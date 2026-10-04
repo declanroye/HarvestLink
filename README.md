@@ -8,7 +8,7 @@ HarvestLink helps smallholder farmers in Guyana and northern Brazil turn individ
 
 The **web workspace is the CRM and marketplace**: a place to inspect accounts, availability, buyer proposals, costs, logistics and exporter handovers. The installed phone companion carries the essential conversation and records into places without reliable internet.
 
-[Open the workspace](https://declanroye.github.io/HarvestLink/?release=v25) · [Try the WhatsApp demo](prototype/DEMO-WHATSAPP.md) · [Connect your phone](prototype/SHARED-SETUP.md)
+[Open the workspace](https://declanroye.github.io/HarvestLink/?release=v26) · [Try the WhatsApp demo](prototype/DEMO-WHATSAPP.md) · [Connect your phone](prototype/SHARED-SETUP.md)
 
 ## The problem: a better road does not automatically create a better sale
 

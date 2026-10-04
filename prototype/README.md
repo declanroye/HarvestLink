@@ -14,7 +14,7 @@ npm start
 npm test
 ```
 
-Open http://127.0.0.1:4173. [Published workspace](https://declanroye.github.io/HarvestLink/?release=v25).
+Open http://127.0.0.1:4173. [Published workspace](https://declanroye.github.io/HarvestLink/?release=v26).
 
 ## Small AI and offline behavior
 
