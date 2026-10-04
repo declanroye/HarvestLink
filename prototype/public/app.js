@@ -1,14 +1,14 @@
-import {documentText} from './workflows.js?release=v31';
-import {openPhoneStorage} from './storage.js?release=v31';
-import {recordSyncStates} from './outbox.js?release=v31';
-import {marketView,marketOrder,marketPoolLots} from './marketplace.js?release=v31';
-import {handleFarmerMessage} from './account.js?release=v31';
-import {loadLocalModel} from './ai/load.js?release=v31';
-import {installLinking} from './linking.js?release=v31';
-import {exportJSON} from './export.js?release=v31';
+import {documentText} from './workflows.js?release=v32';
+import {openPhoneStorage} from './storage.js?release=v32';
+import {recordSyncStates} from './outbox.js?release=v32';
+import {marketView,marketOrder,marketPoolLots} from './marketplace.js?release=v32';
+import {handleFarmerMessage} from './account.js?release=v32';
+import {loadLocalModel} from './ai/load.js?release=v32';
+import {installLinking} from './linking.js?release=v32';
+import {exportJSON} from './export.js?release=v32';
 let linking;
-import {installLanguageSwitch} from './i18n.js?release=v31';
-import {handleMessage,missing,lotSummary,poolLots,compare,demoCosts,demoOrder,classify,profiles,crops} from './core.js?release=v31';
+import {installLanguageSwitch} from './i18n.js?release=v32';
+import {handleMessage,missing,lotSummary,poolLots,compare,validateLot,demoCosts,demoOrder,classify,profiles,crops} from './core.js?release=v32';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),brl=n=>'R$ '+n.toFixed(2),key='harvestlink-v1';
 let model;try{model=await loadLocalModel();}catch(e){const banner=document.createElement('div');banner.className='recovery-banner';banner.textContent='The complete offline model is not available. Connect to the internet and reload to finish installation. Your saved records have not been erased.';document.body.prepend(banner);throw e;}const modelBytes=model.modelBytes+model.runtimeBytes;
 const defaults=()=>({lots:[],session:{draft:{}},chat:[],choices:[],handovers:[],benchmarks:[],costs:{...demoCosts},profile:"general",channel:{},starts:0});
@@ -21,6 +21,7 @@ function toast(text){$('#toast').textContent=text;}
 function download(name,data){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([typeof data==='string'?data:exportJSON(data)],{type:typeof data==='string'?'text/plain;charset=utf-8':'application/json'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
 function card(text){return `<div class="card">${esc(text)}</div>`;}
 function render(){
+ renderSimpleForms();
  renderPhoneExperience();
  if($('#assistant-goal'))$('#assistant-goal').textContent=state.session.assistant?.goal?'Working goal: '+state.session.assistant.goal:'Tell your assistant what you want to achieve. It will use your saved account and harvest records.';
  renderMarketplace();
@@ -28,11 +29,11 @@ function render(){
  const account=state.session.account,ownLots=account?state.lots.filter(l=>l.farmerId===account.id):[],receipt=state.syncReceipts.at(-1);
  $('#continue-chat').dataset.command=account?'COLHEITA':'INICIAR';$('#create-profile').hidden=!!account;
  $('#overview-stats').innerHTML=[['Perfil',account?account.name:'Comece aqui'],['Lotes confirmados',ownLots.length],['Propostas',currentOrder()?'1 · demonstração':'0'],['Apoio pendente',state.supportRequests.filter(r=>r.status==='pending').length]].map(([label,value])=>'<div><span>'+esc(label)+'</span><b>'+esc(value)+'</b></div>').join('');
- $('#next-step').innerHTML=card(!account?'Crie seu perfil em uma conversa curta: consentimento, nome, cidade e idioma.':!ownLots.length?'Conte sua primeira colheita. Seu nome e local já estão salvos.':!currentOrder()?'Sua colheita está registrada neste telefone. Aguarde uma proposta real; o cadastro não garante venda.':'Há um pedido de demonstração para explorar. Revise os custos antes de escolher.');
- $('#recent-activity').innerHTML=[...ownLots.map(l=>({at:l.confirmedAt,text:l.quantityKg+' kg · '+(crops[l.crop]?.pt||l.crop)+' · '+(l.status==='withdrawn'?'Retirado':'Confirmado neste telefone')})),...state.syncReceipts.map(r=>({at:r.at,text:'Envio explícito ao servidor · não confirma compra'}))].sort((a,b)=>b.at.localeCompare(a.at)).slice(0,4).map(e=>card(e.text+' · '+e.at)).join('')||card('Seu histórico começa com a primeira confirmação.');
- $('#account-profile').innerHTML=account?card(account.name+' · '+account.location+' · '+account.language.toUpperCase()+' · '+account.id.slice(0,8)):card('Seu perfil ainda não foi criado. Comece pela conversa; uma pergunta de cada vez.');
+ $('#next-step').innerHTML=card(!account?'Start in WhatsApp, or add a harvest here when offline.':!ownLots.length?'Add your first harvest. Your name and community are already saved.':!currentOrder()?'Sua colheita está registrada neste telefone. Aguarde uma proposta real; o cadastro não garante venda.':'Há um pedido de demonstração para explorar. Revise os custos antes de escolher.');
+ $('#recent-activity').innerHTML=[...ownLots.map(l=>({at:l.confirmedAt,text:l.quantityKg+' kg · '+(crops[l.crop]?.pt||l.crop)+' · '+(l.status==='withdrawn'?'Retirado':'Confirmado neste telefone')})),...state.syncReceipts.map(r=>({at:r.at,text:'Envio explícito ao servidor · não confirma compra'}))].sort((a,b)=>b.at.localeCompare(a.at)).slice(0,4).map(e=>card(e.text+' · '+new Date(e.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}))).join('')||card('Seu histórico começa com a primeira confirmação.');
+ $('#account-profile').innerHTML=account?card(account.name+' · '+account.location):card('Your profile appears here after connecting WhatsApp or saving your first harvest.');
  $('#account-delivery').innerHTML=card(receipt?'Último envio explícito ao servidor: '+receipt.at+'. Este recibo não confirma compra nem entrega.':'Somente neste telefone. Nenhum envio ao comprador confirmado.')+card(ownLots.filter(l=>receipt?.fingerprints?.[l.id]!==JSON.stringify(l)).length+' lotes ou alterações locais sem recibo de envio ao servidor.');
- $('#account-lots').innerHTML=ownLots.map(l=>card(l.id.slice(0,8)+' · '+l.quantityKg+' kg '+(crops[l.crop]?.pt||l.crop)+' · '+(l.status==='withdrawn'?'Retirado':'Disponível'))).join('')||card('Nenhum lote associado a este perfil.');
+ $('#account-lots').innerHTML=ownLots.map(l=>card(l.quantityKg+' kg '+(crops[l.crop]?.pt||l.crop)+' · '+(l.status==='withdrawn'?'Retirado':'Disponível')+' · '+new Date(l.harvestDate+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'}))).join('')||card('Nenhum lote associado a este perfil.');
  $('#account-support').innerHTML=state.supportRequests.filter(r=>r.farmerId===account?.id).map(r=>card(r.id.slice(0,8)+' · '+r.createdAt+' · Aguardando revisão; sem notificação automática.')).join('')||card('Nenhum pedido de apoio.');
  $("#use-case").value=state.profile;$("#journey-status").textContent=state.choices.some(c=>c.choice==="cross-border-proposal")?"Remessa aguarda confirmação do comprador e verificação comercial":"Nenhuma venda confirmada";
  $('#lot-count').textContent=ownLots.length;
@@ -69,7 +70,7 @@ document.querySelectorAll('[data-channel]').forEach(button=>button.onclick=()=>{
 $('#sample').onclick=()=>{$('#message').value=state.profile==='bonfim'?'Sou Ana, tenho 120 kg de tomate, classe A':'Sou Ana, tenho 120 kg de mandioca, em Boa Vista, classe A';};
 $('#use-case').onchange=()=>{state.profile=$('#use-case').value;state.session={draft:{},account:state.session.account,source:state.session.source};persist();render();toast('Contexto atualizado. Lotes confirmados foram preservados.');};
 $('#confirm-lot').onclick=()=>submit('CONFIRMO');
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!==b.dataset.tab);document.querySelectorAll('[data-tab]').forEach(n=>n.classList.toggle('active',n===b));});
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.body.dataset.view=b.dataset.tab==='farmer'?'capture':b.dataset.tab;window.scrollTo({top:0,behavior:'auto'});document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!==(b.dataset.tab==='farmer'?'capture':b.dataset.tab));document.querySelectorAll('[data-tab]').forEach(n=>n.classList.toggle('active',n===b));});
 $('#match').onclick=()=>{if(!currentOrder())return toast('Nenhuma proposta de comprador ainda.');render();toast('Compatibility checked: crop, grade, harvest window and unreserved quantity. Proposal only.');};
 const costFields={asOf:'Data dos custos',validUntil:'Válido até',gydPerBrl:'GYD por 1 BRL',localTransportBrlKg:'Transporte local BRL/kg',crossTransportBrlKg:'Transporte da proposta BRL/kg',packagingBrlKg:'Embalagem BRL/kg',handlingBrlKg:'Manuseio BRL/kg',feePercent:'Taxa de coordenação %',lossPercent:'Perda prevista %',tradeAllowanceBrl:'Reserva comercial BRL/pedido'};
 $('#cost-form').innerHTML=Object.entries(costFields).map(([k,v])=>`<label for="cost-${k}">${v}</label><input id="cost-${k}" type="${['asOf','validUntil'].includes(k)?'date':'number'}" min="0" step="any" value="${esc(state.costs[k])}">`).join('');
@@ -88,8 +89,8 @@ $('#send-provider').onclick=async()=>{try{const result=await api('send','POST',{
 $('#export-account').onclick=()=>{const account=state.session.account;if(!account)return toast('Crie seu perfil primeiro.');const lots=state.lots.filter(l=>l.farmerId===account.id);download('harvestlink-my-account.json',{account,lots,choices:state.choices.filter(c=>lots.some(l=>l.id===c.lotId)),supportRequests:state.supportRequests.filter(r=>r.farmerId===account.id),exportedAt:new Date().toISOString(),delivery:'Local records; export does not send to a buyer'});};
 function channelLinks(){for(const id of ['whatsapp-number','whatsapp-join','sms-number'])$('#'+id).value=state.channel[id]||'';const number=state.channel['whatsapp-number']||'',sms=state.channel['sms-number']||'';const wa=$('#open-whatsapp'),sm=$('#open-sms');wa.removeAttribute('href');sm.removeAttribute('href');if(/^\+[1-9]\d{7,14}$/.test(number))wa.href='https://wa.me/'+number.slice(1)+'?text='+encodeURIComponent(state.channel['whatsapp-join']||'AJUDA');if(/^\+[1-9]\d{7,14}$/.test(sms))sm.href='sms:'+sms+'?body='+encodeURIComponent('AJUDA');for(const a of [wa,sm])a.setAttribute('aria-disabled',String(!a.hasAttribute('href')));}
 $('#save-channel').onclick=()=>{const next={};for(const id of ['whatsapp-number','whatsapp-join','sms-number'])next[id]=$('#'+id).value.trim();if([next['whatsapp-number'],next['sms-number']].some(n=>n&&!/^\+[1-9]\d{7,14}$/.test(n)))return toast('Use o formato internacional: + seguido do código do país e número.');state.channel=next;persist();channelLinks();toast('Conexão salva neste telefone. Abra o canal e envie a mensagem.');};channelLinks();
-function connectivity(){$('#connection').textContent=navigator.onLine?'● Conectado · AI local':'● Offline · AI local';}window.addEventListener('online',connectivity);window.addEventListener('offline',connectivity);connectivity();render();linking=installLinking({state,persist,render,toast,download,flush:phoneStorage.flush});installLanguageSwitch();
-if('serviceWorker'in navigator){let registration;const showUpdate=()=>{if(!registration?.waiting)return;$('#update-banner').hidden=false;};navigator.serviceWorker.register('./sw.js?release=v31').then(r=>{registration=r;showUpdate();r.addEventListener('updatefound',()=>r.installing?.addEventListener('statechange',showUpdate));return navigator.serviceWorker.ready;}).then(()=>toast('Offline cache ready, including the small AI.')).catch(e=>toast('Offline installation failed. Stay connected and reload to retry: '+e.message));$('#apply-update').onclick=async()=>{try{if(Object.keys(state.session.draft||{}).length||state.session.onboarding||state.session.pendingChoice||state.session.pendingHandover||state.session.pendingDocument||state.session.pendingDelivery||state.session.pendingAccount||state.session.pendingWithdrawal||typeof state.session.pendingNotifications==='boolean'||state.shared?.pendingMessage||state.shared?.pendingOperation)return toast('Finish or cancel the current review and any pending submission before updating.');await phoneStorage.flush();registration?.waiting?.postMessage({type:'ACTIVATE_UPDATE'});}catch(e){toast(e.message);}};navigator.serviceWorker.addEventListener('controllerchange',()=>{if(registration?.active&&$('#update-banner').hidden===false)location.reload();});}
+function connectivity(){$('#connection').textContent=navigator.onLine?'● Online':'● Offline · saved on phone';}window.addEventListener('online',connectivity);window.addEventListener('offline',connectivity);connectivity();render();linking=installLinking({state,persist,render,toast,download,flush:phoneStorage.flush});installLanguageSwitch();
+if('serviceWorker'in navigator){let registration;const showUpdate=()=>{if(!registration?.waiting)return;$('#update-banner').hidden=false;};navigator.serviceWorker.register('./sw.js?release=v32').then(r=>{registration=r;showUpdate();r.addEventListener('updatefound',()=>r.installing?.addEventListener('statechange',showUpdate));return navigator.serviceWorker.ready;}).then(()=>toast('Offline cache ready, including the small AI.')).catch(e=>toast('Offline installation failed. Stay connected and reload to retry: '+e.message));$('#apply-update').onclick=async()=>{try{if(Object.keys(state.session.draft||{}).length||state.session.onboarding||state.session.pendingChoice||state.session.pendingHandover||state.phoneHarvestDraft||state.session.pendingDocument||state.session.pendingDelivery||state.session.pendingAccount||state.session.pendingWithdrawal||typeof state.session.pendingNotifications==='boolean'||state.shared?.pendingMessage||state.shared?.pendingOperation)return toast('Finish or cancel the current review and any pending submission before updating.');await phoneStorage.flush();registration?.waiting?.postMessage({type:'ACTIVATE_UPDATE'});}catch(e){toast(e.message);}};navigator.serviceWorker.addEventListener('controllerchange',()=>{if(registration?.active&&$('#update-banner').hidden===false)location.reload();});}
 
 
 function renderMarketplace(){
@@ -115,3 +116,33 @@ document.querySelectorAll('[data-phone-tab]').forEach(b=>b.onclick=()=>{document
 window.addEventListener('online',()=>{renderPhoneExperience();if(state.shared?.token&&linking?.dirty())toast('Back online. Your saved changes are ready for review and explicit submission in Link my account.');});window.addEventListener('offline',renderPhoneExperience);renderPhoneExperience();
 
 $('#workflow-documents').onclick=e=>{const b=e.target.closest('[data-document-download]');if(!b)return;const d=state.documents.find(x=>x.id===b.dataset.documentDownload&&x.farmerId===state.session.account?.id);if(d)download('harvestlink-'+d.id.slice(0,8)+'.txt',documentText(d));};
+
+// The phone companion is a task interface; WhatsApp is the conversation channel.
+function renderSimpleForms(){
+ const account=state.session.account,fields=$('#profile-fields');if(!fields)return;
+ fields.hidden=!!account;fields.disabled=!!account;
+ const pending=state.session.pendingChoice||state.session.pendingHandover||state.session.pendingDocument||state.session.pendingDelivery||state.session.pendingAccount||state.session.pendingWithdrawal;
+ $('#action-review').hidden=!pending;
+ $('#action-review-details').textContent=pending?(state.chat.at(-1)?.text||'Review before confirming.') : '';
+}
+let formDraft;
+$('#harvest-date').value=new Date().toISOString().slice(0,10);
+$('#harvest-form').onsubmit=e=>{e.preventDefault();try{
+ if(Object.keys(state.session.draft||{}).length||state.session.onboarding||state.session.pendingChoice||state.session.pendingHandover||state.session.pendingDocument||state.session.pendingDelivery)throw Error('Finish or cancel your existing review first.');
+ const account=state.session.account,name=account?.name||$('#harvest-name').value.trim(),location=account?.location||$('#harvest-place').value.trim();
+ formDraft=validateLot({farmer:name,location,crop:$('#harvest-crop').value,quantityKg:Number($('#harvest-weight').value),grade:$('#harvest-grade').value,harvestDate:$('#harvest-date').value,localPriceBrl:Number($('#harvest-price').value)});
+ $('#harvest-review-details').innerHTML='<div class="review-facts">'+Object.entries({Farmer:name,Community:location,Crop:crops[formDraft.crop].en,Weight:formDraft.quantityKg+' kg',Quality:formDraft.grade,Date:formDraft.harvestDate,'Price nearby':'BRL '+formDraft.localPriceBrl+'/kg'}).map(([k,v])=>'<div><span>'+esc(k)+'</span><strong>'+esc(v)+'</strong></div>').join('')+'</div>';
+ $('#harvest-review').hidden=false;$('#harvest-form').hidden=true;
+ }catch(e){toast(e.message);}};
+$('#harvest-edit').onclick=()=>{$('#harvest-form').hidden=false;$('#harvest-review').hidden=true;formDraft=null;};
+$('#harvest-save').onclick=async()=>{if(!formDraft||!phoneStorage.writable)return;const button=$('#harvest-save');button.disabled=true;const before=structuredClone(state);try{
+ validateLot(formDraft);const now=new Date().toISOString();
+ if(!state.session.account){if(!$('#harvest-consent').checked)throw Error('Confirm profile storage first.');state.session.account={id:crypto.randomUUID(),name:formDraft.farmer,location:formDraft.location,language:$('#language')?.value||'en',createdAt:now,consent:{purpose:'harvest coordination and buyer availability summaries',version:'v1',acceptedAt:now},origin:'offline-app'};}
+ const lot={...formDraft,id:crypto.randomUUID(),farmerId:state.session.account.id,confirmedAt:now,confirmation:'explicit farmer confirmation',source:'offline-app',status:'available'};
+ state.lots.push(lot);state.session.lastLotId=lot.id;delete state.phoneHarvestDraft;await persist();formDraft=null;$('#harvest-form').reset();$('#harvest-date').value=new Date().toISOString().slice(0,10);$('#harvest-form').hidden=false;$('#harvest-review').hidden=true;render();document.querySelector('[data-tab=account]').click();toast('Harvest saved on this phone. Share it from Account when connected.');
+ }catch(e){for(const key of Object.keys(state))delete state[key];Object.assign(state,before);render();toast(e.message);}finally{button.disabled=false;}};
+$('#action-confirm').onclick=()=>submit('CONFIRM');$('#action-cancel').onclick=()=>submit('CANCEL');
+
+const harvestInputs=['harvest-name','harvest-place','harvest-crop','harvest-weight','harvest-grade','harvest-date','harvest-price'];
+for(const id of harvestInputs)if(state.phoneHarvestDraft?.[id]!==undefined)$('#'+id).value=state.phoneHarvestDraft[id];
+$('#harvest-form').addEventListener('change',()=>{state.phoneHarvestDraft=Object.fromEntries(harvestInputs.map(id=>[id,$('#'+id).value]));persist();});

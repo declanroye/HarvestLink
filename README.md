@@ -258,3 +258,7 @@ Ask HarvestLink to prepare a harvest summary, packing list or proforma draft. Co
 A [PostgreSQL deployment with two API workers, Nginx load balancing and a durable configurable email worker](prototype/production/README.md) replaces the global document architecture when deployed. The current public Twilio demo continues on Sync until a host, data migration and channel switch are configured. Automated PostgreSQL and proxy tests run in the production CI workflow; do not confuse synthetic test traffic with real messaging evidence.
 
 Vercel deployment is supported with the repository root directory set to `prototype`. PostgreSQL comes from a Marketplace provider; API functions fail closed until it is configured. See the [Vercel configuration and email scheduling limits](prototype/production/README.md#vercel-deployment).
+
+### Task-first phone companion — v32
+
+The workspace now has Today, Harvests, Market and Account. WhatsApp remains the conversational assistant. The browser chat preview is removed from the customer interface; a short offline harvest form replaces it, with explicit review and confirmation before transactional saving. Unsaved form fields are restored after reload. The interface uses larger touch targets, clear hierarchy and a restrained HarvestLink identity. No change here switches the live WhatsApp backend or completes the pending hosted PostgreSQL integration.
