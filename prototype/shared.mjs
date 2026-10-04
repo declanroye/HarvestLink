@@ -44,7 +44,7 @@ export function snapshot(db,farmerId){
  return {documents:structuredClone(db.documents.filter(d=>d.farmerId===farmerId)),deliveryJobs:structuredClone(db.deliveryJobs.filter(d=>d.farmerId===farmerId)),marketplace:marketView(session,db.lots,db.choices,db.handovers),account:{...account},revision:account.revision,handovers:structuredClone(db.handovers.filter(h=>h.farmerId===farmerId)),lots:structuredClone(lots),choices:structuredClone(db.choices.filter(c=>ids.has(c.lotId))),supportRequests:structuredClone(db.supportRequests.filter(s=>s.farmerId===farmerId)),shipmentStatus:'awaiting buyer confirmation and trade-requirement checks'};
 }
 function bump(db,id){if(db.accounts[id])db.accounts[id].revision=(db.accounts[id].revision||0)+1;}
-export function processInbound(db,event,model,profileName='general',now=Date.now()){
+export function processInbound(db,event,model,profileName='general',now=Date.now(),conversationResult=null){
  initialize(db);if(db.seen[event.MessageSid])return db.seen[event.MessageSid];if(typeof event.Body!=='string'||event.Body.length>1000)fail(400,'Send a message of up to 1,000 characters.');rateLimit(db,'inbound:'+event.From,60);
  let session=db.sessions[event.From]||{draft:{},source:'twilio-inbound'};
  if(session.account&&db.accounts[session.account.id])session={...session,account:{...db.accounts[session.account.id]}};
@@ -70,7 +70,7 @@ export function processInbound(db,event,model,profileName='general',now=Date.now
  }else{
   const profile=profiles[profileName]||profiles.general;
   const order=marketOrder(session);const lots=order?marketPoolLots(db.lots,order):db.lots;
- result=handleFarmerMessage(event.Body,session,model,{lots,choices:db.choices,handovers:db.handovers,documents:db.documents,deliveryJobs:db.deliveryJobs,costs:demoCosts,profile,order:order||(profile.id==='bonfim'?demoOrder:null)});
+ result=conversationResult||handleFarmerMessage(event.Body,session,model,{lots,choices:db.choices,handovers:db.handovers,documents:db.documents,deliveryJobs:db.deliveryJobs,costs:demoCosts,profile,order:order||(profile.id==='bonfim'?demoOrder:null)});
  }
  if(result.session.account?.language==='en'){result.reply=englishReply(result.reply).replace(/^Vincular o dispositivo/, 'Link device').replace('à conta','to account').replace('? Código','? Code').replace('Ele poderá consultar e enviar seus registros. Digite CONFIRM somente se você criou este código, ou CANCEL.','It can read and submit your records. Reply CONFIRM only if you created this code, or CANCEL.');}
  db.sessions[event.From]=result.session;
@@ -137,7 +137,7 @@ export function syncDevice(db,device,payload){
  db.receipts[receiptKey]={inputHash,result};const keys=Object.keys(db.receipts);for(const k of keys.slice(0,-200))delete db.receipts[k];
  return {...result,snapshot:snapshot(db,id)};
 }
-export function companionOperation(db,path,method,input,token,rateKey='unknown',model){
+export function companionOperation(db,path,method,input,token,rateKey='unknown',model,conversationResult=null){
  initialize(db);
  if(path==='link/request'&&method==='POST'){rateLimit(db,'request:'+rateKey,5);return requestLink(db,input.label,Date.now(),input.language);}
  if(path==='link/claim'&&method==='POST'){rateLimit(db,'claim:'+rateKey,40);return claimLink(db,input.id,input.claim);}
@@ -150,7 +150,7 @@ export function companionOperation(db,path,method,input,token,rateKey='unknown',
   if(input.baseRevision!==db.accounts[device.farmerId].revision)fail(409,'Shared account changed. Refresh before sending this message.');
   const from=Object.keys(db.sessions).find(k=>db.sessions[k].account?.id===device.farmerId);
   if(!from)fail(409,'Messaging account session unavailable');
-  const reply=processInbound(db,{From:from,Body:input.text,MessageSid:key},model);
+  const reply=processInbound(db,{From:from,Body:input.text,MessageSid:key},model,'general',Date.now(),conversationResult);
   bump(db,device.farmerId);db.sessions[from].account={...db.accounts[device.farmerId]};
   const result={reply,session:structuredClone(db.sessions[from]),snapshot:snapshot(db,device.farmerId),operationId:input.operationId};
   db.receipts[key]={inputHash:hash,result:{reply,operationId:input.operationId}};for(const k of Object.keys(db.receipts).slice(0,-40))delete db.receipts[k];

@@ -1,8 +1,8 @@
-import {workflowMessage} from './workflows.js?release=v37';
-import {routeAssistant,assistantFollowThrough} from './assistant.js?release=v37';
-import {marketMessage} from './marketplace.js?release=v37';
-import {languagePrompt,selectLanguage,englishReply} from './conversation-language.js?release=v37';
-import {normal,handleMessage,extract,lotSummary,crops,profiles,classify,missing} from './core.js?release=v37';
+import {workflowMessage} from './workflows.js?release=v38';
+import {routeAssistant,assistantFollowThrough} from './assistant.js?release=v38';
+import {marketMessage} from './marketplace.js?release=v38';
+import {languagePrompt,selectLanguage,englishReply} from './conversation-language.js?release=v38';
+import {normal,handleMessage,extract,lotSummary,crops,profiles,classify,missing} from './core.js?release=v38';
 const accountMenu='COLHEITA · LOTES · PROPOSTAS · STATUS · CONTA · ALTERAR NOME <nome> · ALTERAR LOCAL <cidade> · RETIRAR LOTE <ID> · SUPORTE · EXPORTAR. CONFIRMO salva uma revisão; CANCELAR abandona um rascunho.';
 const accountMenuEn='HARVEST · LOTS · OFFERS · STATUS · ACCOUNT · CHANGE NAME <name> · CHANGE LOCATION <town> · WITHDRAW LOT <ID> · SUPPORT · EXPORT. CONFIRM saves a review; CANCEL abandons a draft. COMPARE EARNINGS · CHOOSE LOCAL · CHOOSE PROPOSAL · LANGUAGE EN/PT · DEMO MARKET · MARKET · LOGISTICS · TRADE · HANDOVER.';
 const accountQuestions={consent:'Olá! Vamos criar seu perfil. Salvamos seu nome e cidade para registrar colheitas. Um lote confirmado pode ser apresentado a compradores. Não envie documentos ou dados bancários. Digite ACEITO para continuar ou CANCELAR.',name:'Como você prefere ser chamado? Envie somente seu nome.',location:'Em qual cidade ou comunidade você produz? Envie somente o local, sem endereço residencial.',language:languagePrompt};

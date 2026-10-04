@@ -266,3 +266,8 @@ The workspace now has Today, Harvests, Market and Account. WhatsApp remains the 
 ### Architecture hardening — v36
 
 Model integrity checks, credential-free recovery backups, request limits, messaging/device rate controls, safer server errors, bounded database pools, durable provider receipts, CSP headers and multipart SMS formatting have been added. The Account screen reports shared-service readiness instead of implying an online phone means a working backend. See [architecture, security and operational boundaries](docs/ARCHITECTURE-SECURITY.md) for the enforced controls, AI limits, deployment status and remaining data-protection work.
+
+
+### Conversational AI integration
+
+The online language-model tool layer and optional on-device generative guidance are implemented. Hosted inference awaits server-side provider credentials; offline generation requires an explicit model download and compatible WebGPU device. The small intent model and offline forms remain the lightweight default. See [activation, architecture and limitations](docs/CONVERSATIONAL-AI.md). No live model or budget Android performance result is claimed.

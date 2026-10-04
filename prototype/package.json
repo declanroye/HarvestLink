@@ -8,15 +8,18 @@
     "test": "node --test tests/*.test.mjs",
     "build:twilio": "node scripts/build-shared-twilio.mjs",
     "measure:ai": "node scripts/measure-small-ai.mjs",
-    "train:legacy": "node scripts/train.mjs"
+    "train:legacy": "node scripts/train.mjs",
+    "build:offline": "node scripts/build-offline.mjs"
   },
   "optionalDependencies": {
     "twilio": "5.13.1"
   },
   "dependencies": {
+    "@mlc-ai/web-llm": "^0.2.85",
     "pg": "^8.23.1"
   },
   "devDependencies": {
+    "esbuild": "^0.28.2",
     "fake-indexeddb": "^6.2.5"
   }
 }

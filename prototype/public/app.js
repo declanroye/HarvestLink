@@ -1,14 +1,15 @@
-import {documentText} from './workflows.js?release=v37';
-import {openPhoneStorage} from './storage.js?release=v37';
-import {recordSyncStates} from './outbox.js?release=v37';
-import {marketView,marketOrder,marketPoolLots} from './marketplace.js?release=v37';
-import {handleFarmerMessage} from './account.js?release=v37';
-import {loadLocalModel} from './ai/load.js?release=v37';
-import {installLinking} from './linking.js?release=v37';
-import {exportJSON} from './export.js?release=v37';
+import {installOfflineConversation} from './offline-conversation.js?release=v38';
+import {documentText} from './workflows.js?release=v38';
+import {openPhoneStorage} from './storage.js?release=v38';
+import {recordSyncStates} from './outbox.js?release=v38';
+import {marketView,marketOrder,marketPoolLots} from './marketplace.js?release=v38';
+import {handleFarmerMessage} from './account.js?release=v38';
+import {loadLocalModel} from './ai/load.js?release=v38';
+import {installLinking} from './linking.js?release=v38';
+import {exportJSON} from './export.js?release=v38';
 let linking;
-import {installLanguageSwitch} from './i18n.js?release=v37';
-import {handleMessage,missing,lotSummary,poolLots,compare,validateLot,demoCosts,demoOrder,classify,profiles,crops} from './core.js?release=v37';
+import {installLanguageSwitch} from './i18n.js?release=v38';
+import {handleMessage,missing,lotSummary,poolLots,compare,validateLot,demoCosts,demoOrder,classify,profiles,crops} from './core.js?release=v38';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),brl=n=>'R$ '+n.toFixed(2),key='harvestlink-v1';
 let model;try{model=await loadLocalModel();}catch(e){const banner=document.createElement('div');banner.className='recovery-banner';banner.textContent='The complete offline model is not available. Connect to the internet and reload to finish installation. Your saved records have not been erased.';document.body.prepend(banner);throw e;}const modelBytes=model.modelBytes+model.runtimeBytes;
 const defaults=()=>({lots:[],session:{draft:{}},chat:[],choices:[],handovers:[],benchmarks:[],costs:{...demoCosts},profile:"general",channel:{},starts:0});
@@ -90,7 +91,7 @@ $('#export-account').onclick=()=>{const account=state.session.account;if(!accoun
 function channelLinks(){for(const id of ['whatsapp-number','whatsapp-join','sms-number'])$('#'+id).value=state.channel[id]||'';const number=state.channel['whatsapp-number']||'',sms=state.channel['sms-number']||'';const wa=$('#open-whatsapp'),sm=$('#open-sms');wa.removeAttribute('href');sm.removeAttribute('href');if(/^\+[1-9]\d{7,14}$/.test(number))wa.href='https://wa.me/'+number.slice(1)+'?text='+encodeURIComponent(state.channel['whatsapp-join']||'AJUDA');if(/^\+[1-9]\d{7,14}$/.test(sms))sm.href='sms:'+sms+'?body='+encodeURIComponent('AJUDA');for(const a of [wa,sm])a.setAttribute('aria-disabled',String(!a.hasAttribute('href')));}
 $('#save-channel').onclick=()=>{const next={};for(const id of ['whatsapp-number','whatsapp-join','sms-number'])next[id]=$('#'+id).value.trim();if([next['whatsapp-number'],next['sms-number']].some(n=>n&&!/^\+[1-9]\d{7,14}$/.test(n)))return toast('Use o formato internacional: + seguido do código do país e número.');state.channel=next;persist();channelLinks();toast('Conexão salva neste telefone. Abra o canal e envie a mensagem.');};channelLinks();
 function connectivity(){$('#connection').textContent=navigator.onLine?'● Online':'● Offline · saved on phone';}window.addEventListener('online',connectivity);window.addEventListener('offline',connectivity);connectivity();render();linking=installLinking({state,persist,render,toast,download,flush:phoneStorage.flush});installLanguageSwitch();
-if('serviceWorker'in navigator){let registration;const showUpdate=()=>{if(!registration?.waiting)return;$('#update-banner').hidden=false;};navigator.serviceWorker.register('./sw.js?release=v37').then(r=>{registration=r;showUpdate();r.addEventListener('updatefound',()=>r.installing?.addEventListener('statechange',showUpdate));return navigator.serviceWorker.ready;}).then(()=>toast('Offline cache ready, including the small AI.')).catch(e=>toast('Offline installation failed. Stay connected and reload to retry: '+e.message));$('#apply-update').onclick=async()=>{try{if(Object.keys(state.session.draft||{}).length||state.session.onboarding||state.session.pendingChoice||state.session.pendingHandover||state.phoneHarvestDraft||state.session.pendingDocument||state.session.pendingDelivery||state.session.pendingAccount||state.session.pendingWithdrawal||typeof state.session.pendingNotifications==='boolean'||state.shared?.pendingMessage||state.shared?.pendingOperation)return toast('Finish or cancel the current review and any pending submission before updating.');await phoneStorage.flush();registration?.waiting?.postMessage({type:'ACTIVATE_UPDATE'});}catch(e){toast(e.message);}};navigator.serviceWorker.addEventListener('controllerchange',()=>{if(registration?.active&&$('#update-banner').hidden===false)location.reload();});}
+if('serviceWorker'in navigator){let registration;const showUpdate=()=>{if(!registration?.waiting)return;$('#update-banner').hidden=false;};navigator.serviceWorker.register('./sw.js?release=v38').then(r=>{registration=r;showUpdate();r.addEventListener('updatefound',()=>r.installing?.addEventListener('statechange',showUpdate));return navigator.serviceWorker.ready;}).then(()=>toast('Offline cache ready, including the small AI.')).catch(e=>toast('Offline installation failed. Stay connected and reload to retry: '+e.message));$('#apply-update').onclick=async()=>{try{if(Object.keys(state.session.draft||{}).length||state.session.onboarding||state.session.pendingChoice||state.session.pendingHandover||state.phoneHarvestDraft||state.session.pendingDocument||state.session.pendingDelivery||state.session.pendingAccount||state.session.pendingWithdrawal||typeof state.session.pendingNotifications==='boolean'||state.shared?.pendingMessage||state.shared?.pendingOperation)return toast('Finish or cancel the current review and any pending submission before updating.');await phoneStorage.flush();registration?.waiting?.postMessage({type:'ACTIVATE_UPDATE'});}catch(e){toast(e.message);}};navigator.serviceWorker.addEventListener('controllerchange',()=>{if(registration?.active&&$('#update-banner').hidden===false)location.reload();});}
 
 
 function renderMarketplace(){
@@ -151,3 +152,5 @@ $('#harvest-discard').onclick=async()=>{delete state.phoneHarvestDraft;formDraft
 
 async function checkServiceHealth(){const status=$('#service-health');if(!navigator.onLine){status.textContent='Offline. Your saved records remain available; WhatsApp and sharing need a connection.';return;}if(!location.hostname.endsWith('.vercel.app')&&!['localhost','127.0.0.1'].includes(location.hostname)){status.textContent='Use your configured coordinator service to link WhatsApp. Records can be saved offline here.';return;}try{const response=await fetch('./healthz',{cache:'no-store',signal:AbortSignal.timeout(5000)});status.textContent=response.ok?'Shared service reachable. Link your number before sharing records.':'The shared service is not ready. You can still save harvests on this phone; account linking is awaiting backend configuration.';}catch{status.textContent='Shared service unreachable. Your records remain on this phone. Try linking again when the service is available.';}}
 checkServiceHealth();window.addEventListener('online',checkServiceHealth);window.addEventListener('offline',checkServiceHealth);
+
+installOfflineConversation({getState:()=>state,persist}).catch(()=>{});

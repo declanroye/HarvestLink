@@ -4,7 +4,7 @@
   "outputDirectory": "dist",
   "functions": {
     "api/handler.mjs": {
-      "includeFiles": "{public/ai/model/**,public/*.js,public/ai/*.mjs,production/**,shared.mjs,server.mjs}",
+      "includeFiles": "{public/ai/model/**,public/*.js,public/ai/*.mjs,production/**,shared.mjs,conversational-shared.mjs,conversation.mjs,server.mjs}",
       "maxDuration": 60
     },
     "api/email-drain.mjs": {
@@ -59,7 +59,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self' https://harvestlink-test-9531.twil.io; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+          "value": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' blob:; connect-src 'self' https://harvestlink-test-9531.twil.io https://huggingface.co https://cdn-lfs.huggingface.co https://cdn-lfs-us-1.hf.co https://cas-bridge.xethub.hf.co https://raw.githubusercontent.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
         }
       ]
     }

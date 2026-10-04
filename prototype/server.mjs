@@ -1,3 +1,4 @@
+import {processConversationalInbound,conversationalCompanionOperation} from './conversational-shared.mjs';
 import {createPostgresStore} from './production/postgres.mjs';
 import {handleFarmerMessage} from './public/account.js';
 import {initialize,processInbound,companionOperation,channelReplyParts} from './shared.mjs';
@@ -23,7 +24,7 @@ export async function requestHandler(req,res){try{
  await ensureDatabase();
  res.setHeader('X-HarvestLink-Worker',process.env.WORKER_ID||'single');
  const url=new URL(req.url,'http://localhost');
- if(url.pathname==='/healthz'){try{await postgres?.health();return json(res,200,{status:'ready',storage:postgres?'postgresql-account-scoped':'local-file-demo'});}catch{return json(res,503,{status:'database-unavailable'});}}
+ if(url.pathname==='/healthz'){try{await postgres?.health();return json(res,200,{status:'ready',storage:postgres?'postgresql-account-scoped':'local-file-demo',conversation:process.env.OPENAI_API_KEY&&process.env.HARVESTLINK_CHAT_MODEL?'configured':'awaiting-provider-configuration'});}catch{return json(res,503,{status:'database-unavailable'});}}
  if(postgres&&url.pathname.startsWith('/api/'))return json(res,503,{error:'Legacy operator endpoints are disabled in PostgreSQL mode. Use the authenticated companion API.'});
  const origin=req.headers.origin,allowedOrigins=(process.env.COMPANION_ORIGINS||'').split(',').filter(Boolean);
  if(url.pathname.startsWith('/companion/')){
@@ -33,7 +34,7 @@ export async function requestHandler(req,res){try{
   if(req.method==='OPTIONS'){res.writeHead(204);return res.end();}
   const input=req.method==='POST'?JSON.parse(await body(req)):{};
   const action=url.pathname.slice('/companion/'.length),token=(req.headers.authorization||'').replace(/^Bearer /,'');
-  const result=postgres?await postgres.transaction({action,input,token},data=>companionOperation(data,action,req.method,input,token,req.socket.remoteAddress,model)):await transaction(async()=>{const backup=structuredClone(db);try{const result=companionOperation(db,action,req.method,input,token,req.socket.remoteAddress,model);await save();return result;}catch(e){db=backup;throw e;}});
+  const result=postgres?await postgres.transaction({action,input,token},data=>conversationalCompanionOperation(data,action,req.method,input,token,req.socket.remoteAddress,model,process.env)):await transaction(async()=>{const backup=structuredClone(db);try{const result=await conversationalCompanionOperation(db,action,req.method,input,token,req.socket.remoteAddress,model,process.env);await save();return result;}catch(e){db=backup;throw e;}});
   return json(res,200,result);
  }
  if(url.pathname==='/webhooks/twilio'&&req.method==='POST'){
@@ -41,7 +42,7 @@ export async function requestHandler(req,res){try{
   const params=Object.fromEntries(new URLSearchParams(await body(req)));
   if(!twilio.validateRequest(process.env.TWILIO_AUTH_TOKEN,req.headers['x-twilio-signature']||'',process.env.PUBLIC_WEBHOOK_URL,params))return json(res,403,{error:'Invalid provider signature'});
   if(!params.MessageSid||!params.From||typeof params.Body!=='string')return json(res,400,{error:'Missing provider fields'});
-  const reply=postgres?await postgres.transaction({from:params.From,body:params.Body,messageId:params.MessageSid},data=>processInbound(data,params,model,process.env.HARVESTLINK_PROFILE||'general')):await transaction(async()=>{if(db.seen[params.MessageSid])return db.seen[params.MessageSid];const backup=structuredClone(db);try{const reply=processInbound(db,params,model,process.env.HARVESTLINK_PROFILE||'general');db.messages.push({kind:'verified-inbound',sid:params.MessageSid,from:params.From,body:params.Body,reply,at:new Date().toISOString(),signatureVerified:true});await save();return reply;}catch(e){db=backup;throw e;}});
+  const reply=postgres?await postgres.transaction({from:params.From,body:params.Body,messageId:params.MessageSid},data=>processConversationalInbound(data,params,model,process.env.HARVESTLINK_PROFILE||'general',process.env)):await transaction(async()=>{if(db.seen[params.MessageSid])return db.seen[params.MessageSid];const backup=structuredClone(db);try{const reply=await processConversationalInbound(db,params,model,process.env.HARVESTLINK_PROFILE||'general',process.env);db.messages.push({kind:'verified-inbound',sid:params.MessageSid,from:params.From,body:params.Body,reply,at:new Date().toISOString(),signatureVerified:true});await save();return reply;}catch(e){db=backup;throw e;}});
   res.writeHead(200,{'Content-Type':'text/xml'});return res.end(`<?xml version="1.0" encoding="UTF-8"?><Response>${channelReplyParts(reply,params.From).map(part=>'<Message>'+xml(part)+'</Message>').join('')}</Response>`);
  }
  if(url.pathname.startsWith('/api/')){
@@ -66,7 +67,7 @@ export async function requestHandler(req,res){try{
  const pathname=url.pathname==='/'?'/index.html':decodeURIComponent(url.pathname),file=path.resolve(root,'public','.'+pathname),publicRoot=path.join(root,'public')+path.sep;
  if(!file.startsWith(publicRoot))return json(res,403,{error:'Invalid path'});
  const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css','.json':'application/json','.svg':'image/svg+xml'};
- const bytes=await readFile(file);res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'"});res.end(bytes);
+ const bytes=await readFile(file);res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' blob:; connect-src 'self' https://huggingface.co https://cdn-lfs.huggingface.co https://cdn-lfs-us-1.hf.co https://cas-bridge.xethub.hf.co https://raw.githubusercontent.com; object-src 'none'; frame-ancestors 'none'"});res.end(bytes);
  }catch(e){if(!res.headersSent)json(res,e.status||(e.code==='ENOENT'?404:e instanceof SyntaxError?400:500),{error:e.status||e instanceof SyntaxError?e.message:e.code==='ENOENT'?'Not found':'Service unavailable. No operation was acknowledged.'});else res.end();}}
 export const server=http.createServer(requestHandler);
 if(!process.env.VERCEL)server.listen(port,host,()=>console.log(`HarvestLink: http://${host}:${port} | Twilio ${configured?'configured':'not configured'}`));
