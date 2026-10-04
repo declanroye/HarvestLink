@@ -1,12 +1,14 @@
 # HarvestLink
 
+![HarvestLink — from local harvests to wider markets](docs/harvestlink-brand.svg)
+
 ### A conversation can open a market.
 
 HarvestLink helps smallholder farmers in Guyana and northern Brazil turn individual harvests into coordinated buyer orders. Farmers talk to an assistant through **WhatsApp or SMS**, in English or Portuguese. The assistant builds their account in the background, asks for missing harvest details, finds compatible demand, compares what they keep after costs, and helps prepare the next step. Farmers confirm the decisions that affect their records and sales.
 
 The **web workspace is the CRM and marketplace**: a place to inspect accounts, availability, buyer proposals, costs, logistics and exporter handovers. The installed phone companion carries the essential conversation and records into places without reliable internet.
 
-[Open the workspace](https://declanroye.github.io/HarvestLink/?release=v22) · [Try the WhatsApp demo](prototype/DEMO-WHATSAPP.md) · [Connect your phone](prototype/SHARED-SETUP.md)
+[Open the workspace](https://declanroye.github.io/HarvestLink/?release=v23) · [Try the WhatsApp demo](prototype/DEMO-WHATSAPP.md) · [Connect your phone](prototype/SHARED-SETUP.md)
 
 ## The problem: a better road does not automatically create a better sale
 
@@ -46,6 +48,21 @@ Sources: [IBGE agricultural production in Roraima](https://www.ibge.gov.br/expli
 
 CARICOM's statistics portal reports **US$5,120.9 million in total food imports in 2024**. Its regional food-security initiative was extended to 2030, and its September 2026 agriculture discussions again emphasised transport, logistics, standards and trade barriers. That is a substantial demand context, not HarvestLink's revenue forecast or addressable market estimate. Our intended path is to help qualified producers and buyers build dependable supply relationships within that wider opportunity. [2024 trade figures](https://statistics.caricom.org/), [2030 initiative](https://caricom.org/food-security-initiative-expanded-extended-to-2030/), [September 2026 priorities](https://cwa2026.caricom.org/caribbean-agriculture-ministers-call-for-deeper-regional-integration-and-redefined-financing-to-achieve-food-security/)
 
+## The corridor in real life
+
+![The Takutu crossing between Lethem and Bonfim, photographed in 2015](https://commons.wikimedia.org/wiki/Special:FilePath/International_bridge_-_Letham%2C_Guyana_%2823025487324%29.jpg?width=960)
+
+The physical connection at Lethem–Bonfim: a real place where languages, road networks and trading relationships meet. Documentary photograph, **7 December 2015**, by Dan Sloan; Wikimedia version with colour/light adjustments by MPF. [Source and attribution](https://commons.wikimedia.org/wiki/File:International_bridge_-_Letham,_Guyana_(23025487324).jpg), [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/). This historical image does not establish the condition of the wider corridor today or imply any photographer endorsement.
+
+<details>
+<summary>A connection built over time — historical photograph</summary>
+
+![Takutu bridge under construction, viewed from Guyana toward Brazil in April 2008](https://commons.wikimedia.org/wiki/Special:FilePath/LethemBridge.jpg?width=960)
+
+April 2008, under construction; photograph by JodyB, displayed without further edits. [Source](https://commons.wikimedia.org/wiki/File:LethemBridge.jpg), [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). Historical context, not a current construction update.
+
+</details>
+
 ## What the farmer experiences
 
 1. **Text the number.** Choose EN or PT, give consent, name and production area, then confirm the profile. No web registration is required for WhatsApp use.
@@ -84,6 +101,43 @@ English onboarding has been demonstrated in a real WhatsApp exchange. End-to-end
 All cross-border records remain **awaiting buyer confirmation and trade-requirement checks**. The demo never authorizes dispatch. The current Sync-document backend is bounded hackathon infrastructure, not a production multi-tenant marketplace.
 
 Next milestones: farmer/cooperative field interviews; real buyer and carrier partnerships; role-based multi-account CRM; production database and authorization; independent EN/PT accuracy testing; physical phone proof; crop-specific quality/cold-chain workflows; live cost feeds; and qualified export/import review. A more general conversational model is a future capability, not implied by the current agent-like interaction.
+
+## How it works: architecture and technical specifications
+
+```mermaid
+flowchart LR
+  Farmer[Farmer: EN / PT] --> Messages[WhatsApp / SMS]
+  Messages --> Gateway[Signed provider webhook]
+  Gateway --> Agent[Shared conversation engine]
+  Agent --> Model[Small learned intent model]
+  Agent --> Tools[Validated harvest / pooling / earnings tools]
+  Tools --> Confirm[Human confirmation]
+  Confirm --> Backend[Shared account backend]
+  Backend <--> CRM[CRM / marketplace]
+  Backend <-->|Verified pairing and explicit sync| Phone[Offline phone companion]
+  Phone --> Local[Cached model, tools and saved records]
+```
+
+The model understands bounded intents; tools handle facts, calculations and state changes. A draft becomes a lot only after farmer confirmation. Matching checks compatibility before pooling. Saved choices preserve dated cost assumptions. Preparing a handover never establishes buyer acceptance or trade clearance.
+
+The deployment uses Twilio Functions and one bounded Sync document. Device credentials, ownership checks and revisioned uploads protect shared records. **WhatsApp replies require connectivity; offline assistance runs in the installed companion.**
+
+[Full technical specification](docs/TECHNICAL-SPEC.md) includes deployed architecture, an interaction sequence diagram, component specifications, data contracts, synchronization limitations, proposed production architecture and acceptance gates. [Brand guidance](docs/BRAND.md) explains HarvestLink's own linked-fields identity.
+
+## The moonshot: a farmer's harvest becomes a market-ready opportunity
+
+Imagine a farmer saying: **“I will harvest next week. Find me the best route to market and help me get ready.”** HarvestLink knows confirmed availability, asks what is missing, assembles compatible cooperative supply, compares qualified demand, proposes collection and packing, translates the buyer brief and builds a traceable handover. Each party sees the same agreed facts. The farmer understands what they could keep, what remains uncertain and what needs their approval.
+
+The ambition is a multilingual coordination network connecting **farms → cooperatives → buyers → carriers → processors → exporters**, starting with Guyana and northern Brazil and growing toward the Guianas, CARICOM and qualified wider markets. Transport infrastructure opens a route; dependable commercial relationships make it useful to small producers.
+
+| Horizon | Product ambition | Evidence required |
+| --- | --- | --- |
+| Prove one relationship | Real lots, buyer acceptance and one viable collection route; verified EN/PT conversation and offline access | Field interviews, physical phone proof, accurate net costs and completed pilot records |
+| Coordinate a local network | Cooperative aggregation, buyer CRM, carrier scheduling, grading, packing and exception handling | Reliable availability, partner agreements, unit economics and fulfillment performance |
+| Connect regional markets | Qualified import/export workflows, traceability, reviewed requirements and current route/cost integrations | Crop eligibility, qualified review, actual logistics capacity and repeated delivery |
+| Make opportunity portable | More capable small local assistant, voice access and consented market memory, enriched online when signal returns | Device/model benchmarks, multilingual evaluation and reliable recovery/sync |
+
+Future integrations could include verified market signals, weather, quality evidence and appropriate finance partners. These are research and partnership directions, not delivered features. Success means completed orders, better farmer net outcomes, dependable fulfillment and useful access under weak connectivity. The assistant must take verified steps and explain its limits; it must never invent a buyer, price or clearance to sound powerful.
 
 ## Run and inspect
 
