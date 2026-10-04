@@ -1,11 +1,11 @@
-import {marketView,marketOrder,marketPoolLots} from './marketplace.js?release=v19';
-import {handleFarmerMessage} from './account.js?release=v19';
-import {loadLocalModel} from './ai/load.js?release=v19';
-import {installLinking} from './linking.js?release=v19';
-import {exportJSON} from './export.js?release=v19';
+import {marketView,marketOrder,marketPoolLots} from './marketplace.js?release=v20';
+import {handleFarmerMessage} from './account.js?release=v20';
+import {loadLocalModel} from './ai/load.js?release=v20';
+import {installLinking} from './linking.js?release=v20';
+import {exportJSON} from './export.js?release=v20';
 let linking;
-import {installLanguageSwitch} from './i18n.js?release=v19';
-import {handleMessage,missing,lotSummary,poolLots,compare,demoCosts,demoOrder,classify,profiles,crops} from './core.js?release=v19';
+import {installLanguageSwitch} from './i18n.js?release=v20';
+import {handleMessage,missing,lotSummary,poolLots,compare,demoCosts,demoOrder,classify,profiles,crops} from './core.js?release=v20';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),brl=n=>'R$ '+n.toFixed(2),key='harvestlink-v1';
 const model=await loadLocalModel(),modelBytes=model.modelBytes+model.runtimeBytes;
 const defaults=()=>({lots:[],session:{draft:{}},chat:[],choices:[],handovers:[],benchmarks:[],costs:{...demoCosts},profile:"general",channel:{},starts:0});
@@ -75,7 +75,7 @@ $('#export-account').onclick=()=>{const account=state.session.account;if(!accoun
 function channelLinks(){for(const id of ['whatsapp-number','whatsapp-join','sms-number'])$('#'+id).value=state.channel[id]||'';const number=state.channel['whatsapp-number']||'',sms=state.channel['sms-number']||'';const wa=$('#open-whatsapp'),sm=$('#open-sms');wa.removeAttribute('href');sm.removeAttribute('href');if(/^\+[1-9]\d{7,14}$/.test(number))wa.href='https://wa.me/'+number.slice(1)+'?text='+encodeURIComponent(state.channel['whatsapp-join']||'AJUDA');if(/^\+[1-9]\d{7,14}$/.test(sms))sm.href='sms:'+sms+'?body='+encodeURIComponent('AJUDA');for(const a of [wa,sm])a.setAttribute('aria-disabled',String(!a.hasAttribute('href')));}
 $('#save-channel').onclick=()=>{const next={};for(const id of ['whatsapp-number','whatsapp-join','sms-number'])next[id]=$('#'+id).value.trim();if([next['whatsapp-number'],next['sms-number']].some(n=>n&&!/^\+[1-9]\d{7,14}$/.test(n)))return toast('Use o formato internacional: + seguido do código do país e número.');state.channel=next;persist();channelLinks();toast('Conexão salva neste telefone. Abra o canal e envie a mensagem.');};channelLinks();
 function connectivity(){$('#connection').textContent=navigator.onLine?'● Conectado · AI local':'● Offline · AI local';}window.addEventListener('online',connectivity);window.addEventListener('offline',connectivity);connectivity();render();linking=installLinking({state,persist,render,toast,download});installLanguageSwitch();
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?release=v19').then(()=>navigator.serviceWorker.ready).then(()=>toast('Offline cache installed, including the small AI. Reload once, then test airplane mode.')).catch(e=>toast('Offline cache unavailable: '+e.message));
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?release=v20').then(()=>navigator.serviceWorker.ready).then(()=>toast('Offline cache installed, including the small AI. Reload once, then test airplane mode.')).catch(e=>toast('Offline cache unavailable: '+e.message));
 
 
 function renderMarketplace(){
