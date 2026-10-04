@@ -1,5 +1,5 @@
-import {normal,crops,poolLots,compare,missing} from './core.js?release=v24';
-import {marketView,marketOrders,marketPoolLots} from './marketplace.js?release=v24';
+import {normal,crops,poolLots,compare,missing} from './core.js?release=v25';
+import {marketView,marketOrders,marketPoolLots} from './marketplace.js?release=v25';
 const choose=(session,en,pt)=>session.account?.language==='en'?en:pt;
 export function assistantPlan(session,context={}){
  const own=(context.lots||[]).filter(l=>l.farmerId===session.account?.id&&!l.synthetic&&l.status!=='withdrawn');
