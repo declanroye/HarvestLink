@@ -24,7 +24,7 @@ export const questions = {
   harvestDate:'Qual é a data da colheita? Use AAAA-MM-DD.',
   localPriceBrl:'Qual preço local por kg você consegue? Exemplo: R$ 3,50/kg.'
 };
-export function extract(text, previous={},profile=profiles.bonfim) {
+export function extract(text, previous={},profile=profiles.general) {
   const t = normal(text), draft = {...(profile.crop?{crop:profile.crop}:{}),...(profile.location?{location:profile.location}:{}),...previous};
   const detected=Object.entries(crops).filter(([id,c])=>[...c.terms,c.en,...({tomato:['tomato'],maize:['corn'],beans:['bean'],banana:['banana'],papaya:['papaya']}[id]||[])].some(term=>new RegExp('\\b'+term+'\\b').test(t)));
   if(detected.length===1)draft.crop=detected[0][0];
@@ -109,8 +109,8 @@ export function handleMessage(text,session,model,context={}) {
     const choice={...session.pendingChoice,createdAt:new Date().toISOString(),humanConfirmed:true,confirmationSource:session.source||'offline-conversation'};
     return {reply:'Escolha confirmada: '+(choice.choice==='local'?'venda local':'proposta para revisão')+'. Registro salvo. Remessa aguarda confirmação do comprador e verificação comercial.',choice,session:{...session,pendingChoice:null},intent};
   }
-  const draft=extract(text,session.draft||{},context.profile||session.profile||profiles.bonfim), fields=missing(draft);
-  if(intent.intent==='unknown'&&required.every(k=>draft[k]===session.draft?.[k])) return {reply:'Não entendi com segurança. Envie: sou Ana, tenho 120 kg de tomate, classe A, colheita 2026-10-04, R$ 3,50/kg.',session,intent};
+  const draft=extract(text,session.draft||{},context.profile||session.profile||profiles.general), fields=missing(draft);
+  if(intent.intent==='unknown'&&required.every(k=>draft[k]===session.draft?.[k])) return {reply:'Não entendi com segurança. Diga sua cultura e quantidade, ou pergunte sobre compradores, ganhos, transporte ou documentos.',session,intent};
   if(!fields.length) {try {validateLot(draft);} catch(e) {return {reply:e.message,session:{...session,draft},intent};}}
   return {reply:fields.length?questions[fields[0]]:lotSummary(draft)+' Responda CONFIRMO.',session:{...session,draft},intent};
 }

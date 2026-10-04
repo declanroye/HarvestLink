@@ -1,11 +1,11 @@
-import {poolLots,compare,demoCosts,crops,normal} from './core.js?release=v36';
+import {poolLots,compare,demoCosts,crops,normal} from './core.js?release=v37';
 export const shipmentHold='awaiting buyer confirmation and trade-requirement checks';
 export const marketOrders=[
  {id:'DEMO-TOMATO',crop:'tomato',grade:'A',quantityKg:200,sourceLocation:'Bonfim',buyer:'Lethem Fresh Produce (fictional importer)',destination:'Lethem, Guyana',priceGydKg:250,earliest:'2026-10-04',latest:'2026-10-10'},
  {id:'DEMO-CASSAVA',crop:'cassava',grade:'A',quantityKg:300,sourceLocation:'Boa Vista',buyer:'Rupununi Foods (fictional importer)',destination:'Lethem, Guyana',priceGydKg:180,earliest:'2026-10-04',latest:'2026-10-10'},
  {id:'DEMO-BANANA',crop:'banana',grade:'A',quantityKg:150,sourceLocation:'Bonfim',buyer:'Border Fruit Market (fictional importer)',destination:'Lethem, Guyana',priceGydKg:220,earliest:'2026-10-04',latest:'2026-10-10'}
 ].map(o=>({...o,label:'DEMONSTRATION ORDER — fictional, not a purchase commitment'}));
-export function marketOrder(session){return session.demoMarketplace?marketOrders.find(o=>o.id===(session.marketOrderId||'DEMO-TOMATO')):null;}
+export function marketOrder(session){return session.demoMarketplace?marketOrders.find(o=>session.marketOrderId?o.id===session.marketOrderId:session.assistant?.focusCrop?o.crop===session.assistant.focusCrop:o.id==='DEMO-TOMATO'):null;}
 export function marketView(session,lots=[],choices=[],handovers=[]){
  const order=marketOrder(session),at=new Date().toISOString();
  if(!order)return {enabled:false,observedAt:at,orders:marketOrders,status:shipmentHold};
@@ -20,7 +20,7 @@ export function marketMessage(text,session,context={}){
  const t=normal(text).trim(),en=session.account?.language==='en',say=(a,b)=>en?a:b;
  if(!/^(demo market|demo mercado|demo off|market|mercado|logistics|logistica|trade|comercio|handover|repasse|offer demo-[a-z]+)$/.test(t)&&!session.pendingHandover)return null;
  if(!session.account)return null;
- if(t==='demo market'||t==='demo mercado')return {session:{...session,demoMarketplace:true,marketOrderId:'DEMO-TOMATO'},reply:say('DEMO enabled: fictional buyers, prices and an 80 kg partner lot. Your real records remain separate. Send MARKET, LOGISTICS, TRADE or COMPARE EARNINGS.','DEMO ativada: compradores, preços e 80 kg fictícios. Envie MERCADO, LOGISTICA, COMERCIO ou COMPARAR GANHOS.')};
+ if(t==='demo market'||t==='demo mercado')return {session:{...session,demoMarketplace:true,marketOrderId:marketOrders.find(o=>o.crop===(session.assistant?.focusCrop||(context.lots||[]).find(l=>l.id===session.lastLotId&&l.farmerId===session.account.id)?.crop))?.id||null},reply:say('DEMO enabled: fictional buyers, prices and an 80 kg partner lot. Your real records remain separate. Send MARKET, LOGISTICS, TRADE or COMPARE EARNINGS.','DEMO ativada: compradores, preços e 80 kg fictícios. Envie MERCADO, LOGISTICA, COMERCIO ou COMPARAR GANHOS.')};
  if(t==='demo off')return {session:{...session,demoMarketplace:false,pendingHandover:null},reply:say('Demo disabled. Confirmed records preserved.','Demo desativada. Registros preservados.')};
  if(t.startsWith('offer ')){const order=marketOrders.find(o=>o.id===t.slice(6).toUpperCase());if(!order)return {session,reply:'Unknown demo order / Pedido desconhecido.'};return {session:{...session,demoMarketplace:true,marketOrderId:order.id},reply:say('Selected fictional order '+order.id+'. Send MARKET.','Pedido fictício selecionado '+order.id+'. Envie MERCADO.')};}
  const view=marketView(session,context.lots,context.choices,context.handovers);

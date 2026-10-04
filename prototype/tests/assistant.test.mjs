@@ -21,3 +21,17 @@ test('Portuguese goal guidance and multiple-lot selection stay grounded',()=>{
 test('expired assumptions stop a recommendation and an embedded harvest remains usable',()=>{let r=handleFarmerMessage('What is my best option?',base,model,{...context,costs:{...demoCosts,validUntil:'2020-01-01'}});assert.match(r.reply,/costs have expired/);assert.doesNotMatch(r.reply,/530.25/);r=handleFarmerMessage('Help me sell 120 kg of tomatoes',{account,draft:{}},model,context);assert.equal(r.session.draft.quantityKg,120);assert.match(r.reply,/grade/);assert.equal(r.session.assistant.goal,'Help me sell 120 kg of tomatoes');});
 
 test('confirmed harvest proactively checks options and remembers review target without committing a sale',()=>{let r=handleFarmerMessage('CONFIRM',{...base,draft:{farmer:account.name,location:lot.location,crop:lot.crop,quantityKg:120,grade:'A',harvestDate:lot.harvestDate,localPriceBrl:3.5} },model,{...context,lots:[]});assert.ok(r.lot);assert.match(r.reply,/also checked/);assert.match(r.reply,/530.25/);assert.equal(r.session.assistant.recommendedOrderId,'DEMO-TOMATO');assert.equal(r.choice,undefined);const review=handleFarmerMessage('review that offer',r.session,model,{...context,lots:[r.lot]});assert.equal(review.session.marketOrderId,'DEMO-TOMATO');assert.equal(review.choice,undefined);});
+
+test('crop-aware enquiry selects cassava context and missing details continue without tomatoes',()=>{
+ let r=handleFarmerMessage('I grow cassava, can you help?',{account,draft:{}},model,{lots:[]});assert.equal(r.session.assistant.focusCrop,'cassava');assert.match(r.reply,/DEMO-CASSAVA/);assert.doesNotMatch(r.reply,/tomato/);
+ r=handleFarmerMessage('80 kg, grade B, 2026-10-04, BRL 4/kg',r.session,model,{lots:[]});assert.equal(r.session.draft.crop,'cassava');assert.equal(r.session.draft.quantityKg,80);assert.equal(r.lot,undefined);
+});
+test('crop switches clear stale facts, local arithmetic is grounded and AI limits are explicit',()=>{
+ let r=handleFarmerMessage('I have 30 kg of bananas',{account,draft:{farmer:'Declan',location:'Bonfim',crop:'tomato',quantityKg:120,grade:'A',harvestDate:'2026-10-04',localPriceBrl:3.5}},model,{lots:[]});assert.equal(r.session.draft.crop,'banana');assert.equal(r.session.draft.quantityKg,30);assert.equal(r.session.draft.localPriceBrl,undefined);assert.equal(r.lot,undefined);
+ r=handleFarmerMessage('What is my best option?',{...base,demoMarketplace:false},model,context);assert.match(r.reply,/420.00/);assert.match(r.reply,/before transport/);
+ r=handleFarmerMessage('How does your small AI work?',base,model,context);assert.match(r.reply,/not a general-purpose/);
+});
+test('unsupported demo buyers stay crop-specific and explain actual matching constraints',()=>{
+ let r=handleFarmerMessage('Who buys maize?',base,model,context);assert.match(r.reply,/no demo buyer/);assert.equal(r.session.assistant.focusCrop,'maize');
+ r=handleFarmerMessage('Why no buyer match?',base,model,context);assert.match(r.reply,/grade/);assert.match(r.reply,/Bonfim/);assert.equal(r.choice,undefined);
+});

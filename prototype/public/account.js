@@ -1,8 +1,8 @@
-import {workflowMessage} from './workflows.js?release=v36';
-import {routeAssistant,assistantFollowThrough} from './assistant.js?release=v36';
-import {marketMessage} from './marketplace.js?release=v36';
-import {languagePrompt,selectLanguage,englishReply} from './conversation-language.js?release=v36';
-import {normal,handleMessage,extract,lotSummary,crops,profiles,classify,missing} from './core.js?release=v36';
+import {workflowMessage} from './workflows.js?release=v37';
+import {routeAssistant,assistantFollowThrough} from './assistant.js?release=v37';
+import {marketMessage} from './marketplace.js?release=v37';
+import {languagePrompt,selectLanguage,englishReply} from './conversation-language.js?release=v37';
+import {normal,handleMessage,extract,lotSummary,crops,profiles,classify,missing} from './core.js?release=v37';
 const accountMenu='COLHEITA · LOTES · PROPOSTAS · STATUS · CONTA · ALTERAR NOME <nome> · ALTERAR LOCAL <cidade> · RETIRAR LOTE <ID> · SUPORTE · EXPORTAR. CONFIRMO salva uma revisão; CANCELAR abandona um rascunho.';
 const accountMenuEn='HARVEST · LOTS · OFFERS · STATUS · ACCOUNT · CHANGE NAME <name> · CHANGE LOCATION <town> · WITHDRAW LOT <ID> · SUPPORT · EXPORT. CONFIRM saves a review; CANCEL abandons a draft. COMPARE EARNINGS · CHOOSE LOCAL · CHOOSE PROPOSAL · LANGUAGE EN/PT · DEMO MARKET · MARKET · LOGISTICS · TRADE · HANDOVER.';
 const accountQuestions={consent:'Olá! Vamos criar seu perfil. Salvamos seu nome e cidade para registrar colheitas. Um lote confirmado pode ser apresentado a compradores. Não envie documentos ou dados bancários. Digite ACEITO para continuar ou CANCELAR.',name:'Como você prefere ser chamado? Envie somente seu nome.',location:'Em qual cidade ou comunidade você produz? Envie somente o local, sem endereço residencial.',language:languagePrompt};
@@ -64,10 +64,12 @@ function handleFarmerMessageInner(text,session,model,context={}){
  const withdraw=/^(?:retirar lote|withdraw lot) ([a-z0-9-]{4,36})$/.exec(t);
  if(withdraw){const matches=lots.filter(l=>l.id.startsWith(withdraw[1])&&l.status!=='withdrawn');if(matches.length!==1)return reply('ID não encontrado ou ambíguo nos seus lotes. Envie LOTES.');const lot=matches[0];if(lot.reservedOrderId||session.pendingChoice?.lotId===lot.id||choices.some(c=>c.lotId===lot.id))return reply('Este lote já tem reserva ou escolha. Envie SUPORTE para revisão.');return reply(`Retirar ${lot.quantityKg} kg do lote ${lot.id.slice(0,8)}? Digite CONFIRMO ou CANCELAR.`,{...session,pendingWithdrawal:lot.id});}
  if(/^(colheita|harvest)$/.test(t))return reply(`O que você tem disponível, ${account.name}? Exemplo: tenho 120 kg de mandioca. Usarei ${account.location}; você pode corrigir na mensagem.`,{...session,draft:{farmer:account.name,location:account.location}});
- const seeded={...session,draft:Object.keys(session.draft||{}).length?session.draft:{farmer:account.name,location:account.location}};
+ const detectedCrop=extract(text,{},profiles.general).crop;
+ if(detectedCrop&&session.draft?.crop&&detectedCrop!==session.draft.crop)session={...session,draft:{farmer:account.name,location:account.location}};
+ const seeded={...session,draft:Object.keys(session.draft||{}).length?session.draft:{farmer:account.name,location:account.location,...(session.assistant?.focusCrop?{crop:session.assistant.focusCrop}:{})}};
  // Do not seed a harvest draft while comparing or confirming a sales choice.
  const active=(/^(comparar ganhos|escolho (local|proposta)|confirmo|confirm|sim)$/.test(t)||classify(text,model).intent==='earnings')&&!Object.keys(session.draft||{}).length?session:seeded;
- const result=handleMessage(text,{...active,lastLotId:lots.some(l=>l.id===active.lastLotId)?active.lastLotId:null},model,context);
+ const result=handleMessage(text,{...active,lastLotId:lots.some(l=>l.id===active.lastLotId)?active.lastLotId:null},model,{...context,profile:profiles.general});
  result.session={...result.session,account,assistant:session.assistant,demoMarketplace:session.demoMarketplace,marketOrderId:session.marketOrderId};if(result.lot)result.lot={...result.lot,farmerId:account.id,status:'available'};
  return assistantFollowThrough(result,context);
 }
