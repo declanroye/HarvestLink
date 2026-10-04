@@ -70,6 +70,7 @@ let locale = localStorage.getItem('harvestlink-language') || 'pt';
 const originals = new WeakMap();
 const escape = s => s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 export function translate(text, language=locale) {
+  if(pairs.some(pair=>text===pair[language==='en'?1:0]))return text;
   const entries = pairs.filter(([pt,en])=>pt!==en).map(([pt,en])=>language==='en'?[pt,en]:[en,pt]);
   const map = new Map(entries);
   const pattern = new RegExp([...map.keys()].sort((a,b)=>b.length-a.length).map(escape).join('|'),'g');
