@@ -1,6 +1,7 @@
-import {marketMessage} from './marketplace.js?release=v18';
-import {languagePrompt,selectLanguage,englishReply} from './conversation-language.js?release=v18';
-import {normal,handleMessage,extract,lotSummary,crops,profiles,classify,missing} from './core.js?release=v18';
+import {routeAssistant,assistantFollowThrough} from './assistant.js?release=v19';
+import {marketMessage} from './marketplace.js?release=v19';
+import {languagePrompt,selectLanguage,englishReply} from './conversation-language.js?release=v19';
+import {normal,handleMessage,extract,lotSummary,crops,profiles,classify,missing} from './core.js?release=v19';
 const accountMenu='COLHEITA · LOTES · PROPOSTAS · STATUS · CONTA · ALTERAR NOME <nome> · ALTERAR LOCAL <cidade> · RETIRAR LOTE <ID> · SUPORTE · EXPORTAR. CONFIRMO salva uma revisão; CANCELAR abandona um rascunho.';
 const accountMenuEn='HARVEST · LOTS · OFFERS · STATUS · ACCOUNT · CHANGE NAME <name> · CHANGE LOCATION <town> · WITHDRAW LOT <ID> · SUPPORT · EXPORT. CONFIRM saves a review; CANCEL abandons a draft. COMPARE EARNINGS · CHOOSE LOCAL · CHOOSE PROPOSAL · LANGUAGE EN/PT · DEMO MARKET · MARKET · LOGISTICS · TRADE · HANDOVER.';
 const accountQuestions={consent:'Olá! Vamos criar seu perfil. Salvamos seu nome e cidade para registrar colheitas. Um lote confirmado pode ser apresentado a compradores. Não envie documentos ou dados bancários. Digite ACEITO para continuar ou CANCELAR.',name:'Como você prefere ser chamado? Envie somente seu nome.',location:'Em qual cidade ou comunidade você produz? Envie somente o local, sem endereço residencial.',language:languagePrompt};
@@ -67,10 +68,11 @@ function handleFarmerMessageInner(text,session,model,context={}){
  const active=(/^(comparar ganhos|escolho (local|proposta)|confirmo|confirm|sim)$/.test(t)||classify(text,model).intent==='earnings')&&!Object.keys(session.draft||{}).length?session:seeded;
  const result=handleMessage(text,{...active,lastLotId:lots.some(l=>l.id===active.lastLotId)?active.lastLotId:null},model,context);
  result.session={...result.session,account};if(result.lot)result.lot={...result.lot,farmerId:account.id,status:'available'};
- return result;
+ return assistantFollowThrough(result,context);
 }
 
 export function handleFarmerMessage(text,session,model,context={}){
+ const routed=routeAssistant(text,session,context);if(routed.result)return routed.result;session=routed.session||session;text=routed.command;
  const marketResult=typeof text==='string'?marketMessage(text,session,context):null;
  if(marketResult)return marketResult;
  if(typeof text==='string'&&/^(restart|restart onboarding|recomeçar|recomecar)$/i.test(text.trim())){
@@ -100,6 +102,6 @@ export function handleFarmerMessage(text,session,model,context={}){
  if(/O que você tem/.test(result.reply))result.reply='What do you have available, '+result.session.account.name+'? For example: I have 120 kg of cassava. Your saved area is '+result.session.account.location+'; you can correct it in your message.';
  const draft=result.session.draft||{};if(!missing(draft).length&&/Responda|Reply CONFIRM/.test(result.reply))result.reply=lotSummary(draft,'en')+' Local price: BRL '+draft.localPriceBrl+'/kg. Reply CONFIRM or correct the details.';
  }
- result.session.language=lang;result.session.demoMarketplace=session.demoMarketplace;result.session.marketOrderId=session.marketOrderId;return result;
+ result.session.assistant=session.assistant;result.session.language=lang;result.session.demoMarketplace=session.demoMarketplace;result.session.marketOrderId=session.marketOrderId;return result;
 }
 

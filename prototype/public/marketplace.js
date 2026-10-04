@@ -1,4 +1,4 @@
-import {poolLots,compare,demoCosts,crops,normal} from './core.js?release=v18';
+import {poolLots,compare,demoCosts,crops,normal} from './core.js?release=v19';
 export const shipmentHold='awaiting buyer confirmation and trade-requirement checks';
 export const marketOrders=[
  {id:'DEMO-TOMATO',crop:'tomato',grade:'A',quantityKg:200,sourceLocation:'Bonfim',buyer:'Lethem Fresh Produce (fictional importer)',destination:'Lethem, Guyana',priceGydKg:250,earliest:'2026-10-04',latest:'2026-10-10'},
@@ -11,7 +11,7 @@ export function marketView(session,lots=[],choices=[],handovers=[]){
  if(!order)return {enabled:false,observedAt:at,orders:marketOrders,status:shipmentHold};
  // Synthetic availability exists only in the opted-in demonstration view, never in farmer records.
  const example={id:'DEMO-SYNTHETIC-'+order.crop,farmer:'Fictional partner farmer',farmerId:'DEMO-PARTNER',crop:order.crop,location:order.sourceLocation,quantityKg:80,grade:'A',harvestDate:'2026-10-04',localPriceBrl:3.5,confirmedAt:'2026-10-04T00:00:00Z',status:'available',synthetic:true};
- const compatible=lots.filter(l=>normal(l.location||'').startsWith(normal(order.sourceLocation))).map(l=>({...l,location:order.sourceLocation}));
+ const compatible=lots.filter(l=>!l.synthetic).map(l=>normal(l.location||'').startsWith(normal(order.sourceLocation))?{...l,location:order.sourceLocation}:l);
  const pool=poolLots([...compatible,example],order),costs={...demoCosts},comparison=compare(pool,costs,order);
  const ownIds=new Set(lots.filter(l=>l.farmerId===session.account?.id).map(l=>l.id));
  return {enabled:true,observedAt:at,source:'SIMULATED marketplace, buyers, prices, transport and trade tasks',orders:marketOrders,order,costs,pooledKg:pool.quantityKg,shortfallKg:pool.shortfallKg,syntheticKg:pool.allocations.filter(a=>a.lot.synthetic).reduce((s,a)=>s+a.kg,0),ownAllocations:comparison.farmers.filter(f=>ownIds.has(f.id)),transport:{id:'DEMO-ROUTE-01',carrier:'Border Harvest Transport (fictional)',route:order.sourceLocation+' → '+order.destination,pickup:'2026-10-05 07:00–09:00 local, illustrative',capacityKg:500,transportBrlKg:costs.crossTransportBrlKg,booking:'not booked'},trade:{exporter:'HarvestLink Export Desk (fictional)',originCountry:'Brazil',destinationCountry:'Guyana',checks:{buyerConfirmation:'pending',exporterEligibility:'unchecked',importRequirements:'unchecked',plantHealthRequirements:'unchecked',quality:'unconfirmed',payment:'unconfirmed'},dispatchAuthorized:false},handovers:handovers.filter(h=>h.farmerId===session.account?.id),status:shipmentHold};
@@ -40,4 +40,4 @@ export function marketMessage(text,session,context={}){
  return {session:{...session,pendingHandover:draft},reply:say('Review DEMO handover: ','Revise o repasse DEMO: ')+`${draft.quantityKg} kg to ${draft.exporter}. Transport not booked; checks pending. Reply ${en?'CONFIRM or CANCEL':'CONFIRMO ou CANCELAR'}. ${shipmentHold}.`};
 }
 
-export function marketPoolLots(lots,order){return [...lots.filter(l=>normal(l.location||'').startsWith(normal(order.sourceLocation))).map(l=>({...l,location:order.sourceLocation})),{id:'DEMO-SYNTHETIC-'+order.crop,farmer:'Fictional partner farmer',farmerId:'DEMO-PARTNER',crop:order.crop,location:order.sourceLocation,quantityKg:80,grade:'A',harvestDate:'2026-10-04',localPriceBrl:3.5,confirmedAt:'2026-10-04T00:00:00Z',synthetic:true}];}
+export function marketPoolLots(lots,order){return [...lots.filter(l=>!l.synthetic).map(l=>normal(l.location||'').startsWith(normal(order.sourceLocation))?{...l,location:order.sourceLocation}:l),{id:'DEMO-SYNTHETIC-'+order.crop,farmer:'Fictional partner farmer',farmerId:'DEMO-PARTNER',crop:order.crop,location:order.sourceLocation,quantityKg:80,grade:'A',harvestDate:'2026-10-04',localPriceBrl:3.5,confirmedAt:'2026-10-04T00:00:00Z',synthetic:true}];}

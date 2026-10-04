@@ -1,11 +1,11 @@
-import {marketView,marketOrder,marketPoolLots} from './marketplace.js?release=v18';
-import {handleFarmerMessage} from './account.js?release=v18';
-import {loadLocalModel} from './ai/load.js?release=v18';
-import {installLinking} from './linking.js?release=v18';
-import {exportJSON} from './export.js?release=v18';
+import {marketView,marketOrder,marketPoolLots} from './marketplace.js?release=v19';
+import {handleFarmerMessage} from './account.js?release=v19';
+import {loadLocalModel} from './ai/load.js?release=v19';
+import {installLinking} from './linking.js?release=v19';
+import {exportJSON} from './export.js?release=v19';
 let linking;
-import {installLanguageSwitch} from './i18n.js?release=v18';
-import {handleMessage,missing,lotSummary,poolLots,compare,demoCosts,demoOrder,classify,profiles,crops} from './core.js?release=v18';
+import {installLanguageSwitch} from './i18n.js?release=v19';
+import {handleMessage,missing,lotSummary,poolLots,compare,demoCosts,demoOrder,classify,profiles,crops} from './core.js?release=v19';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),brl=n=>'R$ '+n.toFixed(2),key='harvestlink-v1';
 const model=await loadLocalModel(),modelBytes=model.modelBytes+model.runtimeBytes;
 const defaults=()=>({lots:[],session:{draft:{}},chat:[],choices:[],handovers:[],benchmarks:[],costs:{...demoCosts},profile:"general",channel:{},starts:0});
@@ -17,6 +17,7 @@ function toast(text){$('#toast').textContent=text;}
 function download(name,data){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([typeof data==='string'?data:exportJSON(data)],{type:'application/json'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
 function card(text){return `<div class="card">${esc(text)}</div>`;}
 function render(){
+ if($('#assistant-goal'))$('#assistant-goal').textContent=state.session.assistant?.goal?'Working goal: '+state.session.assistant.goal:'Tell your assistant what you want to achieve. It will use your saved account and harvest records.';
  renderMarketplace();
  linking?.refresh();
  const account=state.session.account,ownLots=account?state.lots.filter(l=>l.farmerId===account.id):[],receipt=state.syncReceipts.at(-1);
@@ -33,7 +34,7 @@ function render(){
  $('#chat').innerHTML=state.chat.length?state.chat.map(m=>`<div class="bubble ${m.role==='user'?'user':''}">${esc(m.text)}</div>`).join(''):card('Olá! Sou o HarvestLink. Toque em Começar para criar seu perfil. Uma pergunta de cada vez; você confirma antes de salvar.');$('#chat').scrollTop=$('#chat').scrollHeight;
  const d=state.session.draft||{};
  $('#draft').innerHTML=Object.keys(d).length?card(Object.entries(d).map(([k,v])=>`${({farmer:'Agricultor',crop:'Cultura',location:'Local',quantityKg:'Quilos',grade:'Classe',harvestDate:'Colheita',localPriceBrl:'Preço local/kg'})[k]||k}: ${k==='crop'?(crops[v]?.pt||v):v}`).join(' · ')):card(state.session.onboarding?({consent:'Permissão para guardar seus dados',name:'Seu nome',location:'Sua comunidade',language:'Seu idioma',review:'Confira seu perfil'})[state.session.onboarding.step]:state.session.pendingAccount?'Alteração de perfil aguardando confirmação':state.session.pendingWithdrawal?'Retirada de lote aguardando confirmação':'Nenhum rascunho ainda.');
- $('#confirm-lot').disabled=missing(d).length!==0&&!state.session.pendingChoice&&state.session.onboarding?.step!=='review'&&!state.session.pendingAccount&&!state.session.pendingWithdrawal;$('#confirm-lot').textContent=state.session.onboarding?.step==='review'||state.session.pendingAccount?'Confirmar perfil / CONFIRMO':state.session.pendingWithdrawal?'Confirmar retirada / CONFIRMO':state.session.pendingChoice?'Confirmar escolha / CONFIRMO':'Confirmar lote / CONFIRMO';
+ $('#confirm-lot').disabled=!state.session.pendingHandover&&missing(d).length!==0&&!state.session.pendingChoice&&state.session.onboarding?.step!=='review'&&!state.session.pendingAccount&&!state.session.pendingWithdrawal;$('#confirm-lot').textContent=state.session.onboarding?.step==='review'||state.session.pendingAccount?'Confirmar perfil / CONFIRMO':state.session.pendingWithdrawal?'Confirmar retirada / CONFIRMO':state.session.pendingChoice?'Confirmar escolha / CONFIRMO':'Confirmar lote / CONFIRMO';
  $('#lots').innerHTML=state.lots.map(l=>card(lotSummary(l)+' Confirmado '+l.confirmedAt)).join('')||card('Nenhum lote confirmado.');
  $('#buyer-lots').innerHTML=state.lots.map(l=>card(lotSummary(l,'en'))).join('')||card('No confirmed availability yet.');
  $('#order').innerHTML=currentOrder()?card(`${currentOrder().label}. ${currentOrder().buyer}. ${currentOrder().quantityKg} kg grade ${currentOrder().grade} ${currentOrder().crop}; harvest ${currentOrder().earliest} to ${currentOrder().latest}; GYD ${currentOrder().priceGydKg}/kg.`):card("Nenhuma proposta de comprador ainda. Seus lotes confirmados ficam disponíveis para revisão.");
@@ -74,7 +75,7 @@ $('#export-account').onclick=()=>{const account=state.session.account;if(!accoun
 function channelLinks(){for(const id of ['whatsapp-number','whatsapp-join','sms-number'])$('#'+id).value=state.channel[id]||'';const number=state.channel['whatsapp-number']||'',sms=state.channel['sms-number']||'';const wa=$('#open-whatsapp'),sm=$('#open-sms');wa.removeAttribute('href');sm.removeAttribute('href');if(/^\+[1-9]\d{7,14}$/.test(number))wa.href='https://wa.me/'+number.slice(1)+'?text='+encodeURIComponent(state.channel['whatsapp-join']||'AJUDA');if(/^\+[1-9]\d{7,14}$/.test(sms))sm.href='sms:'+sms+'?body='+encodeURIComponent('AJUDA');for(const a of [wa,sm])a.setAttribute('aria-disabled',String(!a.hasAttribute('href')));}
 $('#save-channel').onclick=()=>{const next={};for(const id of ['whatsapp-number','whatsapp-join','sms-number'])next[id]=$('#'+id).value.trim();if([next['whatsapp-number'],next['sms-number']].some(n=>n&&!/^\+[1-9]\d{7,14}$/.test(n)))return toast('Use o formato internacional: + seguido do código do país e número.');state.channel=next;persist();channelLinks();toast('Conexão salva neste telefone. Abra o canal e envie a mensagem.');};channelLinks();
 function connectivity(){$('#connection').textContent=navigator.onLine?'● Conectado · AI local':'● Offline · AI local';}window.addEventListener('online',connectivity);window.addEventListener('offline',connectivity);connectivity();render();linking=installLinking({state,persist,render,toast,download});installLanguageSwitch();
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?release=v18').then(()=>navigator.serviceWorker.ready).then(()=>toast('Offline cache installed, including the small AI. Reload once, then test airplane mode.')).catch(e=>toast('Offline cache unavailable: '+e.message));
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?release=v19').then(()=>navigator.serviceWorker.ready).then(()=>toast('Offline cache installed, including the small AI. Reload once, then test airplane mode.')).catch(e=>toast('Offline cache unavailable: '+e.message));
 
 
 function renderMarketplace(){
