@@ -1,0 +1,56 @@
+services:
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: harvestlink
+      POSTGRES_USER: harvestlink
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes: ["harvestlink-db:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U harvestlink"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  api1: &api
+    build: ..
+    environment: &env
+      WORKER_ID: api1
+      DATABASE_URL: postgresql://harvestlink:${POSTGRES_PASSWORD}@database:5432/harvestlink
+      COMPANION_ORIGINS: ${COMPANION_ORIGINS:-http://localhost:8080}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_FROM: ${TWILIO_FROM:-}
+      PUBLIC_WEBHOOK_URL: ${PUBLIC_WEBHOOK_URL:-}
+      API_KEY: ${API_KEY:-}
+    depends_on:
+      database: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4173/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  api2:
+    <<: *api
+    environment:
+      <<: *env
+      WORKER_ID: api2
+  proxy:
+    image: nginx:stable-alpine
+    ports: ["127.0.0.1:8080:80"]
+    volumes: ["./nginx.conf:/etc/nginx/conf.d/default.conf:ro"]
+    depends_on:
+      api1: {condition: service_healthy}
+      api2: {condition: service_healthy}
+  email-worker:
+    build: ..
+    command: ["node", "production/email-worker.mjs"]
+    environment:
+      <<: *env
+      EMAIL_RELAY_URL: ${EMAIL_RELAY_URL:-}
+      EMAIL_RELAY_TOKEN: ${EMAIL_RELAY_TOKEN:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      EMAIL_RELAY_IDEMPOTENT: ${EMAIL_RELAY_IDEMPOTENT:-false}
+    depends_on:
+      database: {condition: service_healthy}
+volumes:
+  harvestlink-db:

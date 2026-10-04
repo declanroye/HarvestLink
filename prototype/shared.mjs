@@ -9,7 +9,7 @@ const canonical=v=>JSON.stringify(v,(_,x)=>x&&typeof x==='object'&&!Array.isArra
 const fail=(status,message)=>{throw Object.assign(Error(message),{status});};
 export function initialize(db){
  for(const name of ['sessions','accounts','links','devices','seen','receipts','rateLimits'])db[name]||={};
- for(const name of ['lots','choices','handovers','messages','supportRequests'])db[name]||=[];
+ for(const name of ['lots','choices','handovers','messages','supportRequests','documents','deliveryJobs'])db[name]||=[];
  for(const session of Object.values(db.sessions))if(session.account&&!db.accounts[session.account.id])db.accounts[session.account.id]={...session.account,revision:0};
  return db;
 }
@@ -41,7 +41,7 @@ export function snapshot(db,farmerId){
  const account=db.accounts[farmerId];if(!account)fail(404,'Account not found');
  const lots=db.lots.filter(l=>l.farmerId===farmerId),ids=new Set(lots.map(l=>l.id));
  const session=Object.values(db.sessions).find(s=>s.account?.id===farmerId)||{account};
- return {marketplace:marketView(session,db.lots,db.choices,db.handovers),account:{...account},revision:account.revision,handovers:structuredClone(db.handovers.filter(h=>h.farmerId===farmerId)),lots:structuredClone(lots),choices:structuredClone(db.choices.filter(c=>ids.has(c.lotId))),supportRequests:structuredClone(db.supportRequests.filter(s=>s.farmerId===farmerId)),shipmentStatus:'awaiting buyer confirmation and trade-requirement checks'};
+ return {documents:structuredClone(db.documents.filter(d=>d.farmerId===farmerId)),deliveryJobs:structuredClone(db.deliveryJobs.filter(d=>d.farmerId===farmerId)),marketplace:marketView(session,db.lots,db.choices,db.handovers),account:{...account},revision:account.revision,handovers:structuredClone(db.handovers.filter(h=>h.farmerId===farmerId)),lots:structuredClone(lots),choices:structuredClone(db.choices.filter(c=>ids.has(c.lotId))),supportRequests:structuredClone(db.supportRequests.filter(s=>s.farmerId===farmerId)),shipmentStatus:'awaiting buyer confirmation and trade-requirement checks'};
 }
 function bump(db,id){if(db.accounts[id])db.accounts[id].revision=(db.accounts[id].revision||0)+1;}
 export function processInbound(db,event,model,profileName='general',now=Date.now()){
@@ -70,7 +70,7 @@ export function processInbound(db,event,model,profileName='general',now=Date.now
  }else{
   const profile=profiles[profileName]||profiles.general;
   const order=marketOrder(session);const lots=order?marketPoolLots(db.lots,order):db.lots;
- result=handleFarmerMessage(event.Body,session,model,{lots,choices:db.choices,handovers:db.handovers,costs:demoCosts,profile,order:order||(profile.id==='bonfim'?demoOrder:null)});
+ result=handleFarmerMessage(event.Body,session,model,{lots,choices:db.choices,handovers:db.handovers,documents:db.documents,deliveryJobs:db.deliveryJobs,costs:demoCosts,profile,order:order||(profile.id==='bonfim'?demoOrder:null)});
  }
  if(result.session.account?.language==='en'){result.reply=englishReply(result.reply).replace(/^Vincular o dispositivo/, 'Link device').replace('à conta','to account').replace('? Código','? Code').replace('Ele poderá consultar e enviar seus registros. Digite CONFIRM somente se você criou este código, ou CANCEL.','It can read and submit your records. Reply CONFIRM only if you created this code, or CANCEL.');}
  db.sessions[event.From]=result.session;
@@ -82,6 +82,8 @@ export function processInbound(db,event,model,profileName='general',now=Date.now
  if(result.choice)db.choices.push(result.choice);
  if(result.lotUpdate)db.lots=db.lots.map(l=>l.id===result.lotUpdate.id?{...l,...result.lotUpdate}:l);
  if(result.supportRequest)db.supportRequests.push(result.supportRequest);
+ if(result.document){db.documents.push(result.document);bump(db,result.session.account.id);}
+ if(result.deliveryJob){db.deliveryJobs.push(result.deliveryJob);bump(db,result.session.account.id);}
  if(result.handover){db.handovers.push(result.handover);bump(db,result.session.account.id);}
  db.seen[event.MessageSid]=result.reply;return result.reply;
 }
@@ -119,11 +121,17 @@ export function syncDevice(db,device,payload){
  if(!validId(h.id)||h.farmerId!==id||h.humanConfirmed!==true||!confirmedDate(h.createdAt)||!lot||lot.farmerId!==id||choice.choice!=='cross-border-proposal'||h.orderId!==choice.orderId||h.quantityKg!==choice.quantityKg||h.dispatchAuthorized!==false||h.status!=='awaiting buyer confirmation and trade-requirement checks'||h.demo!==true||typeof h.exporter!=='string'||h.exporter.length>100||h.transport?.booking!=='not booked'||!h.checks||Object.values(h.checks).some(v=>!['pending','unchecked','unconfirmed'].includes(v)))fail(400,'Only your reviewed pending demo handover is accepted');
  const old=db.handovers.find(x=>x.id===h.id);if(old&&canonical(old)!==canonical(h))fail(409,'Handover conflict');
  }
+ const documents=payload.documents||[],deliveryJobs=payload.deliveryJobs||[];
+ if(!Array.isArray(documents)||documents.length>50||!Array.isArray(deliveryJobs)||deliveryJobs.length>50)fail(400,'Invalid workflow batch');
+ for(const d of documents){const lot=merged.get(d.record?.lotId);if(!validId(d.id)||d.farmerId!==id||d.humanConfirmed!==true||d.status!=='draft-for-review'||!confirmedDate(d.createdAt)||!['harvest-summary','packing-list','proforma-invoice'].includes(d.kind)||!lot||lot.farmerId!==id||d.record.quantityKg!==lot.quantityKg||d.record.grade!==lot.grade||d.record.harvestDate!==lot.harvestDate||d.record.location!==lot.location||d.record.localPriceBrl!==lot.localPriceBrl||typeof d.title!=='string'||d.title.length>80||d.packaging&&(!/^\d{1,4}\s+.{2,60}$/.test(d.packaging)))fail(400,'Document must reference your confirmed harvest');const old=db.documents.find(x=>x.id===d.id);if(old&&canonical(old)!==canonical(d))fail(409,'Document conflict');}
+ for(const j of deliveryJobs){const d=[...db.documents,...documents].find(x=>x.id===j.documentId&&x.farmerId===id);if(!validId(j.id)||j.farmerId!==id||!d||j.channel!=='email'||!confirmedDate(j.authorizedAt)||!['saved-on-phone','awaiting-provider-configuration'].includes(j.status)||typeof j.destination!=='string'||! /^[^\s@\r\n]{1,64}@[^\s@\r\n]{1,190}\.[a-zA-Z]{2,20}$/.test(j.destination))fail(400,'Invalid reviewed delivery request');const old=db.deliveryJobs.find(x=>x.id===j.id);if(old&&canonical(old)!==canonical(j))fail(409,'Delivery conflict');}
  let account=current.account;
  if(payload.account){const a=payload.account;if(a.id!==id||typeof a.name!=='string'||a.name.trim().length<2||a.name.length>60||typeof a.location!=='string'||a.location.length<2||a.location.length>60||!['pt','en'].includes(a.language))fail(400,'Invalid profile');account={...account,name:a.name,location:a.location,language:a.language,updatedAt:new Date().toISOString()};}
  for(const l of lotChanges){const at=db.lots.findIndex(x=>x.id===l.id);if(at<0)db.lots.push(l);else db.lots[at]=l;}
  for(const field of ['choices','supportRequests'])for(const item of payload[field])if(!db[field].some(x=>x.id===item.id))db[field].push(structuredClone(item));
  for(const h of handovers)if(!db.handovers.some(x=>x.id===h.id))db.handovers.push(structuredClone(h));
+ for(const d of documents)if(!db.documents.some(x=>x.id===d.id))db.documents.push(structuredClone(d));
+ for(const j of deliveryJobs)if(!db.deliveryJobs.some(x=>x.id===j.id))db.deliveryJobs.push({...structuredClone(j),status:'awaiting-provider-configuration'});
  db.accounts[id]=account;bump(db,id);
  const result={operationId:payload.operationId,receivedAt:new Date().toISOString(),revision:db.accounts[id].revision,status:'received by shared service; not buyer acceptance'};
  db.receipts[receiptKey]={inputHash,result};const keys=Object.keys(db.receipts);for(const k of keys.slice(0,-200))delete db.receipts[k];

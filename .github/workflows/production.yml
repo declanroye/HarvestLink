@@ -1,0 +1,50 @@
+name: Verify production backend
+on:
+  push:
+    branches: [main]
+    paths: ['prototype/**', '.github/workflows/production.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: harvestlink
+          POSTGRES_USER: harvestlink
+          POSTGRES_PASSWORD: ci-only-password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U harvestlink"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24, cache: npm, cache-dependency-path: prototype/package-lock.json}
+      - run: npm ci
+        working-directory: prototype
+      - run: node --test production/postgres.test.mjs
+        working-directory: prototype
+        env:
+          DATABASE_URL: postgresql://harvestlink:ci-only-password@localhost:5432/harvestlink
+      - name: Build and exercise load-balanced deployment
+        run: |
+          docker compose -f production/compose.yml up -d --build --wait
+          node production/load-test.mjs
+        working-directory: prototype
+        env:
+          POSTGRES_PASSWORD: ci-only-docker-password
+          TWILIO_ACCOUNT_SID: AC00000000000000000000000000000000
+          TWILIO_AUTH_TOKEN: ci-fixture-token
+          TWILIO_FROM: whatsapp:+15550000000
+          PUBLIC_WEBHOOK_URL: http://localhost:8080/webhooks/twilio
+      - name: Container diagnostics
+        if: failure()
+        run: docker compose -f prototype/production/compose.yml logs --tail 80
+        env:
+          POSTGRES_PASSWORD: ci-only-docker-password

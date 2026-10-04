@@ -8,7 +8,7 @@ HarvestLink helps smallholder farmers in Guyana and northern Brazil turn individ
 
 The **web workspace is the CRM and marketplace**: a place to inspect accounts, availability, buyer proposals, costs, logistics and exporter handovers. The installed phone companion carries the essential conversation and records into places without reliable internet.
 
-[Explore the landing page and interactive architecture](https://declanroye.github.io/HarvestLink/landing.html) · [Open the workspace](https://declanroye.github.io/HarvestLink/?release=v30) · [Try the WhatsApp demo](prototype/DEMO-WHATSAPP.md) · [Connect your phone](prototype/SHARED-SETUP.md)
+[Explore the landing page and interactive architecture](https://declanroye.github.io/HarvestLink/landing.html) · [Open the workspace](https://declanroye.github.io/HarvestLink/?release=v31) · [Try the WhatsApp demo](prototype/DEMO-WHATSAPP.md) · [Connect your phone](prototype/SHARED-SETUP.md)
 
 ## The problem: a better road does not automatically create a better sale
 
@@ -160,7 +160,7 @@ Linked online web conversations now use the same authenticated account session a
 - Paired Twilio Functions using one bounded Sync store, signed inbound handling, retry/deduplication, verified linking and durable account records.
 - Simulated buyer orders, compatible pooling, dated BRL/GYD cost comparisons, unbooked transport examples and farmer-confirmed exporter handovers.
 - Offline caching and local persistence; owner-scoped synchronization with conflict checks.
-- **47 passing unit/integration tests** at this release. Desktop browser inference was measured at approximately 0.10 ms median and 0.30 ms p95 across 100 samples, excluding rendering. These are desktop results, not budget Android measurements.
+- **54 passing unit/integration tests** at this release. Desktop browser inference was measured at approximately 0.10 ms median and 0.30 ms p95 across 100 samples, excluding rendering. These are desktop results, not budget Android measurements.
 
 English onboarding has been demonstrated in a real WhatsApp exchange. End-to-end participant pairing, the complete real-phone commercial workflow, physical Android timings/airplane-mode evidence and bilingual human template sign-off remain outstanding.
 
@@ -248,3 +248,13 @@ Pairing checks quietly for WhatsApp confirmation and then asks the user to revie
 ### Proactive conversation flow
 
 After a confirmed harvest, HarvestLink immediately checks compatible available demo orders and dated net-earnings assumptions, remembers the recommendation and offers a natural-language review step. “Help me sell my harvest” performs that check directly. This is initiative within a conversation; no unsolicited messages are sent and no sale, carrier booking or shipment is automatically authorized.
+
+### Resilient companion and chat workflows — v31
+
+Phone records now use transactional IndexedDB snapshots with legacy migration, a recovery snapshot and damaged-data quarantine. Cross-tab editing is exclusive; stale writers cannot replace newer state. Updates wait for explicit activation, and already-authorized submissions retain their operation IDs with bounded retry backoff. Per-lot status distinguishes local, queued, received and review states.
+
+Ask HarvestLink to prepare a harvest summary, packing list or proforma draft. Confirm the document, receive its text in the conversation or download it from the companion, and separately confirm an email destination to save a delivery request. External email remains unsent until a sender is configured.
+
+A [PostgreSQL deployment with two API workers, Nginx load balancing and a durable configurable email worker](prototype/production/README.md) replaces the global document architecture when deployed. The current public Twilio demo continues on Sync until a host, data migration and channel switch are configured. Automated PostgreSQL and proxy tests run in the production CI workflow; do not confuse synthetic test traffic with real messaging evidence.
+
+Vercel deployment is supported with the repository root directory set to `prototype`. PostgreSQL comes from a Marketplace provider; API functions fail closed until it is configured. See the [Vercel configuration and email scheduling limits](prototype/production/README.md#vercel-deployment).

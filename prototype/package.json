@@ -12,5 +12,11 @@
   },
   "optionalDependencies": {
     "twilio": "5.13.1"
+  },
+  "dependencies": {
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.2.5"
   }
 }

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "node scripts/build-vercel.mjs",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/handler.mjs": {"includeFiles": "{public/ai/model/**,public/*.js,public/ai/*.mjs,production/**,shared.mjs,server.mjs}", "maxDuration": 60},
+    "api/email-drain.mjs": {"includeFiles": "{production/**,public/workflows.js}", "maxDuration": 60}
+  },
+  "rewrites": [
+    {"source": "/companion/:path*", "destination": "/api/handler?route=companion/:path*"},
+    {"source": "/webhooks/twilio", "destination": "/api/handler?route=webhooks/twilio"},
+    {"source": "/healthz", "destination": "/api/handler?route=healthz"}
+  ],
+  "crons": [{"path": "/api/email-drain", "schedule": "0 5 * * *"}],
+  "headers": [{"source": "/sw.js", "headers": [{"key": "Cache-Control", "value": "no-cache"}]}]
+}

@@ -365,6 +365,36 @@ function assistantFollowThrough(result,context={}){
  return result;
 }
 
+const kinds={'harvest summary':'harvest-summary','harvest-summary':'harvest-summary','resumo da colheita':'harvest-summary','packing list':'packing-list','lista de embalagem':'packing-list','proforma invoice':'proforma-invoice','proforma':'proforma-invoice','fatura proforma':'proforma-invoice'};
+function documentText(document){const r=document.record;return [document.title,'DRAFT FOR REVIEW — not a sale, tax invoice or customs clearance','Document '+document.id,'Farmer: '+r.farmer,'Community: '+r.location,'Lot: '+r.lotId,'Crop: '+r.crop,'Quantity: '+r.quantityKg+' kg','Grade: '+r.grade,'Harvest date: '+r.harvestDate,'Local price supplied by farmer: BRL '+r.localPriceBrl+'/kg',...(document.packaging?['Packaging: '+document.packaging]:[]),'Buyer / consignee: not confirmed','Shipment: awaiting buyer confirmation and trade-requirement checks','Created: '+document.createdAt].join('\n');}
+function workflowMessage(text,session,context={}){
+ if(!session.account||session.onboarding||typeof text!=='string')return null;
+ const t=normal(text).trim(),en=session.account.language==='en',say=(a,b)=>en?a:b,docs=(context.documents||[]).filter(d=>d.farmerId===session.account.id);
+ if(session.pendingDocument){
+  const draft=session.pendingDocument;
+  if(/^(cancel|cancelar)$/.test(t))return {session:{...session,pendingDocument:null},reply:say('Document draft cancelled.','Rascunho cancelado.')};
+  if(draft.step==='packaging'){if(!/^\d{1,4}\s+.{2,60}$/.test(text.trim()))return {session,reply:say('How many packages, and what type? For example: 6 crates.','Quantas embalagens e qual tipo? Exemplo: 6 caixas.')};return {session:{...session,pendingDocument:{...draft,packaging:text.trim(),step:'review'}},reply:say('Review packing list: ','Revise a lista: ')+draft.record.quantityKg+' kg · '+text.trim()+'. '+say('Reply CONFIRM to generate a draft, or CANCEL.','Envie CONFIRMO para gerar um rascunho, ou CANCELAR.')};}
+  if(!/^(confirm|confirmo)$/.test(t))return {session,reply:say('Review the document details. Reply CONFIRM or CANCEL.','Revise os dados. Envie CONFIRMO ou CANCELAR.')};
+  const document={...draft,id:crypto.randomUUID(),farmerId:session.account.id,createdAt:new Date().toISOString(),humanConfirmed:true,status:'draft-for-review'};delete document.step;
+  return {session:{...session,pendingDocument:null,lastDocumentId:document.id},document,reply:say('Your document draft is ready. ','Seu rascunho está pronto. ')+document.id.slice(0,8)+'\n'+documentText(document)+'\n'+say('Say “send document here” to receive it in this chat, or “email document to address@example.com” to review a delivery request. Email requires a configured sender.','Diga “enviar documento aqui” para receber no chat ou “email document to address@example.com” para revisar o envio. Email exige remetente configurado.')};
+ }
+ if(session.pendingDelivery){
+  if(/^(cancel|cancelar)$/.test(t))return {session:{...session,pendingDelivery:null},reply:say('Delivery cancelled. Nothing sent.','Envio cancelado. Nada enviado.')};
+  if(!/^(confirm|confirmo)$/.test(t))return {session,reply:say('Confirm the destination with CONFIRM or CANCEL.','Confirme o destino com CONFIRMO ou CANCELAR.')};
+  const deliveryJob={...session.pendingDelivery,id:crypto.randomUUID(),farmerId:session.account.id,authorizedAt:new Date().toISOString(),status:context.offline?'saved-on-phone':'awaiting-provider-configuration',attempts:0};
+  return {session:{...session,pendingDelivery:null},deliveryJob,reply:say('Delivery request saved. It has not been sent. The operator must configure delivery and submit local work before processing.','Pedido de envio salvo. Não foi enviado. O operador precisa configurar o envio e sincronizar os dados locais.')};
+ }
+ if(session.pendingChoice||session.pendingAccount||session.pendingWithdrawal||session.pendingHandover||typeof session.pendingNotifications==='boolean')return null;
+ if(/^(documents|my documents|meus documentos)$/.test(t))return {session,reply:docs.length?docs.map(d=>d.id.slice(0,8)+' · '+d.title+' · '+d.status).join('\n'):say('No documents yet. Say “prepare a harvest summary” or “prepare a packing list”.','Nenhum documento. Diga “prepare a harvest summary” ou “prepare a packing list”.')};
+ const prepare=/^(?:prepare|draft|create|generate|preparar|gerar|criar)(?: a| an| uma| um)? (.+)$/.exec(t),kind=prepare&&kinds[prepare[1]];
+ if(kind){if(Object.keys(session.draft||{}).length)return {session,reply:say('Finish or cancel your harvest draft before preparing a document.','Termine ou cancele sua colheita antes de preparar documentos.')};const lots=(context.lots||[]).filter(l=>l.farmerId===session.account.id&&l.confirmedAt&&l.status!=='withdrawn'&&!l.synthetic);const lot=lots.find(l=>l.id===session.lastLotId)||(lots.length===1?lots[0]:null);if(!lot)return {session,reply:say('I need one confirmed harvest. Tell me the lot ID with USE LOT <ID>, or register your harvest first.','Preciso de uma colheita confirmada. Envie USAR LOTE <ID> ou registre a colheita.')};const draft={kind,title:kind==='packing-list'?'HarvestLink Packing List':kind==='proforma-invoice'?'HarvestLink Proforma Draft':'HarvestLink Harvest Summary',record:{lotId:lot.id,farmer:session.account.name,location:lot.location,crop:crops[lot.crop]?.[en?'en':'pt']||lot.crop,quantityKg:lot.quantityKg,grade:lot.grade,harvestDate:lot.harvestDate,localPriceBrl:lot.localPriceBrl},step:kind==='packing-list'?'packaging':'review'};return {session:{...session,pendingDocument:draft},reply:kind==='packing-list'?say('I filled the confirmed harvest details. How many packages and what type? Example: 6 crates.','Preenchi os dados confirmados. Quantas embalagens e qual tipo? Exemplo: 6 caixas.'):say('Review: ','Revise: ')+draft.title+' · '+lot.quantityKg+' kg · '+draft.record.crop+' · '+lot.harvestDate+'. '+say('Buyer and shipment are unconfirmed. Reply CONFIRM to generate this draft, or CANCEL.','Comprador e remessa não confirmados. Envie CONFIRMO ou CANCELAR.')};}
+ if(/^(send document here|send document to my number|enviar documento aqui|enviar documento para meu numero|email document to .+)$/.test(t)){
+  const document=docs.find(d=>d.id===session.lastDocumentId)||docs.at(-1);if(!document)return {session,reply:say('Create and confirm a document draft first.','Crie e confirme o rascunho primeiro.')};const email=/^email document to (.+)$/i.exec(text.trim());if(!email)return {session,reply:documentText(document)};
+  const destination=email[1].trim();if(!/^[^\s@\r\n]{1,64}@[^\s@\r\n]{1,190}\.[a-zA-Z]{2,20}$/.test(destination))return {session,reply:say('Please provide a valid email address.','Informe um email válido.')};return {session:{...session,pendingDelivery:{documentId:document.id,channel:'email',destination}},reply:say('Send the harvest details in this draft to ','Enviar os dados desta colheita para ')+destination+'? '+say('Reply CONFIRM or CANCEL. Nothing has been sent.','Envie CONFIRMO ou CANCELAR. Nada enviado.')};
+ }
+ return null;
+}
+
 const accountMenu='COLHEITA · LOTES · PROPOSTAS · STATUS · CONTA · ALTERAR NOME <nome> · ALTERAR LOCAL <cidade> · RETIRAR LOTE <ID> · SUPORTE · EXPORTAR. CONFIRMO salva uma revisão; CANCELAR abandona um rascunho.';
 const accountMenuEn='HARVEST · LOTS · OFFERS · STATUS · ACCOUNT · CHANGE NAME <name> · CHANGE LOCATION <town> · WITHDRAW LOT <ID> · SUPPORT · EXPORT. CONFIRM saves a review; CANCEL abandons a draft. COMPARE EARNINGS · CHOOSE LOCAL · CHOOSE PROPOSAL · LANGUAGE EN/PT · DEMO MARKET · MARKET · LOGISTICS · TRADE · HANDOVER.';
 const accountQuestions={consent:'Olá! Vamos criar seu perfil. Salvamos seu nome e cidade para registrar colheitas. Um lote confirmado pode ser apresentado a compradores. Não envie documentos ou dados bancários. Digite ACEITO para continuar ou CANCELAR.',name:'Como você prefere ser chamado? Envie somente seu nome.',location:'Em qual cidade ou comunidade você produz? Envie somente o local, sem endereço residencial.',language:languagePrompt};
@@ -435,6 +465,7 @@ function handleFarmerMessageInner(text,session,model,context={}){
 }
 
 function handleFarmerMessage(text,session,model,context={}){
+ const workflow=workflowMessage(text,session,context);if(workflow)return workflow;
  if(typeof text==='string'){
   const natural=normal(text).trim(),en=(session.account?.language||session.language)==='en';
   const greeting=/^(hello|hi|hey|good morning|good afternoon|bom dia|boa tarde)[!.?]*$/.test(natural);
@@ -495,7 +526,7 @@ const canonical=v=>JSON.stringify(v,(_,x)=>x&&typeof x==='object'&&!Array.isArra
 const fail=(status,message)=>{throw Object.assign(Error(message),{status});};
 function initialize(db){
  for(const name of ['sessions','accounts','links','devices','seen','receipts','rateLimits'])db[name]||={};
- for(const name of ['lots','choices','handovers','messages','supportRequests'])db[name]||=[];
+ for(const name of ['lots','choices','handovers','messages','supportRequests','documents','deliveryJobs'])db[name]||=[];
  for(const session of Object.values(db.sessions))if(session.account&&!db.accounts[session.account.id])db.accounts[session.account.id]={...session.account,revision:0};
  return db;
 }
@@ -527,7 +558,7 @@ function snapshot(db,farmerId){
  const account=db.accounts[farmerId];if(!account)fail(404,'Account not found');
  const lots=db.lots.filter(l=>l.farmerId===farmerId),ids=new Set(lots.map(l=>l.id));
  const session=Object.values(db.sessions).find(s=>s.account?.id===farmerId)||{account};
- return {marketplace:marketView(session,db.lots,db.choices,db.handovers),account:{...account},revision:account.revision,handovers:structuredClone(db.handovers.filter(h=>h.farmerId===farmerId)),lots:structuredClone(lots),choices:structuredClone(db.choices.filter(c=>ids.has(c.lotId))),supportRequests:structuredClone(db.supportRequests.filter(s=>s.farmerId===farmerId)),shipmentStatus:'awaiting buyer confirmation and trade-requirement checks'};
+ return {documents:structuredClone(db.documents.filter(d=>d.farmerId===farmerId)),deliveryJobs:structuredClone(db.deliveryJobs.filter(d=>d.farmerId===farmerId)),marketplace:marketView(session,db.lots,db.choices,db.handovers),account:{...account},revision:account.revision,handovers:structuredClone(db.handovers.filter(h=>h.farmerId===farmerId)),lots:structuredClone(lots),choices:structuredClone(db.choices.filter(c=>ids.has(c.lotId))),supportRequests:structuredClone(db.supportRequests.filter(s=>s.farmerId===farmerId)),shipmentStatus:'awaiting buyer confirmation and trade-requirement checks'};
 }
 function bump(db,id){if(db.accounts[id])db.accounts[id].revision=(db.accounts[id].revision||0)+1;}
 function processInbound(db,event,model,profileName='general',now=Date.now()){
@@ -556,7 +587,7 @@ function processInbound(db,event,model,profileName='general',now=Date.now()){
  }else{
   const profile=profiles[profileName]||profiles.general;
   const order=marketOrder(session);const lots=order?marketPoolLots(db.lots,order):db.lots;
- result=handleFarmerMessage(event.Body,session,model,{lots,choices:db.choices,handovers:db.handovers,costs:demoCosts,profile,order:order||(profile.id==='bonfim'?demoOrder:null)});
+ result=handleFarmerMessage(event.Body,session,model,{lots,choices:db.choices,handovers:db.handovers,documents:db.documents,deliveryJobs:db.deliveryJobs,costs:demoCosts,profile,order:order||(profile.id==='bonfim'?demoOrder:null)});
  }
  if(result.session.account?.language==='en'){result.reply=englishReply(result.reply).replace(/^Vincular o dispositivo/, 'Link device').replace('à conta','to account').replace('? Código','? Code').replace('Ele poderá consultar e enviar seus registros. Digite CONFIRM somente se você criou este código, ou CANCEL.','It can read and submit your records. Reply CONFIRM only if you created this code, or CANCEL.');}
  db.sessions[event.From]=result.session;
@@ -568,6 +599,8 @@ function processInbound(db,event,model,profileName='general',now=Date.now()){
  if(result.choice)db.choices.push(result.choice);
  if(result.lotUpdate)db.lots=db.lots.map(l=>l.id===result.lotUpdate.id?{...l,...result.lotUpdate}:l);
  if(result.supportRequest)db.supportRequests.push(result.supportRequest);
+ if(result.document){db.documents.push(result.document);bump(db,result.session.account.id);}
+ if(result.deliveryJob){db.deliveryJobs.push(result.deliveryJob);bump(db,result.session.account.id);}
  if(result.handover){db.handovers.push(result.handover);bump(db,result.session.account.id);}
  db.seen[event.MessageSid]=result.reply;return result.reply;
 }
@@ -605,11 +638,17 @@ function syncDevice(db,device,payload){
  if(!validId(h.id)||h.farmerId!==id||h.humanConfirmed!==true||!confirmedDate(h.createdAt)||!lot||lot.farmerId!==id||choice.choice!=='cross-border-proposal'||h.orderId!==choice.orderId||h.quantityKg!==choice.quantityKg||h.dispatchAuthorized!==false||h.status!=='awaiting buyer confirmation and trade-requirement checks'||h.demo!==true||typeof h.exporter!=='string'||h.exporter.length>100||h.transport?.booking!=='not booked'||!h.checks||Object.values(h.checks).some(v=>!['pending','unchecked','unconfirmed'].includes(v)))fail(400,'Only your reviewed pending demo handover is accepted');
  const old=db.handovers.find(x=>x.id===h.id);if(old&&canonical(old)!==canonical(h))fail(409,'Handover conflict');
  }
+ const documents=payload.documents||[],deliveryJobs=payload.deliveryJobs||[];
+ if(!Array.isArray(documents)||documents.length>50||!Array.isArray(deliveryJobs)||deliveryJobs.length>50)fail(400,'Invalid workflow batch');
+ for(const d of documents){const lot=merged.get(d.record?.lotId);if(!validId(d.id)||d.farmerId!==id||d.humanConfirmed!==true||d.status!=='draft-for-review'||!confirmedDate(d.createdAt)||!['harvest-summary','packing-list','proforma-invoice'].includes(d.kind)||!lot||lot.farmerId!==id||d.record.quantityKg!==lot.quantityKg||d.record.grade!==lot.grade||d.record.harvestDate!==lot.harvestDate||d.record.location!==lot.location||d.record.localPriceBrl!==lot.localPriceBrl||typeof d.title!=='string'||d.title.length>80||d.packaging&&(!/^\d{1,4}\s+.{2,60}$/.test(d.packaging)))fail(400,'Document must reference your confirmed harvest');const old=db.documents.find(x=>x.id===d.id);if(old&&canonical(old)!==canonical(d))fail(409,'Document conflict');}
+ for(const j of deliveryJobs){const d=[...db.documents,...documents].find(x=>x.id===j.documentId&&x.farmerId===id);if(!validId(j.id)||j.farmerId!==id||!d||j.channel!=='email'||!confirmedDate(j.authorizedAt)||!['saved-on-phone','awaiting-provider-configuration'].includes(j.status)||typeof j.destination!=='string'||! /^[^\s@\r\n]{1,64}@[^\s@\r\n]{1,190}\.[a-zA-Z]{2,20}$/.test(j.destination))fail(400,'Invalid reviewed delivery request');const old=db.deliveryJobs.find(x=>x.id===j.id);if(old&&canonical(old)!==canonical(j))fail(409,'Delivery conflict');}
  let account=current.account;
  if(payload.account){const a=payload.account;if(a.id!==id||typeof a.name!=='string'||a.name.trim().length<2||a.name.length>60||typeof a.location!=='string'||a.location.length<2||a.location.length>60||!['pt','en'].includes(a.language))fail(400,'Invalid profile');account={...account,name:a.name,location:a.location,language:a.language,updatedAt:new Date().toISOString()};}
  for(const l of lotChanges){const at=db.lots.findIndex(x=>x.id===l.id);if(at<0)db.lots.push(l);else db.lots[at]=l;}
  for(const field of ['choices','supportRequests'])for(const item of payload[field])if(!db[field].some(x=>x.id===item.id))db[field].push(structuredClone(item));
  for(const h of handovers)if(!db.handovers.some(x=>x.id===h.id))db.handovers.push(structuredClone(h));
+ for(const d of documents)if(!db.documents.some(x=>x.id===d.id))db.documents.push(structuredClone(d));
+ for(const j of deliveryJobs)if(!db.deliveryJobs.some(x=>x.id===j.id))db.deliveryJobs.push({...structuredClone(j),status:'awaiting-provider-configuration'});
  db.accounts[id]=account;bump(db,id);
  const result={operationId:payload.operationId,receivedAt:new Date().toISOString(),revision:db.accounts[id].revision,status:'received by shared service; not buyer acceptance'};
  db.receipts[receiptKey]={inputHash,result};const keys=Object.keys(db.receipts);for(const k of keys.slice(0,-200))delete db.receipts[k];
