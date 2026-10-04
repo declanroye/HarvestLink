@@ -41,7 +41,7 @@ Document generation snapshots confirmed farmer facts. Preparing and emailing a d
 
 ## Deployment and data protection work still required
 
-The current Vercel API fails closed while PostgreSQL is unconfigured. The live Twilio demo remains on its bounded Sync store until migration and channel switching are completed. Generated hardened Twilio handlers must be deployed before their new controls apply to that existing bridge.
+The current Vercel API fails closed while PostgreSQL is unconfigured. The live Twilio demo remains on its bounded Sync store until migration and channel switching are completed. Both hardened Twilio handlers were deployed and the Console confirmed the latest version is deployed on 4 October 2026. This verifies deployment, not a new real SMS delivery or WhatsApp exchange.
 
 Before accepting real sensitive records: choose the database provider and region, review provider contracts and processing roles, configure least-privilege database credentials, backups and tested restore, retention/deletion across records, receipts and provider logs, incident response and access auditing. Device storage needs a deliberate shared-phone/PIN strategy. Do not claim GDPR/LGPD compliance, encryption at rest, disaster recovery objectives or production scale solely from this code.
 
