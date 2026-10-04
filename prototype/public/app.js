@@ -1,5 +1,5 @@
 import {installLanguageSwitch} from './i18n.js';
-import {handleMessage,missing,lotSummary,poolLots,compare,demoCosts,demoOrder,classify,profiles} from './core.js';
+import {handleMessage,missing,lotSummary,poolLots,compare,demoCosts,demoOrder,classify,profiles,crops} from './core.js';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),brl=n=>'R$ '+n.toFixed(2),key='harvestlink-v1';
 const modelResponse=await fetch('./model.json'),modelText=await modelResponse.text(),model=JSON.parse(modelText),modelBytes=new TextEncoder().encode(modelText).length;
 const defaults=()=>({lots:[],session:{draft:{}},chat:[],choices:[],handovers:[],benchmarks:[],costs:{...demoCosts},profile:"general",channel:{},starts:0});
@@ -15,7 +15,7 @@ function render(){
  $('#lot-count').textContent=state.lots.length;
  $('#chat').innerHTML=state.chat.length?state.chat.map(m=>`<div class="bubble ${m.role==='user'?'user':''}">${esc(m.text)}</div>`).join(''):card('Olá! Conte o que você colheu, onde e quantos quilos. Eu peço o que faltar. Você confirma antes de salvar.');$('#chat').scrollTop=$('#chat').scrollHeight;
  const d=state.session.draft||{};
- $('#draft').innerHTML=Object.keys(d).length?card(Object.entries(d).map(([k,v])=>`${({farmer:'Agricultor',crop:'Cultura',location:'Local',quantityKg:'Quilos',grade:'Classe',harvestDate:'Colheita',localPriceBrl:'Preço local/kg'})[k]||k}: ${v}`).join(' · ')):card('Nenhum rascunho ainda.');
+ $('#draft').innerHTML=Object.keys(d).length?card(Object.entries(d).map(([k,v])=>`${({farmer:'Agricultor',crop:'Cultura',location:'Local',quantityKg:'Quilos',grade:'Classe',harvestDate:'Colheita',localPriceBrl:'Preço local/kg'})[k]||k}: ${k==='crop'?(crops[v]?.pt||v):v}`).join(' · ')):card('Nenhum rascunho ainda.');
  $('#confirm-lot').disabled=missing(d).length!==0&&!state.session.pendingChoice;$('#confirm-lot').textContent=state.session.pendingChoice?'Confirmar escolha / CONFIRMO':'Confirmar lote / CONFIRMO';
  $('#lots').innerHTML=state.lots.map(l=>card(lotSummary(l)+' Confirmado '+l.confirmedAt)).join('')||card('Nenhum lote confirmado.');
  $('#buyer-lots').innerHTML=state.lots.map(l=>card(lotSummary(l,'en'))).join('')||card('No confirmed availability yet.');
@@ -38,7 +38,7 @@ $('#sample').onclick=()=>{$('#message').value=state.profile==='bonfim'?'Sou Ana,
 $('#use-case').onchange=()=>{state.profile=$('#use-case').value;state.session={draft:{}};persist();render();toast('Contexto atualizado. Lotes confirmados foram preservados.');};
 $('#confirm-lot').onclick=()=>submit('CONFIRMO');
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!==b.dataset.tab);document.querySelectorAll('[data-tab]').forEach(n=>n.classList.toggle('active',n===b));});
-$('#match').onclick=()=>{render();toast('Compatibility checked: crop, grade, harvest window and unreserved quantity. Proposal only.');};
+$('#match').onclick=()=>{if(!currentOrder())return toast('Nenhuma proposta de comprador ainda.');render();toast('Compatibility checked: crop, grade, harvest window and unreserved quantity. Proposal only.');};
 const costFields={asOf:'Data dos custos',validUntil:'Válido até',gydPerBrl:'GYD por 1 BRL',localTransportBrlKg:'Transporte local BRL/kg',crossTransportBrlKg:'Transporte da proposta BRL/kg',packagingBrlKg:'Embalagem BRL/kg',handlingBrlKg:'Manuseio BRL/kg',feePercent:'Taxa de coordenação %',lossPercent:'Perda prevista %',tradeAllowanceBrl:'Reserva comercial BRL/pedido'};
 $('#cost-form').innerHTML=Object.entries(costFields).map(([k,v])=>`<label for="cost-${k}">${v}</label><input id="cost-${k}" type="${['asOf','validUntil'].includes(k)?'date':'number'}" min="0" step="any" value="${esc(state.costs[k])}">`).join('');
 $('#recalculate').onclick=()=>{try{const next={...state.costs};for(const k of Object.keys(costFields))next[k]=['asOf','validUntil'].includes(k)?$('#cost-'+k).value:Number($('#cost-'+k).value);if(!next.asOf||!next.validUntil||next.validUntil<next.asOf)throw Error('Datas inválidas.');compare(currentPool(),next);state.costs=next;persist();render();toast('Custos atualizados. Escolhas anteriores mantêm o snapshot original.');}catch(e){toast(e.message);}};

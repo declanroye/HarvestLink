@@ -4,6 +4,8 @@ A messaging-first harvest assistant for smallholder farmers. Portuguese crop int
 
 Farmers register harvests, receive net-earnings comparisons and confirm their choices through **WhatsApp or SMS**. The browser interface is a conversation preview, offline companion, and buyer/coordinator workspace.
 
+[Open the phone companion](https://declanroye.github.io/HarvestLink/) · [Phone / WhatsApp setup](prototype/SETUP.md)
+
 ## Run locally
 
 ```sh

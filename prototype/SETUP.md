@@ -2,6 +2,10 @@
 
 HarvestLink is a messaging-first harvest assistant. Bonfim tomatoes → Lethem is an optional, fictional trade example, not the product boundary. General intake supports tomato, cassava, maize, rice, beans, banana and papaya in Portuguese; unfamiliar crops need a coordinator and are not silently mapped to tomatoes.
 
+## Current deployment
+
+Phone companion: https://declanroye.github.io/HarvestLink/ (public HTTPS, installed/cached app required for offline use). Protected WhatsApp webhook deployed at https://harvestlink-test-9531.twil.io/harvestlink-reply and saved as the Sandbox inbound POST handler. General crop intake is active. Phone Sandbox join, real messaging round trip and physical Android offline/timing evidence are still pending.
+
 ## Start on your computer
 
 Use Node 22+:
