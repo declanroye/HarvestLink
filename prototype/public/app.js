@@ -13,8 +13,8 @@ function render(){
  $('#lot-count').textContent=state.lots.length;
  $('#chat').innerHTML=state.chat.length?state.chat.map(m=>`<div class="bubble ${m.role==='user'?'user':''}">${esc(m.text)}</div>`).join(''):card('Olá! Registre um lote de tomate. Você revisa tudo antes de confirmar.');$('#chat').scrollTop=$('#chat').scrollHeight;
  const d=state.session.draft||{};
- $('#draft').innerHTML=Object.keys(d).length?card(Object.entries(d).map(([k,v])=>`${k}: ${v}`).join(' • ')):card('Nenhum rascunho ainda.');
- $('#confirm-lot').disabled=missing(d).length!==0&&!state.session.pendingChoice;
+ $('#draft').innerHTML=Object.keys(d).length?card(Object.entries(d).filter(([k])=>!['crop','location'].includes(k)).map(([k,v])=>`${({farmer:'Agricultor',quantityKg:'Quilos',grade:'Classe',harvestDate:'Colheita',localPriceBrl:'Preço local/kg'})[k]||k}: ${v}`).join(' · ')):card('Nenhum rascunho ainda.');
+ $('#confirm-lot').disabled=missing(d).length!==0&&!state.session.pendingChoice;$('#confirm-lot').textContent=state.session.pendingChoice?'Confirmar escolha / CONFIRMO':'Confirmar lote / CONFIRMO';
  $('#lots').innerHTML=state.lots.map(l=>card(lotSummary(l)+' Confirmado '+l.confirmedAt)).join('')||card('Nenhum lote confirmado.');
  $('#buyer-lots').innerHTML=state.lots.map(l=>card(lotSummary(l,'en'))).join('')||card('No confirmed availability yet.');
  $('#order').innerHTML=card(`${demoOrder.label}. ${demoOrder.buyer}. ${demoOrder.quantityKg} kg grade A tomatoes; harvest ${demoOrder.earliest} to ${demoOrder.latest}; GYD ${demoOrder.priceGydKg}/kg.`);
