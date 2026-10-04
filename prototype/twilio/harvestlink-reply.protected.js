@@ -342,6 +342,10 @@ function handleFarmerMessageInner(text,session,model,context={}){
 }
 
 function handleFarmerMessage(text,session,model,context={}){
+ if(typeof text==='string'&&/^(restart|restart onboarding|recomeçar|recomecar)$/i.test(text.trim())){
+  const next={...session,onboarding:session.account?null:{step:'language',draft:{}},draft:{},pendingAccount:null,pendingWithdrawal:null,pendingChoice:null};
+  return {reply:languagePrompt,session:next};
+ }
  const selected=typeof text==='string'?selectLanguage(text):null;
  // Older conversations may already be mid-onboarding with no language saved.
  // Selecting a language must not be treated as a name or town.

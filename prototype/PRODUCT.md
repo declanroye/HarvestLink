@@ -20,15 +20,17 @@ HarvestLink introduces itself and asks whether the farmer agrees to saving their
 
 Ask a single question per turn:
 
-1. “May we save your profile for harvest coordination?” → ACEITO / CANCELAR.
-2. “What should we call you?” → plain name.
-3. “Which town/community do you produce in?” → coarse location.
-4. “Which menu language?” → PT / EN.
-5. Show the profile and ask CONFIRMO. Then ask what is available today.
+1. “Which language do you prefer?” → EN / PT.
+2. Ask consent in that language → I AGREE / CANCEL or ACEITO / CANCELAR.
+3. “What should we call you?” → plain name.
+4. “Which town/community do you produce in?” → coarse location.
+5. Show the profile and ask CONFIRM / CONFIRMO. The backend account is created here; opening the control panel is optional.
+
+Send RESTART to discard unfinished onboarding and choose the language again. Existing accounts retain their identity and confirmed records; EN or PT changes their language. Deleting the WhatsApp chat does not reset backend state.
 
 If the first message already contains a harvest, retain it during onboarding and resume it after profile confirmation. Ask only missing harvest details. Reuse the confirmed profile's name/location on later harvests. Do not overwrite historical lots when the profile changes.
 
-This version parses harvest input in Portuguese. The English UI and controlled buyer summaries are supported; choosing EN on a profile is a saved preference, not proof that the crop model can interpret arbitrary English messages. Full English dialogue is a subsequent model/template milestone.
+The learned small intent model accepts English and Portuguese, with structured bilingual clarification and confirmation. It is a compact intent classifier, not a general-purpose conversational LLM. WhatsApp runs this model in the backend; the installed companion runs the same model locally without connectivity. Offline messages and decisions require explicit synchronization and cannot imply buyer receipt or a completed sale.
 
 ## Everyday harvest conversation
 

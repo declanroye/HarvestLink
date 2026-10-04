@@ -1,5 +1,5 @@
-import {languagePrompt,selectLanguage,englishReply} from './conversation-language.js?release=v16';
-import {normal,handleMessage,extract,lotSummary,crops,profiles,classify,missing} from './core.js?release=v16';
+import {languagePrompt,selectLanguage,englishReply} from './conversation-language.js?release=v17';
+import {normal,handleMessage,extract,lotSummary,crops,profiles,classify,missing} from './core.js?release=v17';
 const accountMenu='COLHEITA · LOTES · PROPOSTAS · STATUS · CONTA · ALTERAR NOME <nome> · ALTERAR LOCAL <cidade> · RETIRAR LOTE <ID> · SUPORTE · EXPORTAR. CONFIRMO salva uma revisão; CANCELAR abandona um rascunho.';
 const accountMenuEn='HARVEST · LOTS · OFFERS · STATUS · ACCOUNT · CHANGE NAME <name> · CHANGE LOCATION <town> · WITHDRAW LOT <ID> · SUPPORT · EXPORT. CONFIRM saves a review; CANCEL abandons a draft. COMPARE EARNINGS · CHOOSE LOCAL · CHOOSE PROPOSAL · LANGUAGE EN/PT.';
 const accountQuestions={consent:'Olá! Vamos criar seu perfil. Salvamos seu nome e cidade para registrar colheitas. Um lote confirmado pode ser apresentado a compradores. Não envie documentos ou dados bancários. Digite ACEITO para continuar ou CANCELAR.',name:'Como você prefere ser chamado? Envie somente seu nome.',location:'Em qual cidade ou comunidade você produz? Envie somente o local, sem endereço residencial.',language:languagePrompt};
@@ -70,6 +70,10 @@ function handleFarmerMessageInner(text,session,model,context={}){
 }
 
 export function handleFarmerMessage(text,session,model,context={}){
+ if(typeof text==='string'&&/^(restart|restart onboarding|recomeçar|recomecar)$/i.test(text.trim())){
+  const next={...session,onboarding:session.account?null:{step:'language',draft:{}},draft:{},pendingAccount:null,pendingWithdrawal:null,pendingChoice:null};
+  return {reply:languagePrompt,session:next};
+ }
  const selected=typeof text==='string'?selectLanguage(text):null;
  // Older conversations may already be mid-onboarding with no language saved.
  // Selecting a language must not be treated as a name or town.
