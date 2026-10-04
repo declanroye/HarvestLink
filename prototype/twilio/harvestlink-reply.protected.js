@@ -562,7 +562,7 @@ function snapshot(db,farmerId){
 }
 function bump(db,id){if(db.accounts[id])db.accounts[id].revision=(db.accounts[id].revision||0)+1;}
 function processInbound(db,event,model,profileName='general',now=Date.now()){
- initialize(db);if(db.seen[event.MessageSid])return db.seen[event.MessageSid];
+ initialize(db);if(db.seen[event.MessageSid])return db.seen[event.MessageSid];if(typeof event.Body!=='string'||event.Body.length>1000)fail(400,'Send a message of up to 1,000 characters.');rateLimit(db,'inbound:'+event.From,60);
  let session=db.sessions[event.From]||{draft:{},source:'twilio-inbound'};
  if(session.account&&db.accounts[session.account.id])session={...session,account:{...db.accounts[session.account.id]}};
  const t=event.Body.trim().toLowerCase();let result;
@@ -658,7 +658,7 @@ function companionOperation(db,path,method,input,token,rateKey='unknown',model){
  initialize(db);
  if(path==='link/request'&&method==='POST'){rateLimit(db,'request:'+rateKey,5);return requestLink(db,input.label,Date.now(),input.language);}
  if(path==='link/claim'&&method==='POST'){rateLimit(db,'claim:'+rateKey,40);return claimLink(db,input.id,input.claim);}
- const device=authenticateDevice(db,token);
+ const device=authenticateDevice(db,token);rateLimit(db,'device:'+device.id,120);
  if(path==='conversation'&&method==='POST'){
   if(!model)fail(503,'Conversation model unavailable');
   if(!validId(input.operationId)||typeof input.text!=='string'||!input.text.trim()||input.text.length>1000)fail(400,'Invalid conversation message');
@@ -677,6 +677,13 @@ function companionOperation(db,path,method,input,token,rateKey='unknown',model){
  if(path==='sync'&&method==='POST')return syncDevice(db,device,input);
  if(path==='revoke'&&method==='POST'){device.revoked=true;return {revoked:true};}
  fail(404,'Unknown companion route');
+}
+
+// SMS providers limit a TwiML Message body. Preserve all reviewed text in bounded parts.
+function channelReplyParts(text,from){
+ text=String(text);if(String(from).startsWith('whatsapp:'))return [text];
+ const chunks=[];while(text.length){let end=Math.min(1300,text.length);if(end<text.length){const boundary=text.lastIndexOf(' ',end);if(boundary>650)end=boundary;}chunks.push(text.slice(0,end).trim());text=text.slice(end).trimStart();}
+ return chunks.length>1?chunks.map((part,i)=>'('+ (i+1)+'/'+chunks.length+') '+part):chunks;
 }
 
 
@@ -699,7 +706,7 @@ exports.handler=async function(context,event,callback){
  try{
   if(!event.MessageSid||!event.From||typeof event.Body!=='string')throw Error('Invalid message');
   const reply=await runStored(context,data=>{const reply=processInbound(data,event,model,context.HARVESTLINK_PROFILE||'general');data.evidence=(data.evidence||[]).concat({sid:event.MessageSid,at:new Date().toISOString(),reply,signatureVerifiedBy:'Protected Twilio Function'}).slice(-6);return reply;});
-  response.message(reply);
+  for(const part of channelReplyParts(reply,event.From))response.message(part);
  }catch(error){console.error('HarvestLink save failed',error.status||'runtime');response.message('Não consegui salvar com segurança. Tente novamente. Nenhuma confirmação foi registrada nesta tentativa.');}
  return callback(null,response);
 };

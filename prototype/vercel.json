@@ -3,14 +3,65 @@
   "buildCommand": "node scripts/build-vercel.mjs",
   "outputDirectory": "dist",
   "functions": {
-    "api/handler.mjs": {"includeFiles": "{public/ai/model/**,public/*.js,public/ai/*.mjs,production/**,shared.mjs,server.mjs}", "maxDuration": 60},
-    "api/email-drain.mjs": {"includeFiles": "{production/**,public/workflows.js}", "maxDuration": 60}
+    "api/handler.mjs": {
+      "includeFiles": "{public/ai/model/**,public/*.js,public/ai/*.mjs,production/**,shared.mjs,server.mjs}",
+      "maxDuration": 60
+    },
+    "api/email-drain.mjs": {
+      "includeFiles": "{production/**,public/workflows.js}",
+      "maxDuration": 60
+    }
   },
   "rewrites": [
-    {"source": "/companion/:path*", "destination": "/api/handler?route=companion/:path*"},
-    {"source": "/webhooks/twilio", "destination": "/api/handler?route=webhooks/twilio"},
-    {"source": "/healthz", "destination": "/api/handler?route=healthz"}
+    {
+      "source": "/companion/:path*",
+      "destination": "/api/handler?route=companion/:path*"
+    },
+    {
+      "source": "/webhooks/twilio",
+      "destination": "/api/handler?route=webhooks/twilio"
+    },
+    {
+      "source": "/healthz",
+      "destination": "/api/handler?route=healthz"
+    }
   ],
-  "crons": [{"path": "/api/email-drain", "schedule": "0 5 * * *"}],
-  "headers": [{"source": "/sw.js", "headers": [{"key": "Cache-Control", "value": "no-cache"}]}]
+  "crons": [
+    {
+      "path": "/api/email-drain",
+      "schedule": "0 5 * * *"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self' https://harvestlink-test-9531.twil.io; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+        }
+      ]
+    }
+  ]
 }

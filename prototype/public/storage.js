@@ -1,4 +1,5 @@
 export const STORAGE_SCHEMA=3;
+export function recoveryBackup(value){const copy=structuredClone(value);if(copy.shared){delete copy.shared.token;delete copy.shared.pairing;delete copy.shared.deviceId;}return copy;}
 const arrays=['lots','chat','choices','handovers','benchmarks','supportRequests','syncReceipts','documents','deliveryJobs'];
 export function migrateState(value,defaults){
  if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Invalid saved state');
@@ -20,7 +21,7 @@ export async function openPhoneStorage({defaults,onStatus=()=>{},legacy=globalTh
  }
  state||=fallback||defaults();state=migrateState(state,defaults);
  const save=next=>{if(!writable)return Promise.reject(Error('This tab is read-only. Close the editing tab and reload to edit safely.'));const captured=migrateState(next,defaults);queue=queue.catch(()=>{}).then(()=>new Promise((resolve,reject)=>{
- if(!db){try{legacy.setItem('harvestlink-v1',JSON.stringify(captured));onStatus('Saved in browser backup only; transactional storage unavailable.');resolve();}catch(e){reject(e);}return;}
+ if(!db){try{legacy.setItem('harvestlink-v1',JSON.stringify(recoveryBackup(captured)));onStatus('Saved in browser backup only; transactional storage unavailable.');resolve();}catch(e){reject(e);}return;}
  const tx=db.transaction('snapshots','readwrite'),store=tx.objectStore('snapshots');let stale=false;const r=store.get('current');r.onsuccess=()=>{const current=r.result;if((current?.revision||0)!==revision){stale=true;tx.abort();return;}if(current)store.put(current,'previous');store.put({schema:STORAGE_SCHEMA,revision:revision+1,savedAt:new Date().toISOString(),state:captured},'current');};
  tx.oncomplete=()=>{revision++;try{legacy?.setItem('harvestlink-v1',JSON.stringify(captured));}catch{}onStatus('Saved transactionally on this phone.');resolve();};tx.onabort=()=>reject(Error(stale?'Another tab changed these records. Reload before editing.':'Phone storage write failed. Export your work before closing.'));tx.onerror=()=>{};
  }));return queue;};

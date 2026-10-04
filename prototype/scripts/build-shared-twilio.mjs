@@ -29,7 +29,7 @@ exports.handler=async function(context,event,callback){
  try{
   if(!event.MessageSid||!event.From||typeof event.Body!=='string')throw Error('Invalid message');
   const reply=await runStored(context,data=>{const reply=processInbound(data,event,model,context.HARVESTLINK_PROFILE||'general');data.evidence=(data.evidence||[]).concat({sid:event.MessageSid,at:new Date().toISOString(),reply,signatureVerifiedBy:'Protected Twilio Function'}).slice(-6);return reply;});
-  response.message(reply);
+  for(const part of channelReplyParts(reply,event.From))response.message(part);
  }catch(error){console.error('HarvestLink save failed',error.status||'runtime');response.message('Não consegui salvar com segurança. Tente novamente. Nenhuma confirmação foi registrada nesta tentativa.');}
  return callback(null,response);
 };

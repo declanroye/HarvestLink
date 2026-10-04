@@ -1,4 +1,4 @@
-import {scheduleRetry} from './outbox.js?release=v35';
+import {scheduleRetry} from './outbox.js?release=v36';
 const canonical=v=>JSON.stringify(v,(_,x)=>x&&typeof x==='object'&&!Array.isArray(x)?Object.fromEntries(Object.entries(x).sort(([a],[b])=>a.localeCompare(b))):x);
 export function installLinking({state,persist,render,toast,download,flush=async()=>{}}){
  let pairingPoll, pairingBusy=false,syncBusy=false;
@@ -18,7 +18,7 @@ export function installLinking({state,persist,render,toast,download,flush=async(
   const target=new URL(endpoint,location.href);
   if(target.protocol!=='https:'&&!['localhost','127.0.0.1'].includes(target.hostname))throw Error('The shared service must use HTTPS.');
   let response;
-  if(s.kind==='twilio')response=await fetch(target,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action,input:JSON.stringify(input),token:s.token||''}),cache:'no-store'});
+  if(s.kind==='twilio')response=await fetch(target,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action,input:JSON.stringify(input),token:s.token||''}),cache:'no-store',signal:AbortSignal.timeout(15000)});
   else{target.pathname=target.pathname.replace(/\/?$/,'/')+action;response=await fetch(target,{method:action==='snapshot'?'GET':'POST',headers:{'Content-Type':'application/json',...(s.token?{Authorization:'Bearer '+s.token}:{})},body:action==='snapshot'?undefined:JSON.stringify(input),cache:'no-store'});}
   const text=await response.text();let data;try{data=JSON.parse(text);}catch{throw Error('This address is not a shared backend. GitHub Pages serves only the companion; enter the deployed service URL.');}
   if(!response.ok)throw Object.assign(Error(data.error||'Shared service unavailable'),{status:response.status});return data;

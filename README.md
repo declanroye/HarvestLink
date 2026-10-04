@@ -262,3 +262,7 @@ Vercel deployment is supported with the repository root directory set to `protot
 ### Task-first phone companion — v32
 
 The workspace now has Today, Harvests, Market and Account. WhatsApp remains the conversational assistant. The browser chat preview is removed from the customer interface; a short offline harvest form replaces it, with explicit review and confirmation before transactional saving. Unsaved form fields are restored after reload. The interface uses larger touch targets, clear hierarchy and a restrained HarvestLink identity. No change here switches the live WhatsApp backend or completes the pending hosted PostgreSQL integration.
+
+### Architecture hardening — v36
+
+Model integrity checks, credential-free recovery backups, request limits, messaging/device rate controls, safer server errors, bounded database pools, durable provider receipts, CSP headers and multipart SMS formatting have been added. The Account screen reports shared-service readiness instead of implying an online phone means a working backend. See [architecture, security and operational boundaries](docs/ARCHITECTURE-SECURITY.md) for the enforced controls, AI limits, deployment status and remaining data-protection work.

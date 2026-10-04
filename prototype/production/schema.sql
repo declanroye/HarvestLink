@@ -8,3 +8,6 @@ CREATE INDEX IF NOT EXISTS hl_records_owner ON hl_records(scope,kind);
 CREATE INDEX IF NOT EXISTS hl_lot_match ON hl_records((payload->>'crop'),(payload->>'location'),(payload->>'grade'),(payload->>'harvestDate')) WHERE kind='lots';
 CREATE TABLE IF NOT EXISTS hl_email_jobs (id text PRIMARY KEY,scope text NOT NULL REFERENCES hl_accounts(scope),destination text NOT NULL,subject text NOT NULL,body text NOT NULL,status text NOT NULL DEFAULT 'queued',attempts integer NOT NULL DEFAULT 0,next_at timestamptz NOT NULL DEFAULT now(),provider_receipt text,last_error text,updated_at timestamptz NOT NULL DEFAULT now());
 CREATE INDEX IF NOT EXISTS hl_email_due ON hl_email_jobs(next_at) WHERE status IN ('queued','retry');
+
+CREATE TABLE IF NOT EXISTS hl_provider_receipts (message_id text PRIMARY KEY, scope text NOT NULL REFERENCES hl_accounts(scope), input_hash text NOT NULL, response jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
+CREATE INDEX IF NOT EXISTS hl_provider_receipts_age ON hl_provider_receipts(created_at);

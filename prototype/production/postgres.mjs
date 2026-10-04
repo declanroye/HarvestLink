@@ -6,7 +6,7 @@ const hash=s=>createHash('sha256').update(s).digest('hex');
 const lists=['lots','choices','handovers','supportRequests','documents','deliveryJobs'];
 export class PostgresStore {
  constructor(pool){this.pool=pool;}
- async migrate(){const c=await this.pool.connect();try{await c.query('BEGIN');await c.query("SELECT pg_advisory_xact_lock(hashtext('harvestlink-schema'))");await c.query(await readFile(new URL('./schema.sql',import.meta.url),'utf8'));await c.query('COMMIT');}catch(e){await c.query('ROLLBACK');throw e;}finally{c.release();}}
+ async migrate(){const c=await this.pool.connect();try{await c.query('BEGIN');await c.query("SET LOCAL lock_timeout = '5s'");await c.query("SET LOCAL statement_timeout = '15s'");await c.query("SELECT pg_advisory_xact_lock(hashtext('harvestlink-schema'))");await c.query(await readFile(new URL('./schema.sql',import.meta.url),'utf8'));await c.query('COMMIT');}catch(e){await c.query('ROLLBACK');throw e;}finally{c.release();}}
  async health(){await this.pool.query('SELECT 1');}
  async transaction(route,operation){
   for(let attempt=0;attempt<4;attempt++){
@@ -38,7 +38,9 @@ export class PostgresStore {
     // Current marketplace is illustrative; query an indexed, bounded matching pool instead of every account.
     const order=Object.values(data.sessions).find(s=>s.marketOrderId)?.marketOrderId;
     if(order){const {marketOrders}=await import('../public/marketplace.js');const o=marketOrders.find(x=>x.id===order);if(o){const matches=(await client.query("SELECT payload FROM hl_records WHERE kind='lots' AND scope<>$1 AND payload->>'crop'=$2 AND payload->>'grade'=$3 AND payload->>'location'=$4 AND payload->>'status'<>'withdrawn' ORDER BY id LIMIT 500",[scope,o.crop,o.grade,o.sourceLocation])).rows;data.lots.push(...matches.map(x=>x.payload));}}
+    let inputHash;if(route.messageId){inputHash=hash(JSON.stringify({from:route.from,body:route.body}));const receipt=(await client.query('SELECT scope,input_hash,response FROM hl_provider_receipts WHERE message_id=$1',[route.messageId])).rows[0];if(receipt){if(receipt.scope!==scope||receipt.input_hash!==inputHash)throw Object.assign(Error('Provider message ID reused with different content'),{status:409});await client.query('COMMIT');return receipt.response;}}
     const result=await operation(data);
+    if(route.messageId)await client.query('INSERT INTO hl_provider_receipts(message_id,scope,input_hash,response) VALUES($1,$2,$3,$4)',[route.messageId,scope,inputHash,JSON.stringify(result)]);
     const accountIds=new Set(Object.keys(data.accounts));
     for(const field of lists)for(const r of data[field]){const owner=field==='choices'?data.lots.find(l=>l.id===r.lotId)?.farmerId:r.farmerId;if(!accountIds.has(owner))continue;await client.query('INSERT INTO hl_records(kind,id,scope,payload) VALUES($1,$2,$3,$4) ON CONFLICT(kind,id) DO UPDATE SET payload=EXCLUDED.payload WHERE hl_records.scope=EXCLUDED.scope',[field,r.id,scope,JSON.stringify(r)]);}
     for(const j of data.deliveryJobs){if(!accountIds.has(j.farmerId)||!j.authorizedAt)continue;const d=data.documents.find(d=>d.id===j.documentId&&d.farmerId===j.farmerId);if(d)await client.query('INSERT INTO hl_email_jobs(id,scope,destination,subject,body) VALUES($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING',[j.id,scope,j.destination,d.title,documentText(d)]);}
@@ -52,4 +54,4 @@ export class PostgresStore {
   }
  }
 }
-export async function createPostgresStore(url){const {Pool}=await import('pg');const store=new PostgresStore(new Pool({connectionString:url,max:Number(process.env.DB_POOL_SIZE||10)}));await store.migrate();return store;}
+export async function createPostgresStore(url){const {Pool}=await import('pg');const store=new PostgresStore(new Pool({connectionString:url,max:Math.max(1,Math.min(20,Number(process.env.DB_POOL_SIZE)||(process.env.VERCEL?2:10))),connectionTimeoutMillis:5000,idleTimeoutMillis:20000,maxLifetimeSeconds:300}));try{await store.migrate();return store;}catch(error){await store.pool.end();throw error;}}

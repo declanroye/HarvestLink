@@ -1,10 +1,11 @@
 import {createPostgresStore} from './postgres.mjs';
-const store=await createPostgresStore(process.env.DATABASE_URL);
+let store,connecting;async function getStore(){connecting||=createPostgresStore(process.env.DATABASE_URL).then(result=>store=result).catch(error=>{connecting=null;throw error;});return connecting;}
 const relay=process.env.EMAIL_RELAY_URL,from=process.env.EMAIL_FROM,token=process.env.EMAIL_RELAY_TOKEN;
 const configured=!!(relay&&from&&token&&process.env.EMAIL_RELAY_IDEMPOTENT==='true');
 if(relay&&new URL(relay).protocol!=='https:')throw Error('Email relay must use HTTPS');
 export async function processOne(){
  if(!configured)return false;
+ await getStore();
  const c=await store.pool.connect();let job;
  try{await c.query('BEGIN');job=(await c.query("SELECT * FROM hl_email_jobs WHERE ((status IN ('queued','retry') AND next_at<=now()) OR (status='sending' AND next_at<=now())) AND attempts<8 ORDER BY next_at FOR UPDATE SKIP LOCKED LIMIT 1")).rows[0];if(!job){await c.query('COMMIT');return false;}await c.query("UPDATE hl_email_jobs SET status='sending',attempts=attempts+1,next_at=now()+interval '5 minutes',updated_at=now() WHERE id=$1",[job.id]);await c.query('COMMIT');}catch(e){await c.query('ROLLBACK');throw e;}finally{c.release();}
  let status,error,receipt,next=0;
@@ -14,6 +15,6 @@ export async function processOne(){
 if(!process.env.VERCEL){
 console.log(configured?'Email worker ready; acceptance is not delivery confirmation.':'Email worker waiting for configured HTTPS relay, sender, token and idempotency guarantee. Nothing will be sent.');
 let stopped=false;process.on('SIGTERM',()=>stopped=true);process.on('SIGINT',()=>stopped=true);
-while(!stopped){try{if(!await processOne())await new Promise(r=>setTimeout(r,5000));}catch(e){console.error('Delivery worker failed:',e.code||'runtime');await new Promise(r=>setTimeout(r,5000));}}await store.pool.end();
+while(!stopped){try{if(!await processOne())await new Promise(r=>setTimeout(r,5000));}catch(e){console.error('Delivery worker failed:',e.code||'runtime');await new Promise(r=>setTimeout(r,5000));}}await store?.pool.end();
 
 }
