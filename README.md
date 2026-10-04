@@ -8,7 +8,7 @@ HarvestLink helps smallholder farmers in Guyana and northern Brazil turn individ
 
 The **web workspace is the CRM and marketplace**: a place to inspect accounts, availability, buyer proposals, costs, logistics and exporter handovers. The installed phone companion carries the essential conversation and records into places without reliable internet.
 
-[Open the workspace](https://declanroye.github.io/HarvestLink/?release=v23) · [Try the WhatsApp demo](prototype/DEMO-WHATSAPP.md) · [Connect your phone](prototype/SHARED-SETUP.md)
+[Open the workspace](https://declanroye.github.io/HarvestLink/?release=v24) · [Try the WhatsApp demo](prototype/DEMO-WHATSAPP.md) · [Connect your phone](prototype/SHARED-SETUP.md)
 
 ## The problem: a better road does not automatically create a better sale
 
@@ -148,6 +148,10 @@ April 2008, under construction; photograph by JodyB, displayed without further e
 
 A verified pairing code links the companion to the WhatsApp-created farmer ID. Matching names never merge accounts. Per-device credentials scope access; uploads use revisions, receipts and explicit conflict review. Channel/device assistant goals currently remain local to that session; confirmed lots and choices use the shared account backend.
 
+## Shared assistant release
+
+Linked online web conversations now use the same authenticated account session and small-AI backend as WhatsApp. Offline work stays local until explicit synchronization; local changes must be submitted or reviewed before returning to the shared conversation. Reviewed demo handovers synchronize alongside confirmed lots and choices. Web proposal and handover actions lead through the same human-confirmation flow. Message retries use operation IDs and stale account revisions are rejected.
+
 ## What is working today
 
 - English/Portuguese onboarding and intake; seven supported crops: tomatoes, cassava, maize, rice, beans, bananas and papayas.
@@ -156,7 +160,7 @@ A verified pairing code links the companion to the WhatsApp-created farmer ID. M
 - Paired Twilio Functions using one bounded Sync store, signed inbound handling, retry/deduplication, verified linking and durable account records.
 - Simulated buyer orders, compatible pooling, dated BRL/GYD cost comparisons, unbooked transport examples and farmer-confirmed exporter handovers.
 - Offline caching and local persistence; owner-scoped synchronization with conflict checks.
-- **41 passing unit/integration tests** at this release. Desktop browser inference was measured at approximately 0.10 ms median and 0.30 ms p95 across 100 samples, excluding rendering. These are desktop results, not budget Android measurements.
+- **43 passing unit/integration tests** at this release. Desktop browser inference was measured at approximately 0.10 ms median and 0.30 ms p95 across 100 samples, excluding rendering. These are desktop results, not budget Android measurements.
 
 English onboarding has been demonstrated in a real WhatsApp exchange. End-to-end participant pairing, the complete real-phone commercial workflow, physical Android timings/airplane-mode evidence and bilingual human template sign-off remain outstanding.
 

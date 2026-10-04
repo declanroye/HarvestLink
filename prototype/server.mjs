@@ -26,7 +26,7 @@ export const server=http.createServer(async(req,res)=>{try{
   if(origin){res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');res.setHeader('Access-Control-Allow-Headers','Authorization, Content-Type');res.setHeader('Access-Control-Allow-Methods','GET, POST, OPTIONS');}
   if(req.method==='OPTIONS'){res.writeHead(204);return res.end();}
   const input=req.method==='POST'?JSON.parse(await body(req)):{};
-  const result=await transaction(async()=>{const backup=structuredClone(db);try{const result=companionOperation(db,url.pathname.slice('/companion/'.length),req.method,input,(req.headers.authorization||'').replace(/^Bearer /,''),req.socket.remoteAddress);await save();return result;}catch(e){db=backup;throw e;}});
+  const result=await transaction(async()=>{const backup=structuredClone(db);try{const result=companionOperation(db,url.pathname.slice('/companion/'.length),req.method,input,(req.headers.authorization||'').replace(/^Bearer /,''),req.socket.remoteAddress,model);await save();return result;}catch(e){db=backup;throw e;}});
   return json(res,200,result);
  }
  if(url.pathname==='/webhooks/twilio'&&req.method==='POST'){

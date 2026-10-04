@@ -73,7 +73,7 @@ Core records are account, session/draft, lot, order, cost assumptions, choice sn
 
 The companion must be opened and cached online before loss of signal. It then loads the same model and local tools, captures harvests, asks missing-field questions, saves confirmed choices and computes against saved dated assumptions. Restarting preserves records unless site data is cleared. WhatsApp itself cannot receive an assistant reply offline, and an offline snapshot cannot establish current demand or book transport.
 
-On reconnection the farmer explicitly synchronizes. The server checks ownership and revisions and returns a receipt or a conflict requiring review. Current offline handovers must be recreated through the connected messaging flow after confirmed choices sync; they do not yet upload as handover events. Session goals remain local to each channel/device. These are implementation gaps, not hidden background automation.
+On reconnection the farmer explicitly synchronizes. The server checks ownership and revisions and returns a receipt or a conflict requiring review. Reviewed offline demo handovers synchronize with their owner-scoped lots and choices. They retain pending checks and cannot authorize dispatch. When linked and online, the companion conversation uses the authenticated backend and the same session as WhatsApp; unsubmitted local changes must be reviewed or synchronized first. Unlinked/offline session goals remain local.
 
 ## Proposed production architecture
 
@@ -99,4 +99,4 @@ This diagram is a target design, not deployed infrastructure. The online model w
 
 ## Release evidence and acceptance gates
 
-The existing suite contains 41 unit/integration tests covering dialogue, owner scoping, pooling, calculations, shared API behavior and Twilio integration. Desktop response measurements do not prove budget Android performance. Before a field pilot: complete real WhatsApp-to-companion pairing; record a full harvest-to-handover exchange; test airplane mode and restart on a physical budget phone; collect model size/latency/memory results; obtain bilingual template review; test duplicate delivery, stale prices, concurrent edits and failed sync. Production additionally requires security, load, database migration and operational recovery testing.
+The existing suite contains 43 unit/integration tests covering dialogue, owner scoping, pooling, calculations, shared API behavior and Twilio integration. Desktop response measurements do not prove budget Android performance. Before a field pilot: complete real WhatsApp-to-companion pairing; record a full harvest-to-handover exchange; test airplane mode and restart on a physical budget phone; collect model size/latency/memory results; obtain bilingual template review; test duplicate delivery, stale prices, concurrent edits and failed sync. Production additionally requires security, load, database migration and operational recovery testing.

@@ -503,7 +503,7 @@ function snapshot(db,farmerId){
  const account=db.accounts[farmerId];if(!account)fail(404,'Account not found');
  const lots=db.lots.filter(l=>l.farmerId===farmerId),ids=new Set(lots.map(l=>l.id));
  const session=Object.values(db.sessions).find(s=>s.account?.id===farmerId)||{account};
- return {marketplace:marketView(session,db.lots,db.choices,db.handovers),account:{...account},revision:account.revision,lots:structuredClone(lots),choices:structuredClone(db.choices.filter(c=>ids.has(c.lotId))),supportRequests:structuredClone(db.supportRequests.filter(s=>s.farmerId===farmerId)),shipmentStatus:'awaiting buyer confirmation and trade-requirement checks'};
+ return {marketplace:marketView(session,db.lots,db.choices,db.handovers),account:{...account},revision:account.revision,handovers:structuredClone(db.handovers.filter(h=>h.farmerId===farmerId)),lots:structuredClone(lots),choices:structuredClone(db.choices.filter(c=>ids.has(c.lotId))),supportRequests:structuredClone(db.supportRequests.filter(s=>s.farmerId===farmerId)),shipmentStatus:'awaiting buyer confirmation and trade-requirement checks'};
 }
 function bump(db,id){if(db.accounts[id])db.accounts[id].revision=(db.accounts[id].revision||0)+1;}
 function processInbound(db,event,model,profileName='general',now=Date.now()){
@@ -575,20 +575,41 @@ function syncDevice(db,device,payload){
   if(db.choices.some(c=>c.lotId===choice.lotId&&c.id!==choice.id)||payload.choices.some(c=>c.lotId===choice.lotId&&c.id!==choice.id))fail(409,'A choice already exists for this lot');
  }
  for(const r of payload.supportRequests){if(!validId(r.id)||r.farmerId!==id||r.status!=='pending'||!confirmedDate(r.createdAt))fail(400,'Invalid support request');const old=db.supportRequests.find(x=>x.id===r.id);if(old&&canonical(old)!==canonical(r))fail(409,'Support request conflict');}
+ const handovers=payload.handovers||[];
+ if(!Array.isArray(handovers)||handovers.length>50)fail(400,'Invalid handovers');
+ for(const h of handovers){const choice=[...db.choices,...payload.choices].find(c=>c.id===h.choiceId),lot=choice&&merged.get(choice.lotId);
+ if(!validId(h.id)||h.farmerId!==id||h.humanConfirmed!==true||!confirmedDate(h.createdAt)||!lot||lot.farmerId!==id||choice.choice!=='cross-border-proposal'||h.orderId!==choice.orderId||h.quantityKg!==choice.quantityKg||h.dispatchAuthorized!==false||h.status!=='awaiting buyer confirmation and trade-requirement checks'||h.demo!==true||typeof h.exporter!=='string'||h.exporter.length>100||h.transport?.booking!=='not booked'||!h.checks||Object.values(h.checks).some(v=>!['pending','unchecked','unconfirmed'].includes(v)))fail(400,'Only your reviewed pending demo handover is accepted');
+ const old=db.handovers.find(x=>x.id===h.id);if(old&&canonical(old)!==canonical(h))fail(409,'Handover conflict');
+ }
  let account=current.account;
  if(payload.account){const a=payload.account;if(a.id!==id||typeof a.name!=='string'||a.name.trim().length<2||a.name.length>60||typeof a.location!=='string'||a.location.length<2||a.location.length>60||!['pt','en'].includes(a.language))fail(400,'Invalid profile');account={...account,name:a.name,location:a.location,language:a.language,updatedAt:new Date().toISOString()};}
  for(const l of lotChanges){const at=db.lots.findIndex(x=>x.id===l.id);if(at<0)db.lots.push(l);else db.lots[at]=l;}
  for(const field of ['choices','supportRequests'])for(const item of payload[field])if(!db[field].some(x=>x.id===item.id))db[field].push(structuredClone(item));
+ for(const h of handovers)if(!db.handovers.some(x=>x.id===h.id))db.handovers.push(structuredClone(h));
  db.accounts[id]=account;bump(db,id);
  const result={operationId:payload.operationId,receivedAt:new Date().toISOString(),revision:db.accounts[id].revision,status:'received by shared service; not buyer acceptance'};
  db.receipts[receiptKey]={inputHash,result};const keys=Object.keys(db.receipts);for(const k of keys.slice(0,-200))delete db.receipts[k];
  return {...result,snapshot:snapshot(db,id)};
 }
-function companionOperation(db,path,method,input,token,rateKey='unknown'){
+function companionOperation(db,path,method,input,token,rateKey='unknown',model){
  initialize(db);
  if(path==='link/request'&&method==='POST'){rateLimit(db,'request:'+rateKey,5);return requestLink(db,input.label,Date.now(),input.language);}
  if(path==='link/claim'&&method==='POST'){rateLimit(db,'claim:'+rateKey,40);return claimLink(db,input.id,input.claim);}
  const device=authenticateDevice(db,token);
+ if(path==='conversation'&&method==='POST'){
+  if(!model)fail(503,'Conversation model unavailable');
+  if(!validId(input.operationId)||typeof input.text!=='string'||!input.text.trim()||input.text.length>1000)fail(400,'Invalid conversation message');
+  const key='conversation:'+device.id+':'+input.operationId,hash=digest(canonical(input));
+  const previous=db.receipts[key];if(previous){if(previous.inputHash!==hash)fail(409,'Message ID already used with different content');return {...previous.result,session:structuredClone(db.sessions[Object.keys(db.sessions).find(k=>db.sessions[k].account?.id===device.farmerId)]),snapshot:snapshot(db,device.farmerId)};}
+  if(input.baseRevision!==db.accounts[device.farmerId].revision)fail(409,'Shared account changed. Refresh before sending this message.');
+  const from=Object.keys(db.sessions).find(k=>db.sessions[k].account?.id===device.farmerId);
+  if(!from)fail(409,'Messaging account session unavailable');
+  const reply=processInbound(db,{From:from,Body:input.text,MessageSid:key},model);
+  bump(db,device.farmerId);db.sessions[from].account={...db.accounts[device.farmerId]};
+  const result={reply,session:structuredClone(db.sessions[from]),snapshot:snapshot(db,device.farmerId),operationId:input.operationId};
+  db.receipts[key]={inputHash:hash,result:{reply,operationId:input.operationId}};for(const k of Object.keys(db.receipts).slice(0,-40))delete db.receipts[k];
+  return result;
+ }
  if(path==='snapshot'&&method==='GET')return snapshot(db,device.farmerId);
  if(path==='sync'&&method==='POST')return syncDevice(db,device,input);
  if(path==='revoke'&&method==='POST'){device.revoked=true;return {revoked:true};}

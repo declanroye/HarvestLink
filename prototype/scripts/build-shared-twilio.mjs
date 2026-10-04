@@ -42,11 +42,11 @@ exports.handler=async function(context,event,callback){
  if(!origin||!allowed.includes(origin)){response.setStatusCode(403);response.setBody({error:'Companion origin not allowed'});return callback(null,response);}
  response.appendHeader('Access-Control-Allow-Origin',origin);response.appendHeader('Vary','Origin');
  try{
-  const actions={'link/request':['link/request','POST'],'link/claim':['link/claim','POST'],snapshot:['snapshot','GET'],sync:['sync','POST'],revoke:['revoke','POST']};
+  const actions={'link/request':['link/request','POST'],'link/claim':['link/claim','POST'],conversation:['conversation','POST'],snapshot:['snapshot','GET'],sync:['sync','POST'],revoke:['revoke','POST']};
   const action=actions[event.action];if(!action)throw Object.assign(Error('Unknown action'),{status:400});
   if(typeof event.input==='string'&&event.input.length>60000)throw Object.assign(Error('Payload too large'),{status:413});
   const input=JSON.parse(event.input||'{}');
-  const result=await runStored(context,data=>companionOperation(data,action[0],action[1],input,event.token||'',origin));response.setStatusCode(200);response.setBody(result);
+  const result=await runStored(context,data=>companionOperation(data,action[0],action[1],input,event.token||'',origin,model));response.setStatusCode(200);response.setBody(result);
  }catch(error){response.setStatusCode(error.status||500);response.setBody({error:error.status?error.message:'Could not save to shared storage. Nothing acknowledged.'});}
  return callback(null,response);
 };

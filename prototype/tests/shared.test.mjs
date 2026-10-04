@@ -1,9 +1,21 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
-import {initialize,requestLink,claimLink,authenticateDevice,processInbound,snapshot,syncDevice} from '../shared.mjs';
+import {initialize,requestLink,claimLink,authenticateDevice,processInbound,snapshot,syncDevice,companionOperation} from '../shared.mjs';
 import {HarvestIntentModel} from '../public/ai/predict.mjs';
 const read=p=>readFile(new URL('../public/ai/model/'+p,import.meta.url));
 const [m,v,w]=await Promise.all(['metadata.json','vocabulary.json','weights.f32'].map(read));const model=new HarvestIntentModel(JSON.parse(m),JSON.parse(v),w.buffer.slice(w.byteOffset,w.byteOffset+w.byteLength));
 let sid=0;const send=(db,from,body)=>processInbound(db,{From:from,Body:body,MessageSid:'SM-'+(++sid)},model);
+test('authenticated web conversation shares WhatsApp drafts, confirms once and rejects stale or altered retries',()=>{
+ const db=initialize({});onboard(db,'whatsapp:+333');const linked=link(db,'whatsapp:+333');
+ const ask=text=>companionOperation(db,'conversation','POST',{text,operationId:crypto.randomUUID(),baseRevision:db.accounts[linked.snapshot.account.id].revision},linked.token,'test',model);
+ ask('tenho 120 kg de tomate, classe A, 2026-10-04, BRL 3.50/kg');
+ const input={text:'CONFIRMO',operationId:crypto.randomUUID(),baseRevision:db.accounts[linked.snapshot.account.id].revision};
+ const result=companionOperation(db,'conversation','POST',input,linked.token,'test',model);
+ assert.equal(result.snapshot.lots.length,1);assert.match(send(db,'whatsapp:+333','LOTES'),/120 kg/);
+ assert.equal(companionOperation(db,'conversation','POST',input,linked.token,'test',model).snapshot.lots.length,1);
+ assert.throws(()=>companionOperation(db,'conversation','POST',{...input,text:'CANCEL'},linked.token,'test',model),e=>e.status===409);
+ assert.throws(()=>companionOperation(db,'conversation','POST',{...input,operationId:crypto.randomUUID()},linked.token,'test',model),e=>e.status===409);
+ assert.throws(()=>companionOperation(db,'conversation','POST',input,'invalid','test',model),e=>e.status===401);
+});
 function onboard(db,from,name='Ana'){for(const text of ['INICIAR','PT','ACEITO',name,'Boa Vista','PT','CONFIRMO'])send(db,from,text);return db.sessions[from].account.id;}
 function link(db,from){const r=requestLink(db,'test phone');send(db,from,r.command);send(db,from,'CONFIRMO');return claimLink(db,r.id,r.claim);}
 test('verified linking requires onboarding, provider identity and a second confirmation; expires and claims once',()=>{
@@ -37,4 +49,14 @@ test('stale revisions, another farmer’s lots and partial invalid batches canno
 });
 test('revocation disables device credentials without erasing farmer records',()=>{
  const db=initialize({});onboard(db,'whatsapp:+111');const linked=link(db,'whatsapp:+111');send(db,'whatsapp:+111','DESVINCULAR');assert.ok(authenticateDevice(db,linked.token));send(db,'whatsapp:+111','CONFIRMO');assert.throws(()=>authenticateDevice(db,linked.token),e=>e.status===401);assert.equal(Object.keys(db.accounts).length,1);
+});
+test('offline handovers sync atomically with their owner choice and cannot authorize dispatch',()=>{
+ const db=initialize({}),id=onboard(db,'whatsapp:+444'),linked=link(db,'whatsapp:+444'),device=authenticateDevice(db,linked.token);
+ const at=new Date().toISOString(),lot={id:crypto.randomUUID(),farmer:'Ana',farmerId:id,location:'Boa Vista',crop:'maize',quantityKg:20,grade:'A',harvestDate:'2026-10-04',localPriceBrl:4,confirmedAt:at,confirmation:'explicit farmer confirmation',status:'available',source:'offline-app'};
+ const choice={id:crypto.randomUUID(),lotId:lot.id,orderId:'DEMO-MAIZE',quantityKg:20,choice:'cross-border-proposal',humanConfirmed:true,createdAt:at,status:'awaiting buyer confirmation and trade-requirement checks'};
+ const handover={id:crypto.randomUUID(),farmerId:id,choiceId:choice.id,orderId:choice.orderId,quantityKg:20,exporter:'Demo desk',humanConfirmed:true,createdAt:at,transport:{booking:'not booked'},checks:{buyerConfirmation:'pending'},demo:true,dispatchAuthorized:false,status:choice.status};
+ const payload={operationId:crypto.randomUUID(),baseRevision:linked.snapshot.revision,lots:[lot],choices:[choice],supportRequests:[],handovers:[{...handover,dispatchAuthorized:true}]};
+ assert.throws(()=>syncDevice(db,device,payload),e=>e.status===400);assert.equal(db.lots.length,0);
+ payload.handovers=[handover];assert.equal(syncDevice(db,device,payload).snapshot.handovers.length,1);
+ assert.equal(snapshot(db,id).handovers[0].dispatchAuthorized,false);
 });

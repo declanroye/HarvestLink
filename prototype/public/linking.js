@@ -1,14 +1,14 @@
 const canonical=v=>JSON.stringify(v,(_,x)=>x&&typeof x==='object'&&!Array.isArray(x)?Object.fromEntries(Object.entries(x).sort(([a],[b])=>a.localeCompare(b))):x);
 export function installLinking({state,persist,render,toast,download}){
- const $=s=>document.querySelector(s);state.shared||={};const s=state.shared; if(!s.kind){s.kind=['localhost','127.0.0.1'].includes(location.hostname)?'node':'twilio';if(s.kind==='twilio')s.endpoint='https://harvestlink-test-9531.twil.io/harvestlink-companion';}
+ const $=s=>document.querySelector(s);state.handovers||=[];state.shared||={};const s=state.shared; if(!s.kind){s.kind=['localhost','127.0.0.1'].includes(location.hostname)?'node':'twilio';if(s.kind==='twilio')s.endpoint='https://harvestlink-test-9531.twil.io/harvestlink-companion';}
  $('#backend-url').value=s.endpoint||'';$('#backend-kind').value=s.kind||'node';
  function own(field,id=state.session.account?.id){return (state[field]||[]).filter(x=>field==='choices'?state.lots.some(l=>l.id===x.lotId&&l.farmerId===id):x.farmerId===id);}
  function payload(){const id=s.snapshot?.account.id;if(!id||state.session.account?.id!==id)throw Error('Activate your verified WhatsApp account first.');
   const a=state.session.account,b=s.snapshot.account,profileChanged=['name','location','language'].some(k=>a[k]!==b[k]);
-  const changed=field=>own(field,id).filter(x=>canonical(x)!==canonical(s.snapshot[field].find(y=>y.id===x.id)));
-  return {baseRevision:s.snapshot.revision,lots:changed('lots'),choices:changed('choices'),supportRequests:changed('supportRequests'),...(profileChanged?{account:{id,name:a.name,location:a.location,language:a.language}}:{})};
+  const changed=field=>own(field,id).filter(x=>canonical(x)!==canonical((s.snapshot[field]||[]).find(y=>y.id===x.id)));
+  return {baseRevision:s.snapshot.revision,lots:changed('lots'),choices:changed('choices'),handovers:changed('handovers'),supportRequests:changed('supportRequests'),...(profileChanged?{account:{id,name:a.name,location:a.location,language:a.language}}:{})};
  }
- function dirty(){try{const p=payload();return !!(p.account||p.lots.length||p.choices.length||p.supportRequests.length);}catch{return false;}}
+ function dirty(){try{const p=payload();return !!(p.account||p.lots.length||p.choices.length||p.handovers.length||p.supportRequests.length);}catch{return false;}}
  async function request(action,input={}){
   if(!navigator.onLine)throw Error('Offline. Your confirmed work remains on this phone.');
   const endpoint=s.endpoint||new URL('./companion/',location.href).href;
@@ -21,8 +21,8 @@ export function installLinking({state,persist,render,toast,download}){
   if(!response.ok)throw Object.assign(Error(data.error||'Shared service unavailable'),{status:response.status});return data;
  }
  function setSnapshot(snapshot){
-  const id=snapshot.account.id;s.snapshot=structuredClone(snapshot);state.session={...state.session,account:{...snapshot.account},demoMarketplace:snapshot.marketplace?.enabled,marketOrderId:snapshot.marketplace?.order?.id};
-  for(const field of ['lots','choices','supportRequests']){const old=own(field,id);state[field]=state[field].filter(x=>!old.some(y=>y.id===x.id));state[field].push(...structuredClone(snapshot[field]));}
+  const id=snapshot.account.id;s.snapshot=structuredClone(snapshot);state.marketCache=structuredClone(snapshot.marketplace);state.session={...state.session,account:{...snapshot.account},demoMarketplace:snapshot.marketplace?.enabled,marketOrderId:snapshot.marketplace?.order?.id};
+  for(const field of ['lots','choices','supportRequests','handovers']){const old=own(field,id);state[field]=state[field].filter(x=>!old.some(y=>y.id===x.id));state[field].push(...structuredClone(snapshot[field]||[]));}
   persist();render();draw();
  }
  function draw(){
@@ -52,8 +52,8 @@ export function installLinking({state,persist,render,toast,download}){
  $('#farmer-sync').onclick=async()=>{try{
   if(!$('#submit-records-confirm').checked)throw Error('Confirm submission of your account changes and confirmed records.');
   if(s.review)throw Error('Review the shared version before submitting again.');
-  if(!s.pendingOperation){s.pendingOperation={...payload(),operationId:crypto.randomUUID()};s.pendingBaseline=canonical({account:state.session.account,lots:own('lots'),choices:own('choices'),supportRequests:own('supportRequests')});}persist();
-  const result=await request('sync',s.pendingOperation),current=canonical({account:state.session.account,lots:own('lots'),choices:own('choices'),supportRequests:own('supportRequests')});
+  if(!s.pendingOperation){s.pendingOperation={...payload(),operationId:crypto.randomUUID()};s.pendingBaseline=canonical({account:state.session.account,lots:own('lots'),choices:own('choices'),handovers:own('handovers'),supportRequests:own('supportRequests')});}persist();
+  const result=await request('sync',s.pendingOperation),current=canonical({account:state.session.account,lots:own('lots'),choices:own('choices'),handovers:own('handovers'),supportRequests:own('supportRequests')});
   if(s.pendingBaseline!==current){s.pendingOperation=null;s.pendingBaseline=null;s.review=result.snapshot;persist();draw();return toast('Submitted records were received. Newer local work was preserved; review the shared version before continuing.');}
   s.pendingOperation=null;s.pendingBaseline=null;s.review=null;
   setSnapshot(result.snapshot);state.syncReceipts.push({at:result.receivedAt,operationId:result.operationId,revision:result.revision,status:result.status,fingerprints:Object.fromEntries(own('lots').map(l=>[l.id,JSON.stringify(l)]))});persist();render();draw();$('#submit-records-confirm').checked=false;toast('Shared service received the records. No buyer acceptance or shipment authorization.');
@@ -61,5 +61,5 @@ export function installLinking({state,persist,render,toast,download}){
  $('#farmer-pull').onclick=async()=>{try{const snapshot=await request('snapshot');if(dirty()||s.pendingOperation){s.review=snapshot;persist();draw();toast('Local changes exist. Review both versions; export before replacing local changes.');}else setSnapshot(snapshot);}catch(e){toast(e.message);}};
  $('#accept-shared').onclick=()=>{if(!$('#replace-local-confirm').checked)return toast('Confirm replacing this account’s local version after exporting a backup.');download('harvestlink-before-shared-review.json',state);const next=s.review;s.review=null;s.pendingOperation=null;state.session={draft:{},account:next.account,source:'offline-app'};setSnapshot(next);toast('Shared version restored. Previous local work is in your exported backup.');};
  $('#unlink-device').onclick=async()=>{try{await request('revoke');delete s.token;delete s.deviceId;delete s.snapshot;delete s.pairing;delete s.pendingOperation;persist();draw();toast('Server access revoked. Downloaded records remain on this phone.');}catch(e){toast(e.message);}};
- draw();return {refresh:draw,dirty,marketplace:async()=>{const data=await request('snapshot');return data.marketplace;}};
+ draw();return {refresh:draw,dirty,conversation:async(text,operationId)=>{if(dirty()||s.review||s.pendingOperation)throw Error('Submit or review your offline changes before using the shared assistant.');const result=await request('conversation',{text,operationId,baseRevision:s.snapshot.revision});setSnapshot(result.snapshot);state.session=structuredClone(result.session);persist();return result;},marketplace:async()=>{const data=await request('snapshot');return data.marketplace;}};
 }

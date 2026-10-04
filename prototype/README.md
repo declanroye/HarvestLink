@@ -14,7 +14,7 @@ npm start
 npm test
 ```
 
-Open http://127.0.0.1:4173. [Published workspace](https://declanroye.github.io/HarvestLink/?release=v23).
+Open http://127.0.0.1:4173. [Published workspace](https://declanroye.github.io/HarvestLink/?release=v24).
 
 ## Small AI and offline behavior
 
@@ -24,6 +24,6 @@ The current EN/PT model is a character-ngram logistic-regression intent classifi
 
 [Provider setup](SETUP.md) · [Shared deployment](SHARED-SETUP.md) · [WhatsApp demo](DEMO-WHATSAPP.md) · [Journey](PRODUCT.md) · [Phone evidence protocol](PHONE-TEST.md)
 
-41 tests cover the existing implementation. English onboarding has a real WhatsApp exchange; participant pairing and the complete physical-phone workflow still need proof. Desktop inference measurements are not budget Android evidence.
+43 tests cover the existing implementation. English onboarding has a real WhatsApp exchange; participant pairing and the complete physical-phone workflow still need proof. Desktop inference measurements are not budget Android evidence.
 
 Demo prices, orders, carriers and partner quantities are illustrative. Shipment status remains **awaiting buyer confirmation and trade-requirement checks**. No booking or dispatch occurs. Provider credentials remain server-side. The bounded Sync store is hackathon infrastructure.
