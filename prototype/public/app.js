@@ -1,11 +1,11 @@
-import {marketView,marketOrder,marketPoolLots} from './marketplace.js?release=v26';
-import {handleFarmerMessage} from './account.js?release=v26';
-import {loadLocalModel} from './ai/load.js?release=v26';
-import {installLinking} from './linking.js?release=v26';
-import {exportJSON} from './export.js?release=v26';
+import {marketView,marketOrder,marketPoolLots} from './marketplace.js?release=v28';
+import {handleFarmerMessage} from './account.js?release=v28';
+import {loadLocalModel} from './ai/load.js?release=v28';
+import {installLinking} from './linking.js?release=v28';
+import {exportJSON} from './export.js?release=v28';
 let linking;
-import {installLanguageSwitch} from './i18n.js?release=v26';
-import {handleMessage,missing,lotSummary,poolLots,compare,demoCosts,demoOrder,classify,profiles,crops} from './core.js?release=v26';
+import {installLanguageSwitch} from './i18n.js?release=v28';
+import {handleMessage,missing,lotSummary,poolLots,compare,demoCosts,demoOrder,classify,profiles,crops} from './core.js?release=v28';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),brl=n=>'R$ '+n.toFixed(2),key='harvestlink-v1';
 const model=await loadLocalModel(),modelBytes=model.modelBytes+model.runtimeBytes;
 const defaults=()=>({lots:[],session:{draft:{}},chat:[],choices:[],handovers:[],benchmarks:[],costs:{...demoCosts},profile:"general",channel:{},starts:0});
@@ -17,6 +17,7 @@ function toast(text){$('#toast').textContent=text;}
 function download(name,data){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([typeof data==='string'?data:exportJSON(data)],{type:'application/json'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
 function card(text){return `<div class="card">${esc(text)}</div>`;}
 function render(){
+ renderPhoneExperience();
  if($('#assistant-goal'))$('#assistant-goal').textContent=state.session.assistant?.goal?'Working goal: '+state.session.assistant.goal:'Tell your assistant what you want to achieve. It will use your saved account and harvest records.';
  renderMarketplace();
  linking?.refresh();
@@ -84,7 +85,7 @@ $('#export-account').onclick=()=>{const account=state.session.account;if(!accoun
 function channelLinks(){for(const id of ['whatsapp-number','whatsapp-join','sms-number'])$('#'+id).value=state.channel[id]||'';const number=state.channel['whatsapp-number']||'',sms=state.channel['sms-number']||'';const wa=$('#open-whatsapp'),sm=$('#open-sms');wa.removeAttribute('href');sm.removeAttribute('href');if(/^\+[1-9]\d{7,14}$/.test(number))wa.href='https://wa.me/'+number.slice(1)+'?text='+encodeURIComponent(state.channel['whatsapp-join']||'AJUDA');if(/^\+[1-9]\d{7,14}$/.test(sms))sm.href='sms:'+sms+'?body='+encodeURIComponent('AJUDA');for(const a of [wa,sm])a.setAttribute('aria-disabled',String(!a.hasAttribute('href')));}
 $('#save-channel').onclick=()=>{const next={};for(const id of ['whatsapp-number','whatsapp-join','sms-number'])next[id]=$('#'+id).value.trim();if([next['whatsapp-number'],next['sms-number']].some(n=>n&&!/^\+[1-9]\d{7,14}$/.test(n)))return toast('Use o formato internacional: + seguido do código do país e número.');state.channel=next;persist();channelLinks();toast('Conexão salva neste telefone. Abra o canal e envie a mensagem.');};channelLinks();
 function connectivity(){$('#connection').textContent=navigator.onLine?'● Conectado · AI local':'● Offline · AI local';}window.addEventListener('online',connectivity);window.addEventListener('offline',connectivity);connectivity();render();linking=installLinking({state,persist,render,toast,download});installLanguageSwitch();
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?release=v26').then(()=>navigator.serviceWorker.ready).then(()=>toast('Offline cache installed, including the small AI. Reload once, then test airplane mode.')).catch(e=>toast('Offline cache unavailable: '+e.message));
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?release=v28').then(()=>navigator.serviceWorker.ready).then(()=>toast('Offline cache installed, including the small AI. Reload once, then test airplane mode.')).catch(e=>toast('Offline cache unavailable: '+e.message));
 
 
 function renderMarketplace(){
@@ -96,3 +97,13 @@ function renderMarketplace(){
 $('#market-cards').onclick=async e=>{const b=e.target.closest('[data-market-command]');if(!b)return;document.querySelector('[data-tab=farmer]').click();if(!state.session.demoMarketplace)await submit('DEMO MARKET');if(state.session.demoMarketplace)await submit(b.dataset.marketCommand);};
 $('#refresh-market').onclick=async()=>{try{if(!state.shared?.token){delete state.marketCache;renderMarketplace();return toast('Local demonstration refreshed. Link WhatsApp to load shared records.');}if(!linking?.marketplace)throw Error('Link your WhatsApp account first.');state.marketCache=await linking.marketplace();persist();renderMarketplace();}catch(e){toast(e.message);}};
 setInterval(()=>{if(!$('#marketplace').hidden&&navigator.onLine&&state.shared?.token)$('#refresh-market').click();},15000);
+
+function renderPhoneExperience(){
+ const account=state.session.account,en=account?.language!=='pt',pending=Object.keys(state.session.draft||{}).length||state.session.onboarding||state.session.pendingChoice||state.session.pendingHandover||state.session.pendingAccount||state.session.pendingWithdrawal||typeof state.session.pendingNotifications==='boolean';
+ $('#phone-resume').textContent=pending?(en?'Your conversation is saved. Continue where you left off.':'Sua conversa foi salva. Continue de onde parou.'):(account?(en?'Welcome back, ':'Bem-vindo, ')+account.name:(en?'Start a short conversation to create your account.':'Comece uma conversa curta para criar sua conta.'));
+ $('#phone-connection').textContent=!navigator.onLine?(en?'Working offline — saved on this phone. Market information may be out of date.':'Trabalhando offline — salvo neste telefone. O mercado pode estar desatualizado.'):(state.shared?.token?(en?'WhatsApp account linked. Saved changes need explicit submission.':'WhatsApp vinculado. Alterações salvas precisam de envio explícito.'):(en?'Local companion. Connect WhatsApp to share your account.':'Aplicativo local. Vincule WhatsApp para compartilhar sua conta.'));
+ const updates=$('#customer-updates');if(updates)updates.textContent=account?.notifications?.inApp?(pending?(en?'Action needed: review your saved conversation.':'Ação necessária: revise sua conversa salva.'):(en?'No new buyer acceptance or booked collection has been recorded.':'Nenhuma aceitação do comprador ou coleta reservada registrada.')):(en?'In-app updates are off.':'Avisos no aplicativo desativados.');
+ document.querySelectorAll('.assistant-review-actions [data-command="CONFIRM"]').forEach(b=>b.disabled=!pending||!!missing(state.session.draft||{}).length&&!state.session.pendingChoice&&!state.session.pendingHandover&&!state.session.pendingAccount&&!state.session.pendingWithdrawal&&typeof state.session.pendingNotifications!=='boolean'&&state.session.onboarding?.step!=='review');
+}
+document.querySelectorAll('[data-phone-tab]').forEach(b=>b.onclick=()=>{document.querySelector('[data-tab='+b.dataset.phoneTab+']').click();if(b.dataset.phoneTab==='farmer')$('#message')?.focus();});
+window.addEventListener('online',()=>{renderPhoneExperience();if(state.shared?.token&&linking?.dirty())toast('Back online. Your saved changes are ready for review and explicit submission in Link my account.');});window.addEventListener('offline',renderPhoneExperience);renderPhoneExperience();

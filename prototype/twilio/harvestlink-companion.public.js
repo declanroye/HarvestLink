@@ -431,6 +431,25 @@ function handleFarmerMessageInner(text,session,model,context={}){
 }
 
 function handleFarmerMessage(text,session,model,context={}){
+ if(typeof text==='string'){
+  const natural=normal(text).trim(),en=(session.account?.language||session.language)==='en';
+  const greeting=/^(hello|hi|hey|good morning|good afternoon|bom dia|boa tarde)[!.?]*$/.test(natural);
+  if(greeting)text='oi';
+  const aliases={'show my harvests':'LOTS','my harvests':'LOTS','minhas colheitas':'LOTES','show the costs':'COMPARE EARNINGS','mostrar custos':'COMPARAR GANHOS','what happens next?':'MY PLAN','what happens next':'MY PLAN','o que acontece agora':'MEU PLANO','i want to sell locally':'CHOOSE LOCAL','quero vender localmente':'ESCOLHO LOCAL','cancel this':'CANCEL','cancelar isso':'CANCELAR'};
+  text=aliases[natural]||text;
+  if(session.account&&/^(notifications|notification preferences|notificacoes|preferencias de notificacao)$/.test(natural))return {session,reply:en?'Choose NOTIFICATIONS ON or NOTIFICATIONS OFF. These preferences enable in-app updates only; proactive WhatsApp delivery is not configured.':'Escolha NOTIFICACOES ATIVAR ou NOTIFICACOES DESATIVAR. Preferências para avisos no aplicativo; envio proativo por WhatsApp não configurado.'};
+  const preference=/^(?:notifications|notificacoes) (on|off|ativar|desativar)$/.exec(natural);
+  if(session.account&&preference&&(session.pendingChoice||session.pendingHandover||session.pendingAccount||session.pendingWithdrawal))return {session,reply:en?'Finish the current review with CONFIRM or CANCEL before changing preferences.':'Termine a revisão atual com CONFIRMO ou CANCELAR antes de alterar preferências.'};
+  if(session.account&&preference)return {session:{...session,pendingNotifications:['on','ativar'].includes(preference[1])},reply:en?'Review: '+(['on','ativar'].includes(preference[1])?'enable':'disable')+' in-app opportunity and action updates. Reply CONFIRM or CANCEL. No WhatsApp notifications will be sent.':'Revise a preferência de avisos no aplicativo. Envie CONFIRMO ou CANCELAR. Nenhuma notificação será enviada pelo WhatsApp.'};
+  if(typeof session.pendingNotifications==='boolean'){
+   if(/^(confirm|confirmo)$/.test(natural))return {session:{...session,pendingNotifications:null,account:{...session.account,notifications:{inApp:session.pendingNotifications,whatsapp:false,updatedAt:new Date().toISOString()}}},reply:en?'Notification preference saved. Proactive WhatsApp delivery remains unavailable.':'Preferência salva. Envio proativo por WhatsApp indisponível.'};
+   if(/^(cancel|cancelar)$/.test(natural))return {session:{...session,pendingNotifications:null},reply:en?'Preference unchanged.':'Preferência preservada.'};
+   return {session,reply:en?'Reply CONFIRM or CANCEL for the notification preference.':'Envie CONFIRMO ou CANCELAR para a preferência.'};
+  }
+  const quantity=/(?:change|correct|set|alterar|corrigir|mudar).*(?:quantity|weight|quantidade|peso).*?(\d+(?:[.,]\d+)?)(?:\s*kg)?$/.exec(natural);
+  if(quantity){if(Object.keys(session.draft||{}).length)text=quantity[1]+' kg';else return {session,reply:en?'Confirmed harvest facts stay in history. Tell me the lot ID and request support for a correction, or start a new harvest. I will not silently change a confirmed quantity.':'Dados confirmados ficam no histórico. Informe o ID e peça SUPORTE para correção, ou inicie nova colheita. Não alterarei uma quantidade confirmada silenciosamente.'};}
+  if(/^(change|edit|correct|alterar|corrigir|editar)( the details| details| os detalhes| detalhes)?$/.test(natural)&&Object.keys(session.draft||{}).length)return {session,reply:en?'Tell me the corrected field, for example “change quantity to 100 kg” or “grade B”. I will show the revised details before confirmation.':'Informe a correção: “alterar quantidade para 100 kg” ou “classe B”. Vou mostrar a revisão antes da confirmação.'};
+ }
  const routed=routeAssistant(text,session,context);if(routed.result)return routed.result;session=routed.session||session;text=routed.command;
  const marketResult=typeof text==='string'?marketMessage(text,session,context):null;
  if(marketResult)return marketResult;
