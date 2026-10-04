@@ -1,6 +1,6 @@
 const canonical=v=>JSON.stringify(v,(_,x)=>x&&typeof x==='object'&&!Array.isArray(x)?Object.fromEntries(Object.entries(x).sort(([a],[b])=>a.localeCompare(b))):x);
 export function installLinking({state,persist,render,toast,download}){
- const $=s=>document.querySelector(s);state.shared||={};const s=state.shared;
+ const $=s=>document.querySelector(s);state.shared||={};const s=state.shared; if(!s.kind){s.kind=['localhost','127.0.0.1'].includes(location.hostname)?'node':'twilio';if(s.kind==='twilio')s.endpoint='https://harvestlink-test-9531.twil.io/harvestlink-companion';}
  $('#backend-url').value=s.endpoint||'';$('#backend-kind').value=s.kind||'node';
  function own(field,id=state.session.account?.id){return (state[field]||[]).filter(x=>field==='choices'?state.lots.some(l=>l.id===x.lotId&&l.farmerId===id):x.farmerId===id);}
  function payload(){const id=s.snapshot?.account.id;if(!id||state.session.account?.id!==id)throw Error('Activate your verified WhatsApp account first.');

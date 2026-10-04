@@ -4,7 +4,7 @@ function setup(){
  const verified={id:'verified-farmer',name:'Ana WhatsApp',location:'Boa Vista',language:'pt',revision:0},db=initialize({accounts:{[verified.id]:verified},sessions:{}}),token='a'.repeat(64);
  // The service authentication is real; the device fixture substitutes only prior phone verification.
  const originalFetch=globalThis.fetch;let resolveSync,wait=false;
- globalThis.location={href:'http://127.0.0.1:4173/'};Object.defineProperty(globalThis,'navigator',{configurable:true,value:{onLine:true}});
+ globalThis.location={href:'http://127.0.0.1:4173/',hostname:'127.0.0.1'};Object.defineProperty(globalThis,'navigator',{configurable:true,value:{onLine:true}});
  const elements=new Map();globalThis.document={querySelector:s=>{if(!elements.has(s))elements.set(s,{value:'',checked:false,disabled:false,textContent:''});return elements.get(s);}};
  const $=s=>document.querySelector(s),state={session:{draft:{},account:{id:'local-farmer',name:'Ana',location:'Boa Vista',language:'pt'}},lots:[lot('local-farmer')],choices:[],supportRequests:[],syncReceipts:[],channel:{},shared:{}};
  const exported=[],toasts=[];
@@ -23,3 +23,4 @@ test('work created during an in-flight submission is preserved and requires expl
 test('evidence redaction removes nested claim and device tokens while retaining confirmed records',()=>{
  const result=JSON.parse(exportJSON({shared:{token:'secret-device',pairing:{claim:'secret-claim',code:'paircode'}},lots:[{id:'confirmed'}]}));assert.equal(result.shared.token,undefined);assert.equal(result.shared.pairing,undefined);assert.equal(result.lots[0].id,'confirmed');
 });
+
