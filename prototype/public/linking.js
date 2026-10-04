@@ -1,4 +1,4 @@
-import {scheduleRetry} from './outbox.js?release=v32';
+import {scheduleRetry} from './outbox.js?release=v33';
 const canonical=v=>JSON.stringify(v,(_,x)=>x&&typeof x==='object'&&!Array.isArray(x)?Object.fromEntries(Object.entries(x).sort(([a],[b])=>a.localeCompare(b))):x);
 export function installLinking({state,persist,render,toast,download,flush=async()=>{}}){
  let pairingPoll, pairingBusy=false,syncBusy=false;
