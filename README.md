@@ -33,7 +33,7 @@ Open http://127.0.0.1:4173. Node 22+ required. See [prototype/SETUP.md](prototyp
 - HTTPS phone-hosting workflow and real-channel launch links.
 - Unit/integration tests and documented hackathon evidence limitations.
 
-The latest shared-account build is verified locally. Updating the live Twilio service and publishing these frontend changes still requires deployment; browser access timed out during this update.
+The shared-account build is published on GitHub Pages and both Twilio Functions are deployed. GitHub verification passes (28 tests). Live pairing-code creation, scoped API rejection and model loading are verified. A participant’s real WhatsApp confirmation and physical Android evidence are still pending.
 
 ## Important demonstration boundaries
 

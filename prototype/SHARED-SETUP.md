@@ -1,6 +1,6 @@
 # One verified account across WhatsApp and the offline companion
 
-This build implements phone verification and shared records. It does **not** claim that the new Functions are already deployed. Browser automation timed out during this update, so the previously deployed WhatsApp handler remains the last live version verified. The public Pages companion is a static frontend, never the backend.
+Both Functions and the Pages companion were deployed and verified on 4 October 2026. The companion defaults to the shared Twilio backend. Live pairing-code creation works; unauthenticated record access returns 401 with the intended CORS origin. Real participant confirmation and physical Android evidence remain pending. Pages is a static frontend, never the backend.
 
 ## Recommended hackathon deployment: Twilio Functions + Sync
 

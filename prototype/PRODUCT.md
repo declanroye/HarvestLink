@@ -10,7 +10,7 @@ HarvestLink's primary interface is a conversation. The phone companion keeps use
 | Installed phone companion | Same structured conversation locally, saved profile/lots, recent proposal/cost snapshots, draft decisions, backup export | Runs offline after installation/cache |
 | Web control panel | Profile and record overview, receipts, buyer summaries, compatible pools, cost assumptions, consent/handover review, support queue | Local records offline; shared records require backend connection |
 
-The current build uses one verified farmer ID across WhatsApp and the companion when both use the same backend. Expiring pairing codes, confirmation from a provider-verified sender, scoped device credentials, shared records, revision checks and explicit conflict review are implemented and tested locally. Live deployment of this update is pending. Names are never identifiers. GitHub Pages is only the frontend. Choose either paired Twilio Functions using the same Sync document, or one Node server for both channels; these deployment alternatives do not replicate each other. See [SHARED-SETUP.md](SHARED-SETUP.md).
+The current build uses one verified farmer ID across WhatsApp and the companion when both use the same backend. Expiring pairing codes, confirmation from a provider-verified sender, scoped device credentials, shared records, revision checks and explicit conflict review are implemented and tested locally. Both paired Functions and the public companion are deployed; live pairing-code creation and authentication rejection are verified. A real participant must still confirm linking in WhatsApp. Names are never identifiers. GitHub Pages is only the frontend. Choose either paired Twilio Functions using the same Sync document, or one Node server for both channels; these deployment alternatives do not replicate each other. See [SHARED-SETUP.md](SHARED-SETUP.md).
 
 ## First conversation
 
@@ -79,7 +79,7 @@ For the production implementation, use an operation outbox rather than copying a
 - If the online lot was reserved, changed or withdrawn while the phone was offline, show both versions and ask the farmer/coordinator to resolve. Preserve originals; do not silently overwrite or double-count harvests.
 - An expired proposal remains a historical snapshot. A refreshed proposal requires renewed confirmation before a trade can proceed.
 
-## Verified linking: implemented, live deployment pending
+## Verified linking: deployed, participant confirmation pending
 
 The farmer requests “Link my phone” in the installed companion. The backend issues a short-lived pairing challenge and a high-entropy private claim bound to that browser. The WhatsApp sender confirms the device and account before the browser can claim a device credential. The farmer sends that challenge from their WhatsApp/SMS account. A signature-validated provider webhook proves the sender. The phone polls the challenge result using its own scoped session, then asks the farmer to review the linked number. Names/crops are never used as evidence of ownership. Challenges expire, are rate limited, cannot be used twice and cannot replace an existing link without re-verification. Lost phones, changed numbers, shared devices and account recovery require documented handling.
 
@@ -93,4 +93,4 @@ The farmer sees their own account, lots, received proposals, exact cost snapshot
 
 Test onboarding completion without an instructor; retained initial harvest; correction before confirmation; farmer understanding of kg/class/local price; retrieval of multiple lots; distinction between offline save and a submitted proposal; expired-cost decisions; actual airplane-mode restart; provider reply times; and recovery from interrupted sync. Ask farmers to explain how much they expect to receive and whether a sale is confirmed. Record failures, not just a successful scripted demo.
 
-Prioritise the next release: deploy and prove the shared-account build; measure a real budget Android phone; expand role authorization and recovery; add real buyer/order entry and expiry, human support assignment, notification consent/delivery tracking and a production transactional database. Then expand natural-language coverage, grades, currencies and voice-note accessibility using farmer-tested examples.
+Prioritise the next release: complete participant confirmation and real messaging evidence; measure a real budget Android phone; expand role authorization and recovery; add real buyer/order entry and expiry, human support assignment, notification consent/delivery tracking and a production transactional database. Then expand natural-language coverage, grades, currencies and voice-note accessibility using farmer-tested examples.

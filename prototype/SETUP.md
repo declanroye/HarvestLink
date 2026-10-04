@@ -1,4 +1,4 @@
-> Latest shared-account and Small AI integration: [SHARED-SETUP.md](SHARED-SETUP.md) and [PHONE-TEST.md](PHONE-TEST.md). The live handler described below is the last verified deployment and still needs this update.
+> Latest shared-account and Small AI integration: [SHARED-SETUP.md](SHARED-SETUP.md) and [PHONE-TEST.md](PHONE-TEST.md). Both shared-account handlers are now deployed; the companion defaults to their shared Twilio service.
 
 # HarvestLink setup — this repository
 
