@@ -1,6 +1,6 @@
 # HarvestLink
 
-A messaging-first harvest coordination prototype for Portuguese-speaking tomato farmers around **Bonfim, Roraima** and English-speaking produce importers in **Lethem, Guyana**.
+A messaging-first harvest assistant for smallholder farmers. Portuguese crop intake and an offline phone companion are the core; **Bonfim tomatoes → Lethem importers** is one optional demonstration scenario.
 
 Farmers register harvests, receive net-earnings comparisons and confirm their choices through **WhatsApp or SMS**. The browser interface is a conversation preview, offline companion, and buyer/coordinator workspace.
 
@@ -12,7 +12,7 @@ npm ci
 npm start
 ```
 
-Open http://127.0.0.1:4173. Node 22+ required. See [prototype/README.md](prototype/README.md) for provider setup and offline/device proof.
+Open http://127.0.0.1:4173. Node 22+ required. See [prototype/SETUP.md](prototype/SETUP.md) for the reconciled phone, WhatsApp, SMS and offline setup.
 
 ## Included
 
@@ -21,6 +21,9 @@ Open http://127.0.0.1:4173. Node 22+ required. See [prototype/README.md](prototy
 - Compatible pooling, dated BRL/GYD cost assumptions and immutable choice snapshots.
 - English/Portuguese interface switch, offline records and exporter handover.
 - Official Twilio SDK adapter with signature validation and duplicate-message handling.
+- Generated Protected Twilio Function with persistent Sync drafts/lots/choices and storage failure handling.
+- Seven recognized crops, explicit harvest location and a general mode without fictional buyer offers.
+- HTTPS phone-hosting workflow and real-channel launch links.
 - Unit/integration tests and documented hackathon evidence limitations.
 
 ## Important demonstration boundaries

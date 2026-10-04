@@ -1,5 +1,5 @@
 import http from 'node:http';import {readFile,writeFile,mkdir} from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';import {timingSafeEqual,randomUUID} from 'node:crypto';
-import {handleMessage,validateLot} from './public/core.js';
+import {handleMessage,validateLot,profiles,demoOrder} from './public/core.js';
 const root=path.dirname(fileURLToPath(import.meta.url)),port=Number(process.env.PORT||4173),host=process.env.HOST||'127.0.0.1',dataPath=path.join(process.env.DATA_DIR||path.join(root,'data'),'messages.json');
 const model=JSON.parse(await readFile(path.join(root,'public/model.json'),'utf8'));
 let db={sessions:{},lots:[],choices:[],handovers:[],messages:[],seen:{}};try{db=JSON.parse(await readFile(dataPath,'utf8'));}catch(e){if(e.code!=='ENOENT')throw e;}
@@ -18,7 +18,7 @@ export const server=http.createServer(async(req,res)=>{try{
   const params=Object.fromEntries(new URLSearchParams(await body(req)));
   if(!twilio.validateRequest(process.env.TWILIO_AUTH_TOKEN,req.headers['x-twilio-signature']||'',process.env.PUBLIC_WEBHOOK_URL,params))return json(res,403,{error:'Invalid provider signature'});
   if(!params.MessageSid||!params.From||typeof params.Body!=='string')return json(res,400,{error:'Missing provider fields'});
-  const reply=await transaction(async()=>{if(db.seen[params.MessageSid])return db.seen[params.MessageSid];const id=params.From,session=db.sessions[id]||{draft:{},source:'twilio-inbound'},result=handleMessage(params.Body,session,model,{lots:db.lots,choices:db.choices});db.sessions[id]=result.session;if(result.choice)db.choices.push(result.choice);if(result.lot)db.lots.push({...result.lot,providerSid:params.MessageSid});db.messages.push({kind:'verified-inbound',sid:params.MessageSid,from:id,body:params.Body,reply:result.reply,at:new Date().toISOString(),signatureVerified:true});db.seen[params.MessageSid]=result.reply;await save();return result.reply;});
+  const reply=await transaction(async()=>{if(db.seen[params.MessageSid])return db.seen[params.MessageSid];const id=params.From,session=db.sessions[id]||{draft:{},source:'twilio-inbound'},result=handleMessage(params.Body,session,model,{lots:db.lots,choices:db.choices,profile:process.env.HARVESTLINK_PROFILE==='bonfim'?profiles.bonfim:profiles.general,order:process.env.HARVESTLINK_PROFILE==='bonfim'?demoOrder:null});db.sessions[id]=result.session;if(result.choice)db.choices.push(result.choice);if(result.lot)db.lots.push({...result.lot,providerSid:params.MessageSid});db.messages.push({kind:'verified-inbound',sid:params.MessageSid,from:id,body:params.Body,reply:result.reply,at:new Date().toISOString(),signatureVerified:true});db.seen[params.MessageSid]=result.reply;await save();return result.reply;});
   res.writeHead(200,{'Content-Type':'text/xml'});return res.end(`<?xml version="1.0" encoding="UTF-8"?><Response><Message>${xml(reply)}</Message></Response>`);
  }
  if(url.pathname.startsWith('/api/')){
