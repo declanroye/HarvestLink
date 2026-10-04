@@ -19,6 +19,10 @@ npm start
 
 Open http://127.0.0.1:4173. For phone use, the static `public` directory needs a public HTTPS host. The included GitHub Pages workflow publishes that directory after repository Settings → Pages → Source is set to GitHub Actions. Localhost on a phone means the phone itself, not your computer.
 
+## Account onboarding
+
+Send INICIAR (or AJUDA), then ACEITO, your name, production town/community, PT or EN, and CONFIRMO. The channel profile is saved only after confirmation. Use MENU, CONTA, LOTES, STATUS, ALTERAR NOME, ALTERAR LOCAL, RETIRAR LOTE and SUPORTE for account management. Full journey and implementation boundaries: [PRODUCT.md](PRODUCT.md). Local/WhatsApp profiles remain separate until verified linking is implemented.
+
 ## Farmer journey
 
 1. Online: join the WhatsApp test sender from your own phone, then send `AJUDA`.

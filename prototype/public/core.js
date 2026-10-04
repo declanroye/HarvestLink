@@ -60,7 +60,7 @@ export const demoCosts={asOf:'2026-10-03',validUntil:'2026-10-10',source:'DEMONS
 export function poolLots(lots, order=demoOrder) {
   let left=order.quantityKg; const allocations=[];
   for(const lot of [...lots].sort((a,b)=>a.harvestDate.localeCompare(b.harvestDate)||String(a.confirmedAt||'').localeCompare(String(b.confirmedAt||''))||a.id.localeCompare(b.id))) {
-    if(!lot.confirmedAt||lot.reservedOrderId||(order.sourceLocation&&normal(lot.location||'')!==normal(order.sourceLocation))||lot.crop!==order.crop||lot.grade!==order.grade||lot.harvestDate<order.earliest||lot.harvestDate>order.latest) continue;
+    if(lot.status==='withdrawn'||!lot.confirmedAt||lot.reservedOrderId||(order.sourceLocation&&normal(lot.location||'')!==normal(order.sourceLocation))||lot.crop!==order.crop||lot.grade!==order.grade||lot.harvestDate<order.earliest||lot.harvestDate>order.latest) continue;
     const kg=Math.min(lot.quantityKg,left); if(kg>0) allocations.push({lot,kg}); left-=kg;
   }
   return {allocations,quantityKg:order.quantityKg-left,shortfallKg:left,matched:left===0};

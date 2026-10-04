@@ -16,6 +16,8 @@ npm start
 
 Open http://127.0.0.1:4173. Node 22+ required. See [prototype/SETUP.md](prototype/SETUP.md) for the reconciled phone, WhatsApp, SMS and offline setup.
 
+[Product journey, capabilities and next architecture milestone](prototype/PRODUCT.md)
+
 ## Included
 
 - Compact learned Portuguese intent model (8,621 bytes), structured extraction and missing-field dialogue.
@@ -24,6 +26,9 @@ Open http://127.0.0.1:4173. Node 22+ required. See [prototype/SETUP.md](prototyp
 - English/Portuguese interface switch, offline records and exporter handover.
 - Official Twilio SDK adapter with signature validation and duplicate-message handling.
 - Generated Protected Twilio Function with persistent Sync drafts/lots/choices and storage failure handling.
+- Consent-based one-question onboarding, stable channel profiles, own-lot queries and confirmed account changes.
+- Messaging commands for status, proposals, lot withdrawal and support requests.
+- Control panel with account overview, local record status and explicit upload receipts.
 - Seven recognized crops, explicit harvest location and a general mode without fictional buyer offers.
 - HTTPS phone-hosting workflow and real-channel launch links.
 - Unit/integration tests and documented hackathon evidence limitations.
