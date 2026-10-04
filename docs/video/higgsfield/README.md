@@ -1,6 +1,6 @@
 # HarvestLink · Higgsfield remake
 
-60-second native Higgsedit composition at 1920×1080 / 24 fps. Seed Audio **Celine** narration (voice ID `57ccb351-84d7-54ba-afd4-26b566ca6023`, preset), generation `c4ff2a76-28cc-4bc5-ab9c-75c77e404ebe`: 56.5 seconds, natural rate, no speech time stretching. Original quiet procedural music bed.
+60-second native Higgsedit composition at 1920×1080 / 24 fps. Seed Audio **Celine** narration (voice ID `57ccb351-84d7-54ba-afd4-26b566ca6023`, preset), generation `c4ff2a76-28cc-4bc5-ab9c-75c77e404ebe`: 56.5-second source, natural rate, no speech time stretching. Original quiet procedural music bed. The revised final cut removes the standalone device-benchmark sentence and its on-screen reference, retaining the music and timeline. The edit does not introduce any device-performance claim. Supporting evidence limits remain documented below.
 
 The remake uses native animated text, rounded product captures, flowing architecture connections, scene transitions and an opening farmer dramatization. Actual prototype captures show fictional Ana's 220 kg cassava entry, review, confirmation, market display and restoration after reload.
 
