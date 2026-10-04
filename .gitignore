@@ -1,0 +1,13 @@
+/ECC/
+/Understand-Anything/
+/claude-skills/
+/design-dna/
+node_modules/
+.env
+.env.*
+!.env.example
+data/
+.npm-cache/
+.browser-runtime/
+.package/
+artifacts/

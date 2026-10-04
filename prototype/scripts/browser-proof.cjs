@@ -1,0 +1,57 @@
+const {chromium}=require(process.env.PLAYWRIGHT_PATH||'C:/Users/decla/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const fs=require('node:fs/promises'),path=require('node:path'),assert=require('node:assert/strict');
+(async()=>{
+ const out=path.resolve(__dirname,'../artifacts');await fs.mkdir(out,{recursive:true});
+ const browser=await chromium.launch({headless:true,channel:'chrome'});
+ const context=await browser.newContext({viewport:{width:1280,height:900},recordVideo:{dir:out,size:{width:1280,height:900}},reducedMotion:'reduce'});
+ const page=await context.newPage(),errors=[],requests=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push(r.url()));
+ await page.goto('http://127.0.0.1:4173');await page.waitForFunction(()=>navigator.serviceWorker.controller);await page.reload();await page.locator('#sample').waitFor();
+ const hold=Number(process.env.PROOF_HOLD_MS||0);
+ async function caption(text){await page.evaluate(text=>{let el=document.getElementById('proof-caption');if(!el){el=document.createElement('div');el.id='proof-caption';el.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:99;background:#122e26;color:white;padding:18px 35px;font:17px system-ui;border-top:3px solid #e9c977;';document.body.appendChild(el);}el.textContent=text;},text);if(hold)await page.waitForTimeout(hold);}
+ async function msg(text){await page.locator('#message').fill(text);await page.locator('#message-form button[type=submit]').click();}
+ await caption('HarvestLink hackathon MVP • Bonfim tomato farmers → Lethem importers. Demonstration data throughout.');
+ await context.setOffline(true);requests.length=0;
+ await caption('Network disconnected in the DESKTOP BROWSER. Local AI runs without inference requests. This is not physical Android airplane-mode proof.');
+ await msg('Sou Ana, tenho 120 kg de tomate, classe A');await assert.match(await page.locator('#chat').innerText(),/data da colheita/);
+ await caption('Portuguese farmer input: Ana has 120 kg, grade A. The assistant asks for the missing harvest date.');
+ await msg('2026-10-04');assert.match(await page.locator('#chat').innerText(),/preço local/);
+ await caption('The assistant asks for the farmer’s local-sale price. No lot has been created yet.');
+ await msg('R$ 3,50/kg');assert.equal(await page.locator('#lot-count').innerText(),'0');
+ await caption('Review the structured record and Portuguese summary. AI extraction alone cannot create a confirmed lot.');
+ await page.locator('#confirm-lot').click();assert.equal(await page.locator('#lot-count').innerText(),'1');
+ await caption('Explicit human confirmation creates Ana’s lot. The record stays on this device while offline.');
+ await msg('Sou Paulo, tenho 100 kg de tomate, classe A, colheita 2026-10-04, R$ 3,50/kg');await page.locator('#confirm-lot').click();
+ await page.locator('[data-tab=buyer]').click();await page.locator('#match').click();assert.match(await page.locator('#pool').innerText(),/200\/200/);
+ await caption('English buyer view uses controlled templates. Pool: 120 kg from Ana + 80 kg from Paulo matches the 200 kg demonstration order.');
+ await page.screenshot({path:path.join(out,'buyer-pooling.png'),fullPage:true});
+ await page.locator('[data-tab=earnings]').click();
+ await caption('Dated DEMO assumptions: 40 GYD per BRL; 5% loss; transport, packaging, handling, fee and trade-cost allowance are explicit.');
+ assert.match(await page.locator('#comparison').innerText(),/883.75/);assert.match(await page.locator('#comparison').innerText(),/650.00/);
+ await page.locator('#comparison').scrollIntoViewIfNeeded();
+ await caption('For the same 200 kg, estimated local net is BRL 650.00 versus proposal net BRL 883.75. These are estimates, not guaranteed farmer earnings.');
+ await page.locator('#choice').selectOption('cross-border-proposal');await page.locator('#choice-confirm').check();await page.locator('#save-choice').click();
+ assert.match(await page.locator('#choices').innerText(),/Ana/);
+ await caption('Ana reads the terms and confirms her choice. The app saves the original order, costs and comparison as an offline snapshot.');
+ await page.reload();await page.locator('#lot-count').waitFor();assert.equal(await page.locator('#lot-count').innerText(),'2');
+ await page.locator('[data-tab=earnings]').click();assert.match(await page.locator('#choices').innerText(),/Ana/);
+ await caption('Offline reload: both confirmed lots and Ana’s choice survive. Next, a full browser-process restart checks disk persistence.');
+ const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('harvestlink-v1')));
+ assert.equal(state.choices.length,1);assert.equal(state.lots.length,2);
+ await page.locator('[data-tab=handover]').click();await page.locator('#exporter').fill('Demo exporter coordinator');await page.locator('#handover-note').fill('Ana consented to 120 kg. Remaining farmer consent and all trade checks pending.');await page.locator('#create-handover').click();
+ assert.match(await page.locator('#handover-record').innerText(),/"dispatchAuthorized": false/);
+ await caption('Exporter handover includes only Ana’s consented 120 kg. Shipment status: awaiting buyer confirmation and trade-requirement checks.');
+ await page.locator('[data-tab=proof]').click();await page.locator('#device').fill('Desktop Chromium — not Android');await page.locator('#benchmark').click();
+ await caption('The trained model is 8,621 bytes. Benchmark captures p50/p95 on this browser. Budget Android measurements remain pending.');
+ await page.locator('#messaging-status').evaluate(el=>el.textContent='Real provider exchange: NOT CAPTURED. Twilio adapter requires configured credentials, public HTTPS webhook and consenting test number.');
+ await page.locator('#messaging-status').scrollIntoViewIfNeeded();
+ await caption('SMS/WhatsApp integration is implemented. No live exchange is claimed here; a real provider/device exchange must be added before submission.');
+ const finalState=await page.evaluate(()=>JSON.parse(localStorage.getItem('harvestlink-v1')));
+ await fs.writeFile(path.join(out,'browser-evidence.json'),JSON.stringify({recordedAt:new Date().toISOString(),environment:'Desktop Chromium, network disabled via Playwright',modelBytes:8621,offlineInferenceNetworkRequests:requests.filter(x=>x.includes('/api/')),errors,state:finalState,limitations:['Not physical Android airplane-mode proof','No real SMS/WhatsApp exchange','Bilingual reviewer sign-off pending']},null,2));
+ await page.screenshot({path:path.join(out,'evidence.png'),fullPage:true});assert.deepEqual(errors,[]);assert.equal(requests.filter(x=>x.includes('/api/')).length,0);
+ const storage=await context.storageState();const video=page.video();await context.close();await video.saveAs(path.join(out,'harvestlink-demo.webm'));await browser.close();
+ // A fresh Chromium process reloads disk-backed localStorage, while the app runs offline from its own cache.
+ const profile=path.join(out,'restart-profile');const b2=await chromium.launchPersistentContext(profile,{headless:true,channel:'chrome',viewport:{width:390,height:844}});let p2=await b2.newPage();await p2.goto('http://127.0.0.1:4173');await p2.waitForFunction(()=>navigator.serviceWorker.controller);await p2.evaluate(s=>localStorage.setItem('harvestlink-v1',JSON.stringify(s)),finalState);await p2.reload();await p2.locator('#lot-count').waitFor();assert.equal(await p2.locator('#lot-count').innerText(),'2');await b2.close();
+ const b3=await chromium.launchPersistentContext(profile,{headless:true,channel:'chrome',viewport:{width:390,height:844}});await b3.setOffline(true);p2=await b3.newPage();await p2.goto('http://127.0.0.1:4173');await p2.locator('#lot-count').waitFor();assert.equal(await p2.locator('#lot-count').innerText(),'2');await p2.locator('[data-tab=earnings]').click();assert.match(await p2.locator('#choices').innerText(),/Ana/);const overflow=await p2.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth);assert.equal(overflow,false);await p2.screenshot({path:path.join(out,'mobile-offline-restart.png'),fullPage:true});await b3.close();
+ await fs.writeFile(path.join(out,'restart-evidence.json'),JSON.stringify({passed:true,test:'Fresh Chromium process, same persistent profile, offline launch, 390px viewport',lots:2,choices:1,physicalAndroid:false,recordedAt:new Date().toISOString()},null,2));
+ console.log('Browser workflow, offline inference, persistence and mobile viewport checks passed. Video:',path.join(out,'harvestlink-demo.webm'));
+})().catch(e=>{console.error(e);process.exit(1)});
