@@ -1,7 +1,7 @@
-import {routeAssistant,assistantFollowThrough} from './assistant.js?release=v29';
-import {marketMessage} from './marketplace.js?release=v29';
-import {languagePrompt,selectLanguage,englishReply} from './conversation-language.js?release=v29';
-import {normal,handleMessage,extract,lotSummary,crops,profiles,classify,missing} from './core.js?release=v29';
+import {routeAssistant,assistantFollowThrough} from './assistant.js?release=v30';
+import {marketMessage} from './marketplace.js?release=v30';
+import {languagePrompt,selectLanguage,englishReply} from './conversation-language.js?release=v30';
+import {normal,handleMessage,extract,lotSummary,crops,profiles,classify,missing} from './core.js?release=v30';
 const accountMenu='COLHEITA · LOTES · PROPOSTAS · STATUS · CONTA · ALTERAR NOME <nome> · ALTERAR LOCAL <cidade> · RETIRAR LOTE <ID> · SUPORTE · EXPORTAR. CONFIRMO salva uma revisão; CANCELAR abandona um rascunho.';
 const accountMenuEn='HARVEST · LOTS · OFFERS · STATUS · ACCOUNT · CHANGE NAME <name> · CHANGE LOCATION <town> · WITHDRAW LOT <ID> · SUPPORT · EXPORT. CONFIRM saves a review; CANCEL abandons a draft. COMPARE EARNINGS · CHOOSE LOCAL · CHOOSE PROPOSAL · LANGUAGE EN/PT · DEMO MARKET · MARKET · LOGISTICS · TRADE · HANDOVER.';
 const accountQuestions={consent:'Olá! Vamos criar seu perfil. Salvamos seu nome e cidade para registrar colheitas. Um lote confirmado pode ser apresentado a compradores. Não envie documentos ou dados bancários. Digite ACEITO para continuar ou CANCELAR.',name:'Como você prefere ser chamado? Envie somente seu nome.',location:'Em qual cidade ou comunidade você produz? Envie somente o local, sem endereço residencial.',language:languagePrompt};
@@ -67,7 +67,7 @@ function handleFarmerMessageInner(text,session,model,context={}){
  // Do not seed a harvest draft while comparing or confirming a sales choice.
  const active=(/^(comparar ganhos|escolho (local|proposta)|confirmo|confirm|sim)$/.test(t)||classify(text,model).intent==='earnings')&&!Object.keys(session.draft||{}).length?session:seeded;
  const result=handleMessage(text,{...active,lastLotId:lots.some(l=>l.id===active.lastLotId)?active.lastLotId:null},model,context);
- result.session={...result.session,account};if(result.lot)result.lot={...result.lot,farmerId:account.id,status:'available'};
+ result.session={...result.session,account,assistant:session.assistant,demoMarketplace:session.demoMarketplace,marketOrderId:session.marketOrderId};if(result.lot)result.lot={...result.lot,farmerId:account.id,status:'available'};
  return assistantFollowThrough(result,context);
 }
 
@@ -75,9 +75,10 @@ export function handleFarmerMessage(text,session,model,context={}){
  if(typeof text==='string'){
   const natural=normal(text).trim(),en=(session.account?.language||session.language)==='en';
   const greeting=/^(hello|hi|hey|good morning|good afternoon|bom dia|boa tarde)[!.?]*$/.test(natural);
-  if(greeting)text='oi';
+  if(greeting)text=session.account?'MY PLAN':'oi';
   const aliases={'show my harvests':'LOTS','my harvests':'LOTS','minhas colheitas':'LOTES','show the costs':'COMPARE EARNINGS','mostrar custos':'COMPARAR GANHOS','what happens next?':'MY PLAN','what happens next':'MY PLAN','o que acontece agora':'MEU PLANO','i want to sell locally':'CHOOSE LOCAL','quero vender localmente':'ESCOLHO LOCAL','cancel this':'CANCEL','cancelar isso':'CANCELAR'};
   text=aliases[natural]||text;
+  if(!session.pendingAccount&&!session.pendingChoice&&!session.pendingWithdrawal&&!session.pendingHandover&&/^(review that offer|review the offer|revisar essa oferta|revisar proposta)$/.test(natural)){const id=session.assistant?.recommendedOrderId;if(id)text='OFFER '+id;else text=en?'What is my best option?':'Qual a melhor opção?';}
   if(session.account&&/^(notifications|notification preferences|notificacoes|preferencias de notificacao)$/.test(natural))return {session,reply:en?'Choose NOTIFICATIONS ON or NOTIFICATIONS OFF. These preferences enable in-app updates only; proactive WhatsApp delivery is not configured.':'Escolha NOTIFICACOES ATIVAR ou NOTIFICACOES DESATIVAR. Preferências para avisos no aplicativo; envio proativo por WhatsApp não configurado.'};
   const preference=/^(?:notifications|notificacoes) (on|off|ativar|desativar)$/.exec(natural);
   if(session.account&&preference&&(session.pendingChoice||session.pendingHandover||session.pendingAccount||session.pendingWithdrawal))return {session,reply:en?'Finish the current review with CONFIRM or CANCEL before changing preferences.':'Termine a revisão atual com CONFIRMO ou CANCELAR antes de alterar preferências.'};
@@ -121,6 +122,6 @@ export function handleFarmerMessage(text,session,model,context={}){
  if(/O que você tem/.test(result.reply))result.reply='What do you have available, '+result.session.account.name+'? For example: I have 120 kg of cassava. Your saved area is '+result.session.account.location+'; you can correct it in your message.';
  const draft=result.session.draft||{};if(!missing(draft).length&&/Responda|Reply CONFIRM/.test(result.reply))result.reply=lotSummary(draft,'en')+' Local price: BRL '+draft.localPriceBrl+'/kg. Reply CONFIRM or correct the details.';
  }
- result.session.assistant=session.assistant;result.session.language=lang;result.session.demoMarketplace=session.demoMarketplace;result.session.marketOrderId=session.marketOrderId;return result;
+ result.session.assistant=result.session.assistant||session.assistant;result.session.language=lang;result.session.demoMarketplace=session.demoMarketplace;result.session.marketOrderId=session.marketOrderId;return result;
 }
 

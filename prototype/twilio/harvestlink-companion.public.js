@@ -332,7 +332,7 @@ function routeAssistant(text,session,context={}){
  if(session.pendingChoice||session.pendingAccount||session.pendingWithdrawal||session.pendingHandover)return {command:text};
  const selection=/^(?:use lot|select lot|usar lote|selecionar lote) ([a-z0-9-]{4,36})$/.exec(t);
  if(selection){const lots=(context.lots||[]).filter(l=>l.farmerId===session.account.id&&l.id.startsWith(selection[1])&&l.status!=='withdrawn');return {result:{session:lots.length===1?{...session,lastLotId:lots[0].id}:session,reply:lots.length===1?say('Selected your lot. Ask “What is my best option?”','Lote selecionado. Pergunte “Qual a melhor opção?”'):say('I need one unambiguous lot ID from your LOTS list.','Preciso de um ID único da sua lista LOTES.')}};}
- const intent=/^(?:plan|my plan|next|what next|what should i do next|how can you help|what can you do|plano|meu plano|proximo|o que fazer agora|como pode me ajudar)[?.!]*$/.test(t)?'plan':/(help me sell|sell my harvest|find (?:me )?(?:a )?buyer|selling my|ajude.*vender|vender minha colheita|encontrar comprador)/.test(t)?'sell':/(best option|best price|more money|should i sell|what can i earn|how much.*earn|compare.*(?:earnings|sale|options)|melhor opcao|melhor preco|ganhar mais|quanto.*ganhar)/.test(t)?'recommend':/(arrange.*(?:transport|pickup)|book.*(?:transport|pickup)|pickup plan|how.*(?:transport|pickup)|organizar transporte|coleta|logistica)/.test(t)?'logistics':/(export.*(?:paper|document|handover)|prepare.*handover|import.*requirements|border.*checks|documentos.*export|requisitos.*import)/.test(t)?'trade':/(what.*(?:remember|know).*me|my situation|resumir.*situacao|o que sabe.*mim)/.test(t)?'memory':null;
+ const intent=/^(?:hello|hi|hey|oi|ola|good morning|bom dia|plan|my plan|next|what next|what should i do next|how can you help|what can you do|plano|meu plano|proximo|o que fazer agora|como pode me ajudar)[?.!]*$/.test(t)?'plan':/(help me sell|sell my harvest|find (?:me )?(?:a )?buyer|selling my|ajude.*vender|vender minha colheita|encontrar comprador)/.test(t)?'sell':/(best option|best price|more money|should i sell|what can i earn|how much.*earn|compare.*(?:earnings|sale|options)|melhor opcao|melhor preco|ganhar mais|quanto.*ganhar)/.test(t)?'recommend':/(arrange.*(?:transport|pickup)|book.*(?:transport|pickup)|pickup plan|how.*(?:transport|pickup)|organizar transporte|coleta|logistica)/.test(t)?'logistics':/(export.*(?:paper|document|handover)|prepare.*handover|import.*requirements|border.*checks|documentos.*export|requisitos.*import)/.test(t)?'trade':/(what.*(?:remember|know).*me|my situation|resumir.*situacao|o que sabe.*mim)/.test(t)?'memory':null;
  if(!intent)return {command:text};
  const next={...session,assistant:{...(session.assistant||{}),goal:intent==='sell'?text.slice(0,180):session.assistant?.goal,updatedAt:new Date().toISOString()}};
  if(intent==='sell'&&/\d+\s*(kg|kilos?|quilos?)/i.test(text))return {command:text,session:next};
@@ -341,7 +341,7 @@ function routeAssistant(text,session,context={}){
  if(intent==='logistics')return {command:'LOGISTICS',session:next};
  if(intent==='trade')return {command:/handover|repasse/.test(t)?'HANDOVER':'TRADE',session:next};
  if(intent==='memory')return reply(`${session.account.name} · ${session.account.location}. `+say(`I have ${plan.own.length} confirmed available lots for your account. `,`Tenho ${plan.own.length} lotes disponíveis confirmados na sua conta. `)+plan.own.slice(-4).map(l=>`${l.id.slice(0,8)}: ${l.quantityKg} kg ${crops[l.crop]?.[session.account.language==='en'?'en':'pt']} · ${l.harvestDate}`).join('\n')+'\n'+boundary);
- if(intent==='recommend'){
+ if(intent==='recommend'||intent==='sell'&&plan.own.length&&!Object.keys(session.draft||{}).length){
   if(Object.keys(session.draft||{}).length)return reply(say('Let’s finish reviewing your harvest first. Still needed: ','Vamos terminar sua colheita primeiro. Falta: ')+missing(session.draft).join(', ')+say('. Nothing is saved until you CONFIRM.','. Nada é salvo antes de CONFIRMO.'));
   if(!plan.selected)return reply(say('Choose which harvest I should work on. Send HARVEST if you have none, or USE LOT <ID> from LOTS.','Escolha a colheita. Envie COLHEITA se não tiver lote, ou USAR LOTE <ID> da lista LOTES.'));
   if(!session.demoMarketplace)return reply(say('I can compare your local option with buyer proposals, but no live buyer feed is connected. Send DEMO MARKET to explore clearly fictional offers, or keep your confirmed lot available.','Posso comparar a venda local com propostas, mas não há compradores reais conectados. Envie DEMO MERCADO para explorar ofertas fictícias.'));
@@ -349,14 +349,18 @@ function routeAssistant(text,session,context={}){
   if(!results.length)return reply(say('I checked the demo orders against your crop, area, grade and harvest date. None match this lot. Keep it available; I won’t invent a buyer.','Verifiquei cultura, área, classe e data. Nenhum pedido demo corresponde ao lote. Vou manter a disponibilidade sem inventar comprador.'));
   const r=results[0];if(r.c.expired)return reply(say('I found compatible demo offers, but the saved costs have expired. I need updated assumptions before recommending earnings. Your confirmed records are preserved.','Encontrei propostas compatíveis, mas os custos salvos venceram. Preciso de custos atualizados antes de recomendar ganhos.'));const delta=r.farmer.crossNet-r.farmer.localNet;
   next.assistant={...next.assistant,lastCheckAt:new Date().toISOString(),recommendedOrderId:r.order.id};
-  return reply(say('I checked compatible demo buyers. ','Verifiquei compradores demo compatíveis. ')+`${r.order.id}: ${r.farmer.kg} kg · `+say(`local BRL ${r.farmer.localNet.toFixed(2)}; proposal BRL ${r.farmer.crossNet.toFixed(2)}; difference BRL ${delta.toFixed(2)}. `,`local BRL ${r.farmer.localNet.toFixed(2)}; proposta BRL ${r.farmer.crossNet.toFixed(2)}; diferença BRL ${delta.toFixed(2)}. `)+say(`Pool ${r.pool.quantityKg}/${r.order.quantityKg} kg. Costs dated ${r.c.expired?'EXPIRED · ':''}${(context.costs||plan.market.costs).asOf}. `,`Grupo ${r.pool.quantityKg}/${r.order.quantityKg} kg. Custos ${r.c.expired?'VENCIDOS · ':''}${(context.costs||plan.market.costs).asOf}. `)+say(`Next: OFFER ${r.order.id}, then COMPARE EARNINGS for every deduction. You decide after reviewing. `,`Próximo: OFFER ${r.order.id}, depois COMPARAR GANHOS para revisar deduções. Você decide. `)+boundary);
+  return reply(say('I checked compatible demo buyers. ','Verifiquei compradores demo compatíveis. ')+`${r.order.id}: ${r.farmer.kg} kg · `+say(`local BRL ${r.farmer.localNet.toFixed(2)}; proposal BRL ${r.farmer.crossNet.toFixed(2)}; difference BRL ${delta.toFixed(2)}. `,`local BRL ${r.farmer.localNet.toFixed(2)}; proposta BRL ${r.farmer.crossNet.toFixed(2)}; diferença BRL ${delta.toFixed(2)}. `)+say(`Pool ${r.pool.quantityKg}/${r.order.quantityKg} kg. Costs dated ${r.c.expired?'EXPIRED · ':''}${(context.costs||plan.market.costs).asOf}. `,`Grupo ${r.pool.quantityKg}/${r.order.quantityKg} kg. Custos ${r.c.expired?'VENCIDOS · ':''}${(context.costs||plan.market.costs).asOf}. `)+say(`I can prepare this proposal for your review. Say “review that offer”, or “show the costs” to inspect every deduction. You decide after reviewing. `,`Posso preparar a proposta para sua revisão. Diga “revisar essa oferta” ou “mostrar custos” para ver as deduções. Você decide. `)+boundary);
  }
  return reply(say(`Let’s work on your sale, ${session.account.name}.\n`,`Vamos trabalhar na sua venda, ${session.account.name}.\n`)+plan.tasks.map((task,i)=>`${task.done?'✓':i+1+'.'} ${task.label}`).join('\n')+'\n'+say('Next: ','Próximo: ')+(Object.keys(session.draft||{}).length?say('finish the harvest details.','termine os detalhes da colheita.'):!plan.own.length?say('tell me what you have, for example “I have 120 kg of tomatoes”.','diga o que tem, por exemplo “tenho 120 kg de tomate”.'):say('ask “What is my best option?” I’ll check compatible orders and net earnings.','pergunte “Qual a melhor opção?” Vou verificar pedidos e ganhos líquidos.'))+'\n'+boundary);
 }
 function assistantFollowThrough(result,context={}){
  const session=result.session;
  if(!session.account)return result;
- if(result.lot)result.reply+='\n'+choose(session,'Next, ask “What is my best option?” I can check compatible offers and show what you keep after costs.','Agora pergunte “Qual a melhor opção?” Posso verificar propostas compatíveis e o valor líquido.');
+ if(result.lot){
+  const nextContext={...context,lots:[...(context.lots||[]).filter(l=>l.id!==result.lot.id),result.lot]};
+  const check=routeAssistant(session.account.language==='en'?'What is my best option?':'Qual a melhor opção?',session,nextContext).result;
+  if(check){result.reply+='\n\n'+choose(session,'I’ve also checked your next selling step.\n','Também verifiquei seu próximo passo de venda.\n')+check.reply;result.session=check.session;}
+ }
  if(result.choice)result.reply+='\n'+choose(session,result.choice.choice==='cross-border-proposal'?'Next, ask me to prepare an exporter handover. Buyer approval, transport and trade checks remain open.':'Your local choice is saved. Ask MY PLAN to review your remaining work.',result.choice.choice==='cross-border-proposal'?'Agora peça o repasse ao exportador. Aprovação, transporte e verificações seguem pendentes.':'Sua escolha local está salva. Envie MEU PLANO para revisar o trabalho restante.');
  return result;
 }
@@ -426,7 +430,7 @@ function handleFarmerMessageInner(text,session,model,context={}){
  // Do not seed a harvest draft while comparing or confirming a sales choice.
  const active=(/^(comparar ganhos|escolho (local|proposta)|confirmo|confirm|sim)$/.test(t)||classify(text,model).intent==='earnings')&&!Object.keys(session.draft||{}).length?session:seeded;
  const result=handleMessage(text,{...active,lastLotId:lots.some(l=>l.id===active.lastLotId)?active.lastLotId:null},model,context);
- result.session={...result.session,account};if(result.lot)result.lot={...result.lot,farmerId:account.id,status:'available'};
+ result.session={...result.session,account,assistant:session.assistant,demoMarketplace:session.demoMarketplace,marketOrderId:session.marketOrderId};if(result.lot)result.lot={...result.lot,farmerId:account.id,status:'available'};
  return assistantFollowThrough(result,context);
 }
 
@@ -434,9 +438,10 @@ function handleFarmerMessage(text,session,model,context={}){
  if(typeof text==='string'){
   const natural=normal(text).trim(),en=(session.account?.language||session.language)==='en';
   const greeting=/^(hello|hi|hey|good morning|good afternoon|bom dia|boa tarde)[!.?]*$/.test(natural);
-  if(greeting)text='oi';
+  if(greeting)text=session.account?'MY PLAN':'oi';
   const aliases={'show my harvests':'LOTS','my harvests':'LOTS','minhas colheitas':'LOTES','show the costs':'COMPARE EARNINGS','mostrar custos':'COMPARAR GANHOS','what happens next?':'MY PLAN','what happens next':'MY PLAN','o que acontece agora':'MEU PLANO','i want to sell locally':'CHOOSE LOCAL','quero vender localmente':'ESCOLHO LOCAL','cancel this':'CANCEL','cancelar isso':'CANCELAR'};
   text=aliases[natural]||text;
+  if(!session.pendingAccount&&!session.pendingChoice&&!session.pendingWithdrawal&&!session.pendingHandover&&/^(review that offer|review the offer|revisar essa oferta|revisar proposta)$/.test(natural)){const id=session.assistant?.recommendedOrderId;if(id)text='OFFER '+id;else text=en?'What is my best option?':'Qual a melhor opção?';}
   if(session.account&&/^(notifications|notification preferences|notificacoes|preferencias de notificacao)$/.test(natural))return {session,reply:en?'Choose NOTIFICATIONS ON or NOTIFICATIONS OFF. These preferences enable in-app updates only; proactive WhatsApp delivery is not configured.':'Escolha NOTIFICACOES ATIVAR ou NOTIFICACOES DESATIVAR. Preferências para avisos no aplicativo; envio proativo por WhatsApp não configurado.'};
   const preference=/^(?:notifications|notificacoes) (on|off|ativar|desativar)$/.exec(natural);
   if(session.account&&preference&&(session.pendingChoice||session.pendingHandover||session.pendingAccount||session.pendingWithdrawal))return {session,reply:en?'Finish the current review with CONFIRM or CANCEL before changing preferences.':'Termine a revisão atual com CONFIRMO ou CANCELAR antes de alterar preferências.'};
@@ -480,7 +485,7 @@ function handleFarmerMessage(text,session,model,context={}){
  if(/O que você tem/.test(result.reply))result.reply='What do you have available, '+result.session.account.name+'? For example: I have 120 kg of cassava. Your saved area is '+result.session.account.location+'; you can correct it in your message.';
  const draft=result.session.draft||{};if(!missing(draft).length&&/Responda|Reply CONFIRM/.test(result.reply))result.reply=lotSummary(draft,'en')+' Local price: BRL '+draft.localPriceBrl+'/kg. Reply CONFIRM or correct the details.';
  }
- result.session.assistant=session.assistant;result.session.language=lang;result.session.demoMarketplace=session.demoMarketplace;result.session.marketOrderId=session.marketOrderId;return result;
+ result.session.assistant=result.session.assistant||session.assistant;result.session.language=lang;result.session.demoMarketplace=session.demoMarketplace;result.session.marketOrderId=session.marketOrderId;return result;
 }
 
 

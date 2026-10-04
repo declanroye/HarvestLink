@@ -8,7 +8,7 @@ HarvestLink helps smallholder farmers in Guyana and northern Brazil turn individ
 
 The **web workspace is the CRM and marketplace**: a place to inspect accounts, availability, buyer proposals, costs, logistics and exporter handovers. The installed phone companion carries the essential conversation and records into places without reliable internet.
 
-[Explore the landing page and interactive architecture](https://declanroye.github.io/HarvestLink/landing.html) · [Open the workspace](https://declanroye.github.io/HarvestLink/?release=v29) · [Try the WhatsApp demo](prototype/DEMO-WHATSAPP.md) · [Connect your phone](prototype/SHARED-SETUP.md)
+[Explore the landing page and interactive architecture](https://declanroye.github.io/HarvestLink/landing.html) · [Open the workspace](https://declanroye.github.io/HarvestLink/?release=v30) · [Try the WhatsApp demo](prototype/DEMO-WHATSAPP.md) · [Connect your phone](prototype/SHARED-SETUP.md)
 
 ## The problem: a better road does not automatically create a better sale
 
@@ -160,7 +160,7 @@ Linked online web conversations now use the same authenticated account session a
 - Paired Twilio Functions using one bounded Sync store, signed inbound handling, retry/deduplication, verified linking and durable account records.
 - Simulated buyer orders, compatible pooling, dated BRL/GYD cost comparisons, unbooked transport examples and farmer-confirmed exporter handovers.
 - Offline caching and local persistence; owner-scoped synchronization with conflict checks.
-- **46 passing unit/integration tests** at this release. Desktop browser inference was measured at approximately 0.10 ms median and 0.30 ms p95 across 100 samples, excluding rendering. These are desktop results, not budget Android measurements.
+- **47 passing unit/integration tests** at this release. Desktop browser inference was measured at approximately 0.10 ms median and 0.30 ms p95 across 100 samples, excluding rendering. These are desktop results, not budget Android measurements.
 
 English onboarding has been demonstrated in a real WhatsApp exchange. End-to-end participant pairing, the complete real-phone commercial workflow, physical Android timings/airplane-mode evidence and bilingual human template sign-off remain outstanding.
 
@@ -239,8 +239,12 @@ Node 22+; local workspace: http://127.0.0.1:4173. Provider credentials stay serv
 
 Research checked **4 October 2026** against linked government, regional and statistical sources. Project announcements are attributed to their publishers; market opportunity and proposed product expansion are our interpretation.
 
-### Phone experience — release v29
+### Phone experience — release v30
 
 The companion opens with Talk to HarvestLink, My harvests and Pending actions on small screens. Conversations and unfinished reviews are saved on the phone. English greetings lead into language selection; natural requests such as “show my harvests”, “what happens next?” and draft quantity corrections are supported. Confirm, Change details and Cancel remain explicit. Confirmed quantities are preserved in history.
 
 Pairing checks quietly for WhatsApp confirmation and then asks the user to review the account before activation. Service settings sit under coordinator tools. Offline status distinguishes phone storage from shared delivery; reconnecting prompts review and explicit submission. In-app update preferences require confirmation. Proactive WhatsApp notifications and voice recognition are not enabled.
+
+### Proactive conversation flow
+
+After a confirmed harvest, HarvestLink immediately checks compatible available demo orders and dated net-earnings assumptions, remembers the recommendation and offers a natural-language review step. “Help me sell my harvest” performs that check directly. This is initiative within a conversation; no unsolicited messages are sent and no sale, carrier booking or shipment is automatically authorized.
