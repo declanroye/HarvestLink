@@ -48,6 +48,24 @@ Sources: [IBGE agricultural production in Roraima](https://www.ibge.gov.br/expli
 
 CARICOM's statistics portal reports **US$5,120.9 million in total food imports in 2024**. Its regional food-security initiative was extended to 2030, and its September 2026 agriculture discussions again emphasised transport, logistics, standards and trade barriers. That is a substantial demand context, not HarvestLink's revenue forecast or addressable market estimate. Our intended path is to help qualified producers and buyers build dependable supply relationships within that wider opportunity. [2024 trade figures](https://statistics.caricom.org/), [2030 initiative](https://caricom.org/food-security-initiative-expanded-extended-to-2030/), [September 2026 priorities](https://cwa2026.caricom.org/caribbean-agriculture-ministers-call-for-deeper-regional-integration-and-redefined-financing-to-achieve-food-security/)
 
+## Why this solution: evidence should shape the product
+
+**The corridor creates a route; HarvestLink helps create a usable commercial relationship.** Agricultural production and regional food-import data establish context. They do not tell a farmer who will buy this harvest, whether compatible lots can fill the order, or what remains after costs. HarvestLink addresses that coordination gap through a bilingual conversation, confirmed records, pooled availability and an understandable net comparison.
+
+The hackathon's common-dataset list also helps explain the product choices. These are **research and evaluation resources, not datasets already integrated into this release**. Our current model uses an authored synthetic EN/PT corpus. The next step is local evidence, not claiming that a large public benchmark already proves the product.
+
+| Evidence layer | Useful resources | Why it matters to HarvestLink |
+| --- | --- | --- |
+| Language and understanding | [MASSIVE](https://arxiv.org/abs/2204.08582), [OPUS](https://opus.nlpl.eu/), [FLORES](https://github.com/facebookresearch/flores) | Compare intent/slot and translation approaches, then test agricultural language, numbers, dates and confirmation with local EN/PT speakers. |
+| Future voice access | [Common Voice](https://www.mozillafoundation.org/pt-BR/common-voice/), [FLEURS](https://research.google/pubs/fleurs-few-shot-learning-evaluation-of-universal-representations-of-speech/), [MMS](https://github.com/facebookresearch/fairseq/tree/main/examples/mms) | Build an evaluated path to voice notes; a text intent model does not already deliver speech recognition. |
+| Devices, connection and inclusion | [GSMA](https://www.gsma.com/gender-gap-2025/), [Global Findex](https://www.worldbank.org/en/publication/globalfindex/download-data), [OpenCelliD](https://opencellid.org/), [Anatel](https://www.gov.br/anatel/pt-br/dados/qualidade/qualidade-dos-servicos/mapa-cobertura) | Recruit inclusively and validate actual devices and network conditions. Choose WhatsApp, SMS or the cached companion based on real access. |
+| Catchment and logistics | [WorldPop](https://www.worldpop.org/), [OpenStreetMap](https://www.openstreetmap.org/copyright), [VIIRS](https://eogdata.mines.edu/products/vnl/) | Plan service areas and collection-route research; population, mapped roads and night lights are context, not confirmed farmers, travel times or mobile signal. |
+| Regional livelihoods and production | [IBGE PNAD](https://www.ibge.gov.br/estatisticas/multidominio/genero/17270-pnad-continua.html), [Roraima production](https://www.ibge.gov.br/explica/producao-agropecuaria/rr), [Guyana household surveys](https://statisticsguyana.gov.gy/surveys/) | Ground the opportunity in dated country/subnational evidence and validate it with cooperatives, farmers, buyers and carriers. |
+
+Three distinctions matter for a credible pitch: **a cell-tower location is not proof of usable signal; population is not a farmer customer count; a language benchmark is not local agricultural accuracy.** Regional gender statistics must not be presented as Bonfim/Lethem estimates. Reviewed templates and human confirmation protect commercial facts while a locally tested model develops. Masakhane and AI4Bharat offer valuable community-led methods and future expansion resources, rather than direct evidence for this pilot.
+
+[Dataset-to-product evidence guide and deck narrative](docs/DATA-AND-DECK.md) maps every supplied resource to an application, coverage limit and evaluation need. It adds national statistics to the unfinished section D, separates benchmarks from model licences, and provides a seven-slide story with sources and honest evidence labels. **No external dataset ingestion, voice feature, live price feed or automatic payment integration is implied.**
+
 ## The corridor in real life
 
 ![The Takutu crossing between Lethem and Bonfim, photographed in 2015](https://commons.wikimedia.org/wiki/Special:FilePath/International_bridge_-_Letham%2C_Guyana_%2823025487324%29.jpg?width=960)
