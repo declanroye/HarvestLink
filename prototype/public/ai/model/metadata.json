@@ -1,0 +1,40 @@
+{
+  "format": "harvestlink-intent-f32-v1",
+  "labels": [
+    "cancel",
+    "compare",
+    "correct",
+    "help",
+    "offer",
+    "other"
+  ],
+  "featureCount": 4000,
+  "ngrams": [
+    3,
+    5
+  ],
+  "binaryFeatures": true,
+  "maxCharacters": 320,
+  "normalization": "NFKD; discard non-ASCII; lowercase; collapse ASCII whitespace; trim; truncate",
+  "intercepts": [
+    -0.01758434114520789,
+    -0.7288943331645175,
+    -0.027765228354120212,
+    0.4720620893844353,
+    -0.7112344705548949,
+    1.0134162838343037
+  ],
+  "weightsLayout": "little-endian float32, label-major",
+  "trainingExamples": 72,
+  "languages": [
+    "en",
+    "pt-BR"
+  ],
+  "dataProvenance": "AI-authored synthetic starter, not farmer messages",
+  "clarificationGate": {
+    "minScore": 0.65,
+    "minMargin": 0.15,
+    "minMatchedFeatures": 8
+  },
+  "warning": "Scores and gates are uncalibrated. No autonomous transaction is permitted."
+}

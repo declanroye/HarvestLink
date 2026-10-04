@@ -1,4 +1,4 @@
-import {normal,handleMessage,extract,lotSummary,crops,profiles} from './core.js';
+import {normal,handleMessage,extract,lotSummary,crops,profiles,classify} from './core.js';
 const accountMenu='COLHEITA · LOTES · PROPOSTAS · STATUS · CONTA · ALTERAR NOME <nome> · ALTERAR LOCAL <cidade> · RETIRAR LOTE <ID> · SUPORTE · EXPORTAR. CONFIRMO salva uma revisão; CANCELAR abandona um rascunho.';
 const accountMenuEn='HARVEST · LOTS · OFFERS · STATUS · ACCOUNT · CHANGE NAME <name> · CHANGE LOCATION <town> · WITHDRAW LOT <ID> · SUPPORT · EXPORT. CONFIRMO saves a review; CANCEL abandons a draft. Harvest input remains Portuguese in this pilot.';
 const accountQuestions={consent:'Olá! Vamos criar seu perfil. Salvamos seu nome e cidade para registrar colheitas. Um lote confirmado pode ser apresentado a compradores. Não envie documentos ou dados bancários. Digite ACEITO para continuar ou CANCELAR.',name:'Como você prefere ser chamado? Envie somente seu nome.',location:'Em qual cidade ou comunidade você produz? Envie somente o local, sem endereço residencial.',language:'Qual idioma para menus e conta? PT para português ou EN for English. A interpretação de colheitas deste piloto usa português.'};
@@ -28,7 +28,7 @@ export function handleFarmerMessage(text,session,model,context={}){
    const account={...d,id:crypto.randomUUID(),createdAt:new Date().toISOString(),consent:{purpose:'harvest coordination and buyer availability summaries',version:'v1',acceptedAt:new Date().toISOString()},origin:session.source||'offline-app'};
    const next={...session,account,onboarding:null,draft:{},lastLotId:null,pendingChoice:null};
    if(onboarding.initialHarvest){const r=handleMessage(onboarding.initialHarvest,{...next,draft:{farmer:account.name,location:account.location}},model,context);return {...r,reply:'Perfil salvo. '+r.reply,session:{...r.session,account}};}
-   return reply(account.language==='en'?`Profile saved: ${accountSummary(account)}. Send COLHEITA to register a harvest in Portuguese, or ACCOUNT, LOTS, OFFERS, STATUS, SUPPORT. This phone profile is separate from WhatsApp until verified linking is implemented.`:`Perfil salvo: ${accountSummary(account)}. Envie COLHEITA para começar, ou MENU. O perfil deste telefone é separado do WhatsApp até existir vinculação verificada.`,next);
+   return reply(account.language==='en'?`Profile saved: ${accountSummary(account)}. Send COLHEITA to register a harvest in Portuguese, or ACCOUNT, LOTS, OFFERS, STATUS, SUPPORT. Use Connect WhatsApp / SMS to verify and link your phone account.`:`Perfil salvo: ${accountSummary(account)}. Envie COLHEITA para começar, ou MENU. Use Conectar WhatsApp / SMS para verificar e vincular sua conta.`,next);
   }
  }
  if(session.account&&/^(iniciar|comecar|start|cadastro)$/.test(t))return reply('Seu perfil já está criado. Envie CONTA para revisar ou ALTERAR NOME / ALTERAR LOCAL.');
@@ -61,7 +61,7 @@ export function handleFarmerMessage(text,session,model,context={}){
  if(/^(colheita|harvest)$/.test(t))return reply(`O que você tem disponível, ${account.name}? Exemplo: tenho 120 kg de mandioca. Usarei ${account.location}; você pode corrigir na mensagem.`,{...session,draft:{farmer:account.name,location:account.location}});
  const seeded={...session,draft:Object.keys(session.draft||{}).length?session.draft:{farmer:account.name,location:account.location}};
  // Do not seed a harvest draft while comparing or confirming a sales choice.
- const active=/^(comparar ganhos|escolho (local|proposta)|confirmo|confirm|sim)$/.test(t)&&!Object.keys(session.draft||{}).length?session:seeded;
+ const active=(/^(comparar ganhos|escolho (local|proposta)|confirmo|confirm|sim)$/.test(t)||classify(text,model).intent==='earnings')&&!Object.keys(session.draft||{}).length?session:seeded;
  const result=handleMessage(text,{...active,lastLotId:lots.some(l=>l.id===active.lastLotId)?active.lastLotId:null},model,context);
  result.session={...result.session,account};if(result.lot)result.lot={...result.lot,farmerId:account.id,status:'available'};
  return result;

@@ -1,0 +1,1058 @@
+[
+  {
+    "text": "I have tomatoes available to sell",
+    "scores": [
+      0.03336957885409354,
+      -1.6093722826757773,
+      -0.9629039251587629,
+      -0.6788299474079212,
+      4.597238482483395,
+      -1.3795019950945424
+    ],
+    "pythonPrediction": "offer"
+  },
+  {
+    "text": "My harvest is ready for a buyer",
+    "scores": [
+      -0.3301044911822246,
+      -1.106276395540063,
+      -0.8358133646535962,
+      -1.5581604541308298,
+      4.440171366831952,
+      -0.609816711209205
+    ],
+    "pythonPrediction": "offer"
+  },
+  {
+    "text": "I can supply 120 kg of tomatoes",
+    "scores": [
+      -0.18412896621515396,
+      -1.5698945278258367,
+      -1.172225061745131,
+      -0.9551059623277797,
+      4.510670244269737,
+      -0.6293157221977161
+    ],
+    "pythonPrediction": "offer"
+  },
+  {
+    "text": "Please list my tomato crop for sale",
+    "scores": [
+      -0.06768597293188215,
+      -1.5952536638782664,
+      -0.9853014696265846,
+      -1.0553249326563492,
+      4.749749677064561,
+      -1.0461836122436943
+    ],
+    "pythonPrediction": "offer"
+  },
+  {
+    "text": "I have five bags ready tomorrow",
+    "scores": [
+      -0.5395456231526041,
+      -1.4862987960645302,
+      -0.6804480375132799,
+      -1.1603535600966826,
+      4.4810161518815095,
+      -0.6143701839488493
+    ],
+    "pythonPrediction": "offer"
+  },
+  {
+    "text": "Find a buyer for my produce",
+    "scores": [
+      -0.5937834412069933,
+      -0.9861155355305715,
+      -1.1947634256786943,
+      -0.9936529305792464,
+      4.468712860992842,
+      -0.7003975176945823
+    ],
+    "pythonPrediction": "offer"
+  },
+  {
+    "text": "Tenho tomates disponiveis para vender",
+    "scores": [
+      -0.04511613949210734,
+      -1.58788046780539,
+      -1.2020380654859866,
+      -0.7475539446837319,
+      4.800226620672935,
+      -1.2176381027553724
+    ],
+    "pythonPrediction": "offer"
+  },
+  {
+    "text": "Minha colheita esta pronta para um comprador",
+    "scores": [
+      -0.2619693231862912,
+      -1.698409089220532,
+      -0.48664642957665916,
+      -1.158087062279792,
+      4.714723234630388,
+      -1.1096114091802882
+    ],
+    "pythonPrediction": "offer"
+  },
+  {
+    "text": "Posso fornecer 120 quilos de tomate",
+    "scores": [
+      -1.1491948310612643,
+      -1.0955275011205419,
+      -0.2980105019516587,
+      -0.8536913524527153,
+      4.507175199030631,
+      -1.1107510523167001
+    ],
+    "pythonPrediction": "offer"
+  },
+  {
+    "text": "Quero anunciar minha safra para venda",
+    "scores": [
+      0.0776953885470575,
+      -1.3551801629204607,
+      -0.8402862506474876,
+      -1.2874085452436521,
+      4.601482080220909,
+      -1.196302577317183
+    ],
+    "pythonPrediction": "offer"
+  },
+  {
+    "text": "Tenho cinco sacos prontos para amanha",
+    "scores": [
+      -1.1753806592059264,
+      -1.5092763735869272,
+      -0.588467415363276,
+      -0.9947003336652233,
+      4.7397711391511494,
+      -0.47194636047301164
+    ],
+    "pythonPrediction": "offer"
+  },
+  {
+    "text": "Procure um comprador para minha producao",
+    "scores": [
+      -0.46819564819810333,
+      -1.2883808038736067,
+      -0.9695512875325322,
+      -1.0603577383822813,
+      4.901009812527069,
+      -1.1145243820962059
+    ],
+    "pythonPrediction": "offer"
+  },
+  {
+    "text": "Compare selling here with shared delivery",
+    "scores": [
+      -0.04507580030252577,
+      4.679315444738294,
+      -1.5961952274075986,
+      -0.6775663144449754,
+      -1.5707063215833967,
+      -0.7897718120826902
+    ],
+    "pythonPrediction": "compare"
+  },
+  {
+    "text": "Which selling option leaves more money",
+    "scores": [
+      -0.9470622137050086,
+      4.569492575903113,
+      -0.7055834466002225,
+      -0.952547359143482,
+      -1.2882642170463567,
+      -0.676035464670931
+    ],
+    "pythonPrediction": "compare"
+  },
+  {
+    "text": "Show the transport cost for each option",
+    "scores": [
+      -1.4110324718384946,
+      4.724281364311154,
+      -0.8523181793854847,
+      -0.3915467049606195,
+      -1.21567502334275,
+      -0.853708942699668
+    ],
+    "pythonPrediction": "compare"
+  },
+  {
+    "text": "What do I receive after all costs",
+    "scores": [
+      -1.1149433586141968,
+      4.481633876640971,
+      -1.139391891599381,
+      -0.4507216621219231,
+      -1.4131147476893728,
+      -0.36346221428779235
+    ],
+    "pythonPrediction": "compare"
+  },
+  {
+    "text": "Calculate the net income for both offers",
+    "scores": [
+      -0.8587818271807337,
+      4.574574841377015,
+      -1.1357334128690229,
+      -0.66379247318544,
+      -1.2904802115683323,
+      -0.6257869204734015
+    ],
+    "pythonPrediction": "compare"
+  },
+  {
+    "text": "Is the buyer offer better than farmgate",
+    "scores": [
+      -0.5034245664464252,
+      4.437443503369267,
+      -1.0890159684342609,
+      -1.1117789522773638,
+      -1.1405787881978666,
+      -0.5926451365691172
+    ],
+    "pythonPrediction": "compare"
+  },
+  {
+    "text": "Compare a venda local com a entrega conjunta",
+    "scores": [
+      -0.33110637034763934,
+      4.821462492299887,
+      -0.7034527887146497,
+      -0.6525772270775451,
+      -1.5322489870179323,
+      -1.602077096397479
+    ],
+    "pythonPrediction": "compare"
+  },
+  {
+    "text": "Qual opcao de venda deixa mais dinheiro",
+    "scores": [
+      -0.6258294622274989,
+      4.6360220587972245,
+      -1.0964181306328202,
+      -1.2198854308604314,
+      -1.449463669518276,
+      -0.24442544386205545
+    ],
+    "pythonPrediction": "compare"
+  },
+  {
+    "text": "Mostre o custo de transporte de cada opcao",
+    "scores": [
+      -0.908543712026527,
+      4.819837488657485,
+      -1.0183513350195528,
+      -0.37535916540362446,
+      -1.7431165088948672,
+      -0.7744667301182198
+    ],
+    "pythonPrediction": "compare"
+  },
+  {
+    "text": "Quanto recebo depois de todos os custos",
+    "scores": [
+      -1.2373426237936074,
+      4.574861772083367,
+      -0.5853302543393611,
+      -0.9170766607072255,
+      -1.2426308715532413,
+      -0.5924814230990159
+    ],
+    "pythonPrediction": "compare"
+  },
+  {
+    "text": "Calcule a receita liquida das duas ofertas",
+    "scores": [
+      -0.6213029204263294,
+      4.826961525208007,
+      -1.0169235760688127,
+      -0.937738815884204,
+      -1.5092349173084711,
+      -0.7417613469757633
+    ],
+    "pythonPrediction": "compare"
+  },
+  {
+    "text": "A oferta do comprador e melhor que a venda local",
+    "scores": [
+      -0.09610270781916917,
+      4.919446355038944,
+      -1.2750411736335183,
+      -0.9154299638263,
+      -0.9683879238602585,
+      -1.6644846719451742
+    ],
+    "pythonPrediction": "compare"
+  },
+  {
+    "text": "Change my quantity to 80 kg",
+    "scores": [
+      -0.57680221464028,
+      -1.2609626979523643,
+      4.383691301162607,
+      -0.8360939743957533,
+      -1.0594572738793557,
+      -0.6503751631122576
+    ],
+    "pythonPrediction": "correct"
+  },
+  {
+    "text": "I gave the wrong collection date",
+    "scores": [
+      -1.0019571088814119,
+      -0.7958998391826941,
+      4.500114334456875,
+      -0.6695347681321254,
+      -1.387687323340482,
+      -0.6450352463167655
+    ],
+    "pythonPrediction": "correct"
+  },
+  {
+    "text": "Correct the grade to grade B",
+    "scores": [
+      -0.9481571228570247,
+      -0.8989763486155613,
+      4.365188390657558,
+      -0.6844975104700824,
+      -1.359370013191632,
+      -0.47418747555879226
+    ],
+    "pythonPrediction": "correct"
+  },
+  {
+    "text": "Update my harvest details please",
+    "scores": [
+      0.2029424637694901,
+      -1.774701474975173,
+      4.445586386428467,
+      -1.1287267963430896,
+      -0.7570507328075237,
+      -0.9880498061417164
+    ],
+    "pythonPrediction": "correct"
+  },
+  {
+    "text": "Actually I have 150 kilos instead",
+    "scores": [
+      -0.883800663086673,
+      -1.4367211389311894,
+      4.4935676167377,
+      -0.8717792705661668,
+      -0.6572580586236781,
+      -0.6440085311647998
+    ],
+    "pythonPrediction": "correct"
+  },
+  {
+    "text": "The location should be Parika",
+    "scores": [
+      -1.2248156448221708,
+      -1.0108703186692043,
+      4.425185068569398,
+      -0.567473384182067,
+      -1.4418741224382883,
+      -0.18015161557072124
+    ],
+    "pythonPrediction": "correct"
+  },
+  {
+    "text": "Mude minha quantidade para 80 quilos",
+    "scores": [
+      -0.8618667396112287,
+      -1.6927845107697255,
+      5.171216971299863,
+      -1.4960179518471524,
+      0.10872256503879363,
+      -1.229270429978569
+    ],
+    "pythonPrediction": "correct"
+  },
+  {
+    "text": "Informei a data de coleta errada",
+    "scores": [
+      -1.0959306034819165,
+      -0.9579663682219877,
+      4.474098726700312,
+      -0.8192578741378201,
+      -1.2451395263944631,
+      -0.3558043638937669
+    ],
+    "pythonPrediction": "correct"
+  },
+  {
+    "text": "Corrija a qualidade para categoria B",
+    "scores": [
+      -1.5775682581915462,
+      -1.2966073637784763,
+      4.903777484840965,
+      -0.978777796126069,
+      -0.4823660130661792,
+      -0.568458057636817
+    ],
+    "pythonPrediction": "correct"
+  },
+  {
+    "text": "Atualize os detalhes da minha colheita",
+    "scores": [
+      -0.35089933817283603,
+      -1.3930660972677475,
+      4.545064419101244,
+      -0.9360157950810207,
+      -0.7056579591173558,
+      -1.159425281383519
+    ],
+    "pythonPrediction": "correct"
+  },
+  {
+    "text": "Na verdade tenho 150 quilos",
+    "scores": [
+      -0.8366330716852972,
+      -1.2413505276621624,
+      4.451351860116837,
+      -0.9173858528170785,
+      -0.7621716516607321,
+      -0.6938107660267996
+    ],
+    "pythonPrediction": "correct"
+  },
+  {
+    "text": "O local correto e Boa Vista",
+    "scores": [
+      -1.0870930618002022,
+      -0.6319076228377714,
+      4.377023438981986,
+      -0.6780068437597765,
+      -1.3638610036161607,
+      -0.61615490813223
+    ],
+    "pythonPrediction": "correct"
+  },
+  {
+    "text": "Cancel my sale request",
+    "scores": [
+      4.462123202592979,
+      -1.523531056284283,
+      -1.0108803724280835,
+      -0.6308330559200658,
+      -1.0167087732863491,
+      -0.28016998751503697
+    ],
+    "pythonPrediction": "cancel"
+  },
+  {
+    "text": "Do not share my harvest with buyers",
+    "scores": [
+      4.388851915977343,
+      -1.0114795680114372,
+      -0.6338684770155042,
+      -0.7834936020459099,
+      -0.6572220359978146,
+      -1.3027882973425584
+    ],
+    "pythonPrediction": "cancel"
+  },
+  {
+    "text": "I already sold those tomatoes",
+    "scores": [
+      4.392988363248209,
+      -1.6727656175338967,
+      -1.2895951576640174,
+      -0.9712006253335675,
+      0.3445926476686382,
+      -0.8040197747055935
+    ],
+    "pythonPrediction": "cancel"
+  },
+  {
+    "text": "Remove my lot from the delivery",
+    "scores": [
+      4.437511720196257,
+      -0.6993641824650882,
+      -0.5366903336827918,
+      -0.846917650758387,
+      -1.6960580583711033,
+      -0.658481628563677
+    ],
+    "pythonPrediction": "cancel"
+  },
+  {
+    "text": "Stop the request I have nothing available",
+    "scores": [
+      4.533649173532526,
+      -1.4198510291011377,
+      -0.9855982834116831,
+      -0.43427057666993274,
+      -0.6918586331468887,
+      -1.0020706882229569
+    ],
+    "pythonPrediction": "cancel"
+  },
+  {
+    "text": "Withdraw my offer please",
+    "scores": [
+      4.101877173841844,
+      -0.8165685025000318,
+      -0.6170941022566795,
+      -0.6603325159317864,
+      -1.1863004783683335,
+      -0.8215815098252641
+    ],
+    "pythonPrediction": "cancel"
+  },
+  {
+    "text": "Cancele meu pedido de venda",
+    "scores": [
+      4.517517274212937,
+      -0.4897145631679638,
+      -1.2342406473610128,
+      -0.842307836844684,
+      -1.396780745550326,
+      -0.5544734820019948
+    ],
+    "pythonPrediction": "cancel"
+  },
+  {
+    "text": "Nao compartilhe minha colheita com compradores",
+    "scores": [
+      4.4151514834630365,
+      -0.9353600912567532,
+      -0.632767043948853,
+      -1.0367468466079846,
+      -0.3160635190017401,
+      -1.4942139731016504
+    ],
+    "pythonPrediction": "cancel"
+  },
+  {
+    "text": "Ja vendi esses tomates",
+    "scores": [
+      4.051500217490743,
+      -1.1390887124420448,
+      -1.2459952188212002,
+      -0.9344442245579375,
+      -0.08663389292106694,
+      -0.6453381804045784
+    ],
+    "pythonPrediction": "cancel"
+  },
+  {
+    "text": "Retire meu lote da entrega",
+    "scores": [
+      4.413705471404741,
+      -0.7729273294520869,
+      -0.8745850198312938,
+      -0.7011644925019754,
+      -1.6283497816932266,
+      -0.43667878296640983
+    ],
+    "pythonPrediction": "cancel"
+  },
+  {
+    "text": "Pare o pedido nao tenho mais produto disponivel",
+    "scores": [
+      4.585024851923722,
+      -1.3259070623156919,
+      -1.4889517416588307,
+      -0.5118651223397864,
+      -0.6026275765200025,
+      -0.6556733994972455
+    ],
+    "pythonPrediction": "cancel"
+  },
+  {
+    "text": "Quero retirar minha oferta",
+    "scores": [
+      4.217145915343339,
+      -0.9040816717155582,
+      -0.9561193948022365,
+      -1.1098388629994407,
+      -0.5767509833260319,
+      -0.6703550288681435
+    ],
+    "pythonPrediction": "cancel"
+  },
+  {
+    "text": "How do I use this service",
+    "scores": [
+      -0.8234436619422341,
+      -0.7696332221807285,
+      -0.956954132590191,
+      4.460670617487649,
+      -1.4058960331187462,
+      -0.5047435210314142
+    ],
+    "pythonPrediction": "help"
+  },
+  {
+    "text": "I need help with the next step",
+    "scores": [
+      -0.604580640359869,
+      -0.8904710209884985,
+      -0.9262732130584582,
+      4.378636733532785,
+      -1.7596654889223045,
+      -0.1976463607740151
+    ],
+    "pythonPrediction": "help"
+  },
+  {
+    "text": "Can I speak to a person",
+    "scores": [
+      -0.8117841519742215,
+      -1.2098840980747088,
+      -0.8123457817702829,
+      4.3291934392386064,
+      -1.002009339356131,
+      -0.4931701400079327
+    ],
+    "pythonPrediction": "help"
+  },
+  {
+    "text": "Please explain what I should send",
+    "scores": [
+      -0.9052718053898716,
+      -1.313854997787003,
+      -0.6298470319590806,
+      4.482037356725796,
+      -1.2744157409344679,
+      -0.358647816162047
+    ],
+    "pythonPrediction": "help"
+  },
+  {
+    "text": "I do not understand your question",
+    "scores": [
+      -0.3384795482597256,
+      -1.159614234040801,
+      -0.9532546144320905,
+      4.537640898159607,
+      -1.4240023826298183,
+      -0.6622902475525188
+    ],
+    "pythonPrediction": "help"
+  },
+  {
+    "text": "Show me the available commands",
+    "scores": [
+      -0.6871670796862746,
+      -0.8825752337419732,
+      -0.9447091322501465,
+      4.366707262661675,
+      -1.2014084343847697,
+      -0.6508474416792887
+    ],
+    "pythonPrediction": "help"
+  },
+  {
+    "text": "Como uso este servico",
+    "scores": [
+      -0.9362450563675666,
+      -1.104663749966149,
+      -0.865807309687817,
+      4.370260906309722,
+      -1.1966503446039622,
+      -0.26689438235429397
+    ],
+    "pythonPrediction": "help"
+  },
+  {
+    "text": "Preciso de ajuda com o proximo passo",
+    "scores": [
+      -1.111112736896699,
+      -0.9159177969399213,
+      -1.1349024036309958,
+      4.579404961687414,
+      -1.2781017854742585,
+      -0.13937025975850692
+    ],
+    "pythonPrediction": "help"
+  },
+  {
+    "text": "Posso falar com uma pessoa",
+    "scores": [
+      -0.9109962215042615,
+      -1.2848041685487448,
+      -1.2065047402276934,
+      4.464070289299725,
+      -0.8772677932449496,
+      -0.18449728137296906
+    ],
+    "pythonPrediction": "help"
+  },
+  {
+    "text": "Explique o que devo enviar",
+    "scores": [
+      -0.8240996599524224,
+      -1.0904779844408228,
+      -0.8536116079769372,
+      4.327988875002502,
+      -1.4280398671564525,
+      -0.13175976735023132
+    ],
+    "pythonPrediction": "help"
+  },
+  {
+    "text": "Nao entendi sua pergunta",
+    "scores": [
+      -0.36181768312593343,
+      -1.2034719931383921,
+      -0.9702148222706556,
+      4.4148492793523655,
+      -1.373957688645727,
+      -0.5053869811114418
+    ],
+    "pythonPrediction": "help"
+  },
+  {
+    "text": "Mostre os comandos disponiveis",
+    "scores": [
+      -0.8163104674640054,
+      -0.6436359528874351,
+      -1.1457274541600884,
+      4.363790525958775,
+      -0.8120062015534258,
+      -0.9461104496609913
+    ],
+    "pythonPrediction": "help"
+  },
+  {
+    "text": "Who won the football match",
+    "scores": [
+      -0.7478149269335845,
+      -0.8981182023839398,
+      -0.7080079957952067,
+      -0.6960647312021865,
+      -1.3477560842458969,
+      4.397762000165458
+    ],
+    "pythonPrediction": "other"
+  },
+  {
+    "text": "My roof needs repair",
+    "scores": [
+      -0.7474088403723145,
+      -1.2635657184713824,
+      -0.8811652976430296,
+      -0.4495476531825079,
+      -0.9343603846666283,
+      4.276047878969039
+    ],
+    "pythonPrediction": "other"
+  },
+  {
+    "text": "What medicine should I take",
+    "scores": [
+      -0.9646828607982898,
+      -1.116053069285427,
+      -0.6612368635244011,
+      -0.20248304060949518,
+      -1.5205340769191151,
+      4.46498993570036
+    ],
+    "pythonPrediction": "other"
+  },
+  {
+    "text": "Tell me a joke",
+    "scores": [
+      -0.8111929321057105,
+      -0.9137282509313269,
+      -0.8067052810794949,
+      -0.3915693472168459,
+      -1.1246402856943076,
+      4.047836067458193
+    ],
+    "pythonPrediction": "other"
+  },
+  {
+    "text": "The school bus is late",
+    "scores": [
+      -0.8702644055919664,
+      -0.9871007583991929,
+      -0.5820166570476532,
+      -0.6430089111468805,
+      -1.2191697728869384,
+      4.3015605798694745
+    ],
+    "pythonPrediction": "other"
+  },
+  {
+    "text": "Where is the nearest hotel",
+    "scores": [
+      -0.660628706715157,
+      -0.6337718635754033,
+      -0.9426905220018044,
+      -0.5802806477091326,
+      -1.6297429387506908,
+      4.447114718566227
+    ],
+    "pythonPrediction": "other"
+  },
+  {
+    "text": "Quem ganhou o jogo de futebol",
+    "scores": [
+      -0.7826357719349617,
+      -0.9785370117009922,
+      -0.8565693981356263,
+      -0.6035193867079033,
+      -1.3053405409029564,
+      4.526602194249208
+    ],
+    "pythonPrediction": "other"
+  },
+  {
+    "text": "Meu telhado precisa de reparo",
+    "scores": [
+      -0.6383049942414218,
+      -1.0509972387648492,
+      -0.8694156193516492,
+      -0.6283372962876274,
+      -1.31574362884768,
+      4.50279870450082
+    ],
+    "pythonPrediction": "other"
+  },
+  {
+    "text": "Qual remedio devo tomar",
+    "scores": [
+      -0.6491292950558418,
+      -1.0249994097234054,
+      -1.0745512726127446,
+      -0.6651744321948899,
+      -0.7704716102036527,
+      4.184325978695925
+    ],
+    "pythonPrediction": "other"
+  },
+  {
+    "text": "Conte uma piada",
+    "scores": [
+      -0.8805886158115173,
+      -1.1669465105937167,
+      -0.6999208023182392,
+      -0.1821825384191288,
+      -1.062486712546355,
+      3.992125238362278
+    ],
+    "pythonPrediction": "other"
+  },
+  {
+    "text": "O onibus escolar esta atrasado",
+    "scores": [
+      -0.8148219412286708,
+      -1.3021310024618475,
+      -0.8335583987056553,
+      -0.5035395679093017,
+      -1.0562274010901218,
+      4.510278348415668
+    ],
+    "pythonPrediction": "other"
+  },
+  {
+    "text": "Onde fica o hotel mais proximo",
+    "scores": [
+      -0.6735969011533016,
+      -1.2241017620967074,
+      -1.141799509466374,
+      -0.5149288523039831,
+      -1.0463415572469001,
+      4.600768505200322
+    ],
+    "pythonPrediction": "other"
+  },
+  {
+    "text": "Got tomatoes ready, can you help find a buyer?",
+    "scores": [
+      0.24308990526702834,
+      -1.4917529239741458,
+      -1.7815945352769733,
+      -0.5259046411170675,
+      4.179339965148562,
+      -0.6231778479874628
+    ],
+    "pythonPrediction": "offer"
+  },
+  {
+    "text": "Minha safra de tomate esta pronta. Quero vender.",
+    "scores": [
+      0.34104784062589166,
+      -1.2967116935018754,
+      -1.1626812913011337,
+      -1.2990061053220234,
+      4.162584714400315,
+      -0.7452335557196783
+    ],
+    "pythonPrediction": "offer"
+  },
+  {
+    "text": "Compare what is left after packing and freight",
+    "scores": [
+      -0.2238903269498551,
+      1.5045718240595118,
+      -1.1493379482410193,
+      0.17584338728049265,
+      -0.7203790733639962,
+      0.4131921288329614
+    ],
+    "pythonPrediction": "compare"
+  },
+  {
+    "text": "Quanto sobra se eu dividir o transporte?",
+    "scores": [
+      -0.572475305325439,
+      1.3562696815511839,
+      -0.23650100448795552,
+      -0.07182894144496454,
+      -0.8196482482182673,
+      0.34418385529475937
+    ],
+    "pythonPrediction": "compare"
+  },
+  {
+    "text": "Make that 80 kilos, not 120",
+    "scores": [
+      -0.07018186574344874,
+      -0.7287424195514365,
+      0.7603438814992741,
+      0.48047814619205387,
+      -0.8694443497390366,
+      0.4275465990188969
+    ],
+    "pythonPrediction": "correct"
+  },
+  {
+    "text": "A coleta mudou para sexta. Corrija a data.",
+    "scores": [
+      -1.18005762543538,
+      -1.1393115681552632,
+      2.924643368053502,
+      -0.40475998525796963,
+      0.27239453779273937,
+      -0.4729087233305471
+    ],
+    "pythonPrediction": "correct"
+  },
+  {
+    "text": "All my tomatoes have been sold, remove the offer",
+    "scores": [
+      2.2983276287232584,
+      -0.7083833388009413,
+      -0.5302601636496648,
+      -2.069860415920248,
+      1.5880726378361816,
+      -0.5778964007501053
+    ],
+    "pythonPrediction": "cancel"
+  },
+  {
+    "text": "Nao tenho mais tomates. Cancele a oferta.",
+    "scores": [
+      3.5732248235399893,
+      -0.3529486980245753,
+      -1.3853076327934206,
+      -1.5859190766728535,
+      0.1080294247201764,
+      -0.3570788387902575
+    ],
+    "pythonPrediction": "cancel"
+  },
+  {
+    "text": "Can someone explain how to start?",
+    "scores": [
+      -0.3682989306143427,
+      -0.8265656580173715,
+      -0.3725519906140208,
+      1.881457748261182,
+      -0.4300918124665386,
+      0.1160505940909935
+    ],
+    "pythonPrediction": "help"
+  },
+  {
+    "text": "Preciso falar com alguem para entender isso.",
+    "scores": [
+      -1.254457811857661,
+      -0.914840436466348,
+      -0.83898780908131,
+      3.082989213426499,
+      0.44091000598362917,
+      -0.5156131488498794
+    ],
+    "pythonPrediction": "help"
+  },
+  {
+    "text": "Give me the football score",
+    "scores": [
+      -0.16282633834992888,
+      -0.42558685717669564,
+      -0.16800662578244652,
+      0.018817198541382862,
+      -1.3853808627047455,
+      2.122983504622753
+    ],
+    "pythonPrediction": "other"
+  },
+  {
+    "text": "Preciso consertar o telhado da escola",
+    "scores": [
+      -0.13391552880415114,
+      -0.6321183209496855,
+      -0.6056736204183936,
+      0.6936250439816104,
+      -1.33660868853823,
+      2.014691109839405
+    ],
+    "pythonPrediction": "other"
+  },
+  {
+    "text": "  Tenho\tTOMÁTES\npara vender 😃 ",
+    "scores": [
+      0.07745122359125524,
+      -1.3361088864461823,
+      -0.5673754489536905,
+      -1.622049249804677,
+      4.002015334362828,
+      -0.5539330341149615
+    ],
+    "pythonPrediction": "offer"
+  },
+  {
+    "text": "ÁãçÊ ê ß İ œ",
+    "scores": [
+      -0.05794903592680932,
+      -0.730631448603545,
+      0.00041433243385557636,
+      0.4898924668290602,
+      -0.7338182467085189,
+      1.0320919343042625
+    ],
+    "pythonPrediction": "other"
+  },
+  {
+    "text": "",
+    "scores": [
+      -0.01758434114520789,
+      -0.7288943331645175,
+      -0.027765228354120212,
+      0.4720620893844353,
+      -0.7112344705548949,
+      1.0134162838343037
+    ],
+    "pythonPrediction": "other"
+  },
+  {
+    "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "scores": [
+      -0.01758434114520789,
+      -0.7288943331645175,
+      -0.027765228354120212,
+      0.4720620893844353,
+      -0.7112344705548949,
+      1.0134162838343037
+    ],
+    "pythonPrediction": "other"
+  }
+]

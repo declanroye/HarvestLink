@@ -1,0 +1,96 @@
+{
+  "environment": {
+    "python": "3.12.14",
+    "numpy": "2.3.5",
+    "scikit_learn": "1.8.0"
+  },
+  "training_examples": 72,
+  "features": 4000,
+  "model_files_bytes": {
+    "metadata.json": 917,
+    "vocabulary.json": 28680,
+    "weights.f32": 96000
+  },
+  "model_pack_bytes": 125597,
+  "synthetic_checks_correct": 12,
+  "synthetic_checks_total": 12,
+  "synthetic_checks": [
+    {
+      "text": "Got tomatoes ready, can you help find a buyer?",
+      "expected": "offer",
+      "prediction": "offer"
+    },
+    {
+      "text": "Minha safra de tomate esta pronta. Quero vender.",
+      "expected": "offer",
+      "prediction": "offer"
+    },
+    {
+      "text": "Compare what is left after packing and freight",
+      "expected": "compare",
+      "prediction": "compare"
+    },
+    {
+      "text": "Quanto sobra se eu dividir o transporte?",
+      "expected": "compare",
+      "prediction": "compare"
+    },
+    {
+      "text": "Make that 80 kilos, not 120",
+      "expected": "correct",
+      "prediction": "correct"
+    },
+    {
+      "text": "A coleta mudou para sexta. Corrija a data.",
+      "expected": "correct",
+      "prediction": "correct"
+    },
+    {
+      "text": "All my tomatoes have been sold, remove the offer",
+      "expected": "cancel",
+      "prediction": "cancel"
+    },
+    {
+      "text": "Nao tenho mais tomates. Cancele a oferta.",
+      "expected": "cancel",
+      "prediction": "cancel"
+    },
+    {
+      "text": "Can someone explain how to start?",
+      "expected": "help",
+      "prediction": "help"
+    },
+    {
+      "text": "Preciso falar com alguem para entender isso.",
+      "expected": "help",
+      "prediction": "help"
+    },
+    {
+      "text": "Give me the football score",
+      "expected": "other",
+      "prediction": "other"
+    },
+    {
+      "text": "Preciso consertar o telhado da escola",
+      "expected": "other",
+      "prediction": "other"
+    }
+  ],
+  "limitations": [
+    "Tiny synthetic dataset; checks are authored by the same assistant.",
+    "Not independently evaluated on farmer language or regional devices.",
+    "Intent classification only; no entity extraction or agricultural advice.",
+    "No PWA installation, WhatsApp adapter, SMS adapter or sale engine is provided.",
+    "No claim of smartphone speed, memory use or battery performance.",
+    "Clarification scores are uncalibrated; human confirmation is required."
+  ],
+  "export_parity": {
+    "environment": "Node v24.19.0",
+    "cases": 88,
+    "matched_predictions": 88,
+    "max_absolute_score_error": 2.220446049250313e-16,
+    "outcome": "passed"
+  },
+  "javascript_runtime_bytes": 2587,
+  "model_plus_runtime_bytes": 128184
+}

@@ -1,3 +1,5 @@
+> Latest shared-account and Small AI integration: [SHARED-SETUP.md](SHARED-SETUP.md) and [PHONE-TEST.md](PHONE-TEST.md). The live handler described below is the last verified deployment and still needs this update.
+
 # HarvestLink setup — this repository
 
 HarvestLink is a messaging-first harvest assistant. Bonfim tomatoes → Lethem is an optional, fictional trade example, not the product boundary. General intake supports tomato, cassava, maize, rice, beans, banana and papaya in Portuguese; unfamiliar crops need a coordinator and are not silently mapped to tomatoes.
@@ -21,7 +23,7 @@ Open http://127.0.0.1:4173. For phone use, the static `public` directory needs a
 
 ## Account onboarding
 
-Send INICIAR (or AJUDA), then ACEITO, your name, production town/community, PT or EN, and CONFIRMO. The channel profile is saved only after confirmation. Use MENU, CONTA, LOTES, STATUS, ALTERAR NOME, ALTERAR LOCAL, RETIRAR LOTE and SUPORTE for account management. Full journey and implementation boundaries: [PRODUCT.md](PRODUCT.md). Local/WhatsApp profiles remain separate until verified linking is implemented.
+Send INICIAR (or AJUDA), then ACEITO, your name, production town/community, PT or EN, and CONFIRMO. The channel profile is saved only after confirmation. Use MENU, CONTA, LOTES, STATUS, ALTERAR NOME, ALTERAR LOCAL, RETIRAR LOTE and SUPORTE for account management. Full journey and implementation boundaries: [PRODUCT.md](PRODUCT.md). Verified linking and shared records are implemented in the latest local build; follow [SHARED-SETUP.md](SHARED-SETUP.md) to deploy both handlers to one store.
 
 ## Farmer journey
 
@@ -55,11 +57,11 @@ Copy `.env.example` to `.env` locally. Configure your account credentials, sende
 
 Open the HTTPS phone companion online, wait for the offline-cache message, reload, then install (Android Chrome: Install app; iPhone Safari: Share → Add to Home Screen). Open the installed app online once because its storage may differ from the browser. Create and confirm a lot. Turn on airplane mode and explicitly disable Wi-Fi/mobile data. Close and reopen from the Home Screen. Verify the saved record and submit another Portuguese harvest. Export a backup: clearing website data removes localStorage records.
 
-In Operations & evidence, enter the physical device model/OS and run 100 inferences. The model file is 8,621 bytes, a learned naive Bayes intent classifier with deterministic extraction/templates; it is not a generative LLM and model bytes do not measure RAM. Record p50/p95/max and physical offline steps on video. Device/network attestations are self-reported. Desktop tests and iPhone measurements do not prove budget Android performance.
+In Operations & evidence, enter the physical device model/OS and run 100 inferences. The model pack is 125,597 bytes with a 2,587-byte runtime, a learned character-ngram logistic regression intent classifier with deterministic extraction/templates; it is not a generative LLM and model bytes do not measure RAM. Record p50/p95/max and physical offline steps on video. Device/network attestations are self-reported. Desktop tests and iPhone measurements do not prove budget Android performance.
 
 ## Truthful evidence status
 
-The supplied Downloads/SETUP.md describes a different build (IndexedDB, six intents and a 125,597-byte model). This repository uses localStorage and the 8,621-byte model. Do not combine those claims. The existing desktop video predates the broader crop/context redesign. Real provider round trip, physical Android benchmark and bilingual template reviewer sign-off must be recorded separately before submission.
+The supplied Downloads/SETUP.md describes a different build (IndexedDB, six intents and a 125,597-byte model). The latest build retains localStorage and now integrates the supplied six-intent, 125,597-byte model pack. Model bytes and offline storage technology are distinct claims. See [PHONE-TEST.md](PHONE-TEST.md). The existing desktop video predates the broader crop/context redesign. Real provider round trip, physical Android benchmark and bilingual template reviewer sign-off must be recorded separately before submission.
 
 All trade prices, FX, costs and orders are demonstration assumptions. Cross-border shipment remains **awaiting buyer confirmation and trade-requirement checks**. No dispatch is authorized.
 

@@ -1,6 +1,10 @@
 export const normal = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 export const tokens = s => normal(s).match(/[a-z]+/g) || [];
 export function classify(text, model) {
+  if(typeof model.predict==='function'){
+    const result=model.predict(text),map={compare:'earnings',offer:'harvest',correct:'harvest',help:'help',cancel:'cancel',other:'unknown'};
+    return {...result,intent:result.needsClarification?'unknown':map[result.intent],rawIntent:result.intent,confidence:result.confidenceScore};
+  }
   const words = tokens(text).filter(w => model.vocabulary.includes(w));
   if (!words.length) return {intent:'unknown', confidence:0};
   const scores = model.labels.map(label => Math.log(model.priors[label]) + words.reduce((s,w) => s + model.weights[label][w], 0));
@@ -85,7 +89,7 @@ export function handleMessage(text,session,model,context={}) {
     return {reply:`Lote confirmado: ${lot.quantityKg} kg, classe ${lot.grade}, ${lot.harvestDate}. ID ${lot.id.slice(0,8)}. Nenhuma remessa foi autorizada.`,lot,session:{draft:{},source:session.source,lastLotId:lot.id},intent};
   }
   const choosing=/^escolho (local|proposta)$/.exec(t);
-  if((intent.intent==='earnings'||choosing)&&!Object.keys(session.draft||{}).length) {
+  if((intent.intent==='earnings'||t==='comparar ganhos'||choosing)&&!Object.keys(session.draft||{}).length) {
     const order=context.order===undefined?demoOrder:context.order;
     if(!order)return {reply:'Seu lote pode ser registrado sem um pedido. Ainda não há oferta de comprador para comparar; aguarde uma proposta do coordenador. Nenhuma venda foi confirmada.',session,intent};
     const pool=poolLots(context.lots||[],order),costs=context.costs||demoCosts,comparison=compare(pool,costs,order);

@@ -1,0 +1,362 @@
+[
+  {
+    "text": "I have tomatoes available to sell",
+    "intent": "offer",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "My harvest is ready for a buyer",
+    "intent": "offer",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "I can supply 120 kg of tomatoes",
+    "intent": "offer",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Please list my tomato crop for sale",
+    "intent": "offer",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "I have five bags ready tomorrow",
+    "intent": "offer",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Find a buyer for my produce",
+    "intent": "offer",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Tenho tomates disponiveis para vender",
+    "intent": "offer",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Minha colheita esta pronta para um comprador",
+    "intent": "offer",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Posso fornecer 120 quilos de tomate",
+    "intent": "offer",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Quero anunciar minha safra para venda",
+    "intent": "offer",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Tenho cinco sacos prontos para amanha",
+    "intent": "offer",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Procure um comprador para minha producao",
+    "intent": "offer",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Compare selling here with shared delivery",
+    "intent": "compare",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Which selling option leaves more money",
+    "intent": "compare",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Show the transport cost for each option",
+    "intent": "compare",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "What do I receive after all costs",
+    "intent": "compare",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Calculate the net income for both offers",
+    "intent": "compare",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Is the buyer offer better than farmgate",
+    "intent": "compare",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Compare a venda local com a entrega conjunta",
+    "intent": "compare",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Qual opcao de venda deixa mais dinheiro",
+    "intent": "compare",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Mostre o custo de transporte de cada opcao",
+    "intent": "compare",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Quanto recebo depois de todos os custos",
+    "intent": "compare",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Calcule a receita liquida das duas ofertas",
+    "intent": "compare",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "A oferta do comprador e melhor que a venda local",
+    "intent": "compare",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Change my quantity to 80 kg",
+    "intent": "correct",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "I gave the wrong collection date",
+    "intent": "correct",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Correct the grade to grade B",
+    "intent": "correct",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Update my harvest details please",
+    "intent": "correct",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Actually I have 150 kilos instead",
+    "intent": "correct",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "The location should be Parika",
+    "intent": "correct",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Mude minha quantidade para 80 quilos",
+    "intent": "correct",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Informei a data de coleta errada",
+    "intent": "correct",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Corrija a qualidade para categoria B",
+    "intent": "correct",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Atualize os detalhes da minha colheita",
+    "intent": "correct",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Na verdade tenho 150 quilos",
+    "intent": "correct",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "O local correto e Boa Vista",
+    "intent": "correct",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Cancel my sale request",
+    "intent": "cancel",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Do not share my harvest with buyers",
+    "intent": "cancel",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "I already sold those tomatoes",
+    "intent": "cancel",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Remove my lot from the delivery",
+    "intent": "cancel",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Stop the request I have nothing available",
+    "intent": "cancel",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Withdraw my offer please",
+    "intent": "cancel",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Cancele meu pedido de venda",
+    "intent": "cancel",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Nao compartilhe minha colheita com compradores",
+    "intent": "cancel",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Ja vendi esses tomates",
+    "intent": "cancel",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Retire meu lote da entrega",
+    "intent": "cancel",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Pare o pedido nao tenho mais produto disponivel",
+    "intent": "cancel",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Quero retirar minha oferta",
+    "intent": "cancel",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "How do I use this service",
+    "intent": "help",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "I need help with the next step",
+    "intent": "help",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Can I speak to a person",
+    "intent": "help",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Please explain what I should send",
+    "intent": "help",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "I do not understand your question",
+    "intent": "help",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Show me the available commands",
+    "intent": "help",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Como uso este servico",
+    "intent": "help",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Preciso de ajuda com o proximo passo",
+    "intent": "help",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Posso falar com uma pessoa",
+    "intent": "help",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Explique o que devo enviar",
+    "intent": "help",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Nao entendi sua pergunta",
+    "intent": "help",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Mostre os comandos disponiveis",
+    "intent": "help",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Who won the football match",
+    "intent": "other",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "My roof needs repair",
+    "intent": "other",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "What medicine should I take",
+    "intent": "other",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Tell me a joke",
+    "intent": "other",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "The school bus is late",
+    "intent": "other",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Where is the nearest hotel",
+    "intent": "other",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Quem ganhou o jogo de futebol",
+    "intent": "other",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Meu telhado precisa de reparo",
+    "intent": "other",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Qual remedio devo tomar",
+    "intent": "other",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Conte uma piada",
+    "intent": "other",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "O onibus escolar esta atrasado",
+    "intent": "other",
+    "provenance": "AI-authored synthetic starter"
+  },
+  {
+    "text": "Onde fica o hotel mais proximo",
+    "intent": "other",
+    "provenance": "AI-authored synthetic starter"
+  }
+]

@@ -2,7 +2,7 @@
 
 HarvestLink's primary interface is a conversation. The phone companion keeps useful work possible without a signal. The web control panel helps farmers inspect their records and helps coordinators review availability, costs, buyers and unresolved issues. Bonfim tomatoes → Lethem is one example of this broader workflow.
 
-## Three surfaces, one intended account
+## Three surfaces, one verified account
 
 | Surface | Everyday responsibility | Connectivity |
 | --- | --- | --- |
@@ -10,7 +10,7 @@ HarvestLink's primary interface is a conversation. The phone companion keeps use
 | Installed phone companion | Same structured conversation locally, saved profile/lots, recent proposal/cost snapshots, draft decisions, backup export | Runs offline after installation/cache |
 | Web control panel | Profile and record overview, receipts, buyer summaries, compatible pools, cost assumptions, consent/handover review, support queue | Local records offline; shared records require backend connection |
 
-The intended production account uses one verified farmer ID across these surfaces. The current prototype has persistent channel profiles and browser-local profiles, but **no verified cross-channel linking or shared production identity**. Names are not identifiers. Public GitHub Pages does not run the operator API. Twilio Sync and the Node server are separate stores today; their records do not automatically converge.
+The current build uses one verified farmer ID across WhatsApp and the companion when both use the same backend. Expiring pairing codes, confirmation from a provider-verified sender, scoped device credentials, shared records, revision checks and explicit conflict review are implemented and tested locally. Live deployment of this update is pending. Names are never identifiers. GitHub Pages is only the frontend. Choose either paired Twilio Functions using the same Sync document, or one Node server for both channels; these deployment alternatives do not replicate each other. See [SHARED-SETUP.md](SHARED-SETUP.md).
 
 ## First conversation
 
@@ -69,7 +69,7 @@ A decision records exactly the cost/order snapshot the farmer reviewed. A change
 
 A farmer opens the previously cached installed companion. The small model and dialogue run locally; drafts, profile, lots and choice snapshots persist on that device. WhatsApp itself is not the offline AI host, and an unsent SMS is not a recorded harvest. The farmer can back up records without a network. Cached prices/orders must show their timestamps/expiry. A saved choice is an intention awaiting review; it must not claim a fresh buyer acceptance.
 
-The current control panel shows “Only on this phone” and the last explicit Node-server upload receipt. A receipt means the server acknowledged that upload; it does not prove the buyer saw it or accepted it. The existing upload is a prototype operator workflow and is not production farmer authentication. Offline/local profiles are not linked to WhatsApp, and changes to already uploaded records are not reconciled by the current append-only sync.
+The control panel shows local records and service receipts separately. Farmer-scoped sync requires verified phone linking and explicit submission. The service acknowledges receipt; it does not prove buyer acceptance. An account revision mismatch rejects the whole batch before modification. The review flow exports a backup before explicitly replacing local changes with the shared version. Coordinator tools still use a separate operator key.
 
 For the production implementation, use an operation outbox rather than copying arrays:
 
@@ -79,9 +79,9 @@ For the production implementation, use an operation outbox rather than copying a
 - If the online lot was reserved, changed or withdrawn while the phone was offline, show both versions and ask the farmer/coordinator to resolve. Preserve originals; do not silently overwrite or double-count harvests.
 - An expired proposal remains a historical snapshot. A refreshed proposal requires renewed confirmation before a trade can proceed.
 
-## Verified linking: next implementation milestone
+## Verified linking: implemented, live deployment pending
 
-The farmer requests “Link my phone” in the installed companion. An authenticated backend issues a short-lived, single-use pairing challenge tied to that device's session. The farmer sends that challenge from their WhatsApp/SMS account. A signature-validated provider webhook proves the sender. The phone polls the challenge result using its own scoped session, then asks the farmer to review the linked number. Names/crops are never used as evidence of ownership. Challenges expire, are rate limited, cannot be used twice and cannot replace an existing link without re-verification. Lost phones, changed numbers, shared devices and account recovery require documented handling.
+The farmer requests “Link my phone” in the installed companion. The backend issues a short-lived pairing challenge and a high-entropy private claim bound to that browser. The WhatsApp sender confirms the device and account before the browser can claim a device credential. The farmer sends that challenge from their WhatsApp/SMS account. A signature-validated provider webhook proves the sender. The phone polls the challenge result using its own scoped session, then asks the farmer to review the linked number. Names/crops are never used as evidence of ownership. Challenges expire, are rate limited, cannot be used twice and cannot replace an existing link without re-verification. Lost phones, changed numbers, shared devices and account recovery require documented handling.
 
 After linking, the shared backend owns Accounts, Lots, Orders, Allocations, Decisions, ConsentEvents, SupportRequests, OutboxReceipts and ProviderEvents. Both the webhook and the control-panel API use those services. The phone keeps a local replica. Twilio delivers messages; it does not independently define the trading state. Proactive WhatsApp notifications require actual user consent and provider-approved delivery outside applicable conversation windows; the prototype does not implement those notifications.
 
@@ -93,4 +93,4 @@ The farmer sees their own account, lots, received proposals, exact cost snapshot
 
 Test onboarding completion without an instructor; retained initial harvest; correction before confirmation; farmer understanding of kg/class/local price; retrieval of multiple lots; distinction between offline save and a submitted proposal; expired-cost decisions; actual airplane-mode restart; provider reply times; and recovery from interrupted sync. Ask farmers to explain how much they expect to receive and whether a sale is confirmed. Record failures, not just a successful scripted demo.
 
-Prioritise the next release: verified account linking and one shared store; authenticated farmer/coordinator roles; revisioned sync and conflict handling; real buyer/order entry and expiry; human support assignment; notification consent/delivery tracking. Then expand natural-language coverage, grades, currencies and voice-note accessibility using farmer-tested examples.
+Prioritise the next release: deploy and prove the shared-account build; measure a real budget Android phone; expand role authorization and recovery; add real buyer/order entry and expiry, human support assignment, notification consent/delivery tracking and a production transactional database. Then expand natural-language coverage, grades, currencies and voice-note accessibility using farmer-tested examples.

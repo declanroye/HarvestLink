@@ -1,0 +1,52 @@
+{
+  "measuredAt": "2026-10-04T01:36:18.069Z",
+  "proofType": "desktop Node measurement; NOT Android evidence",
+  "environment": {
+    "node": "v24.14.1",
+    "platform": "win32",
+    "architecture": "x64"
+  },
+  "assets": {
+    "model/metadata.json": {
+      "bytes": 917,
+      "sha256": "c6d9f5028517de4d9f7561b0349156649de0cac5562204631f3b2aca2c4dfca4"
+    },
+    "model/vocabulary.json": {
+      "bytes": 28680,
+      "sha256": "318c0eec974e56141888c3d14d923222ed7a6f69766340b6d4b50392b2205f50"
+    },
+    "model/weights.f32": {
+      "bytes": 96000,
+      "sha256": "da955911621494ea3f324b9511b0c5e2113747b07008e67ef0f6a7874eb978c5"
+    },
+    "predict.mjs": {
+      "bytes": 2587,
+      "sha256": "b55c9b2543e5107e7900e589e51a16de199db75ce09b80ba52aafc2907ba3af9"
+    }
+  },
+  "modelPackBytes": 125597,
+  "runtimeBytes": 2587,
+  "totalBytes": 128184,
+  "coldLoadMs": 12.250600000000006,
+  "classifier": {
+    "samples": 500,
+    "warmup": 50,
+    "p50Ms": 0.026299999999991996,
+    "p95Ms": 0.05510000000001014,
+    "maxMs": 0.8718999999999966
+  },
+  "dialogue": {
+    "samples": 500,
+    "warmup": 50,
+    "p50Ms": 0.06520000000000437,
+    "p95Ms": 0.11600000000001387,
+    "maxMs": 0.7264999999999873
+  },
+  "limitations": [
+    "Desktop CPU only; browser rendering excluded",
+    "No physical phone, airplane-mode, battery or working RAM measurement",
+    "72 synthetic training messages; no independent farmer accuracy benchmark",
+    "Confidence and clarification thresholds are uncalibrated",
+    "Model is an intent classifier, not a generative LLM"
+  ]
+}

@@ -16,22 +16,24 @@ npm start
 
 Open http://127.0.0.1:4173. Node 22+ required. See [prototype/SETUP.md](prototype/SETUP.md) for the reconciled phone, WhatsApp, SMS and offline setup.
 
-[Product journey, capabilities and next architecture milestone](prototype/PRODUCT.md)
+[Product journey](prototype/PRODUCT.md) · [Shared-account deployment](prototype/SHARED-SETUP.md) · [Small AI & physical phone evidence](prototype/PHONE-TEST.md)
 
 ## Included
 
-- Compact learned Portuguese intent model (8,621 bytes), structured extraction and missing-field dialogue.
+- Compact learned EN/PT character-ngram intent model (125,597-byte pack + 2,587-byte runtime), structured extraction and missing-field dialogue.
 - Explicit farmer confirmation for lots and sales choices, through the shared messaging engine.
 - Compatible pooling, dated BRL/GYD cost assumptions and immutable choice snapshots.
 - English/Portuguese interface switch, offline records and exporter handover.
 - Official Twilio SDK adapter with signature validation and duplicate-message handling.
-- Generated Protected Twilio Function with persistent Sync drafts/lots/choices and storage failure handling.
+- Paired Twilio Functions with one shared Sync store, verified phone linking, per-farmer device access, revisioned uploads and conflict review.
 - Consent-based one-question onboarding, stable channel profiles, own-lot queries and confirmed account changes.
 - Messaging commands for status, proposals, lot withdrawal and support requests.
 - Control panel with account overview, local record status and explicit upload receipts.
 - Seven recognized crops, explicit harvest location and a general mode without fictional buyer offers.
 - HTTPS phone-hosting workflow and real-channel launch links.
 - Unit/integration tests and documented hackathon evidence limitations.
+
+The latest shared-account build is verified locally. Updating the live Twilio service and publishing these frontend changes still requires deployment; browser access timed out during this update.
 
 ## Important demonstration boundaries
 
