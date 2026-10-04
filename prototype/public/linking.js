@@ -21,7 +21,7 @@ export function installLinking({state,persist,render,toast,download}){
   if(!response.ok)throw Object.assign(Error(data.error||'Shared service unavailable'),{status:response.status});return data;
  }
  function setSnapshot(snapshot){
-  const id=snapshot.account.id;s.snapshot=structuredClone(snapshot);state.session={...state.session,account:{...snapshot.account}};
+  const id=snapshot.account.id;s.snapshot=structuredClone(snapshot);state.session={...state.session,account:{...snapshot.account},demoMarketplace:snapshot.marketplace?.enabled,marketOrderId:snapshot.marketplace?.order?.id};
   for(const field of ['lots','choices','supportRequests']){const old=own(field,id);state[field]=state[field].filter(x=>!old.some(y=>y.id===x.id));state[field].push(...structuredClone(snapshot[field]));}
   persist();render();draw();
  }
@@ -61,5 +61,5 @@ export function installLinking({state,persist,render,toast,download}){
  $('#farmer-pull').onclick=async()=>{try{const snapshot=await request('snapshot');if(dirty()||s.pendingOperation){s.review=snapshot;persist();draw();toast('Local changes exist. Review both versions; export before replacing local changes.');}else setSnapshot(snapshot);}catch(e){toast(e.message);}};
  $('#accept-shared').onclick=()=>{if(!$('#replace-local-confirm').checked)return toast('Confirm replacing this account’s local version after exporting a backup.');download('harvestlink-before-shared-review.json',state);const next=s.review;s.review=null;s.pendingOperation=null;state.session={draft:{},account:next.account,source:'offline-app'};setSnapshot(next);toast('Shared version restored. Previous local work is in your exported backup.');};
  $('#unlink-device').onclick=async()=>{try{await request('revoke');delete s.token;delete s.deviceId;delete s.snapshot;delete s.pairing;delete s.pendingOperation;persist();draw();toast('Server access revoked. Downloaded records remain on this phone.');}catch(e){toast(e.message);}};
- draw();return {refresh:draw,dirty};
+ draw();return {refresh:draw,dirty,marketplace:async()=>{const data=await request('snapshot');return data.marketplace;}};
 }

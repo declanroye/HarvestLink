@@ -1,7 +1,8 @@
-import {languagePrompt,selectLanguage,englishReply} from './conversation-language.js?release=v17';
-import {normal,handleMessage,extract,lotSummary,crops,profiles,classify,missing} from './core.js?release=v17';
+import {marketMessage} from './marketplace.js?release=v18';
+import {languagePrompt,selectLanguage,englishReply} from './conversation-language.js?release=v18';
+import {normal,handleMessage,extract,lotSummary,crops,profiles,classify,missing} from './core.js?release=v18';
 const accountMenu='COLHEITA · LOTES · PROPOSTAS · STATUS · CONTA · ALTERAR NOME <nome> · ALTERAR LOCAL <cidade> · RETIRAR LOTE <ID> · SUPORTE · EXPORTAR. CONFIRMO salva uma revisão; CANCELAR abandona um rascunho.';
-const accountMenuEn='HARVEST · LOTS · OFFERS · STATUS · ACCOUNT · CHANGE NAME <name> · CHANGE LOCATION <town> · WITHDRAW LOT <ID> · SUPPORT · EXPORT. CONFIRM saves a review; CANCEL abandons a draft. COMPARE EARNINGS · CHOOSE LOCAL · CHOOSE PROPOSAL · LANGUAGE EN/PT.';
+const accountMenuEn='HARVEST · LOTS · OFFERS · STATUS · ACCOUNT · CHANGE NAME <name> · CHANGE LOCATION <town> · WITHDRAW LOT <ID> · SUPPORT · EXPORT. CONFIRM saves a review; CANCEL abandons a draft. COMPARE EARNINGS · CHOOSE LOCAL · CHOOSE PROPOSAL · LANGUAGE EN/PT · DEMO MARKET · MARKET · LOGISTICS · TRADE · HANDOVER.';
 const accountQuestions={consent:'Olá! Vamos criar seu perfil. Salvamos seu nome e cidade para registrar colheitas. Um lote confirmado pode ser apresentado a compradores. Não envie documentos ou dados bancários. Digite ACEITO para continuar ou CANCELAR.',name:'Como você prefere ser chamado? Envie somente seu nome.',location:'Em qual cidade ou comunidade você produz? Envie somente o local, sem endereço residencial.',language:languagePrompt};
 const cleanValue=s=>s.trim().replace(/^(?:sou|meu nome [ée]|nome:|em|local:)\s+/iu,'');
 const accountSummary=a=>`${a.name} · ${a.location} · ${a.language==='en'?'English':'Português'} · ID ${a.id.slice(0,8)}`;
@@ -30,7 +31,7 @@ function handleFarmerMessageInner(text,session,model,context={}){
    const account={...d,id:crypto.randomUUID(),createdAt:new Date().toISOString(),consent:{purpose:'harvest coordination and buyer availability summaries',version:'v1',acceptedAt:new Date().toISOString()},origin:session.source||'offline-app'};
    const next={...session,account,onboarding:null,draft:{},lastLotId:null,pendingChoice:null};
    if(onboarding.initialHarvest){const r=handleMessage(onboarding.initialHarvest,{...next,draft:{farmer:account.name,location:account.location}},model,context);return {...r,reply:'Perfil salvo. '+r.reply,session:{...r.session,account}};}
-   return reply(account.language==='en'?`Profile saved: ${accountSummary(account)}. Send HARVEST to register a harvest, or ACCOUNT, LOTS, OFFERS, STATUS, SUPPORT. Use Connect WhatsApp / SMS to verify and link your phone account.`:`Perfil salvo: ${accountSummary(account)}. Envie COLHEITA para começar, ou MENU. Use Conectar WhatsApp / SMS para verificar e vincular sua conta.`,next);
+   return reply(account.language==='en'?`Profile saved: ${accountSummary(account)}. Send HARVEST to register a harvest, or ACCOUNT, LOTS, OFFERS, STATUS, SUPPORT. Your account is ready to use in this chat. The optional phone companion can be linked for offline access.`:`Perfil salvo: ${accountSummary(account)}. Envie COLHEITA para começar, ou MENU. Use Conectar WhatsApp / SMS para verificar e vincular sua conta.`,next);
   }
  }
  if(session.account&&/^(iniciar|comecar|start|cadastro)$/.test(t))return reply('Seu perfil já está criado. Envie CONTA para revisar ou ALTERAR NOME / ALTERAR LOCAL.');
@@ -70,6 +71,8 @@ function handleFarmerMessageInner(text,session,model,context={}){
 }
 
 export function handleFarmerMessage(text,session,model,context={}){
+ const marketResult=typeof text==='string'?marketMessage(text,session,context):null;
+ if(marketResult)return marketResult;
  if(typeof text==='string'&&/^(restart|restart onboarding|recomeçar|recomecar)$/i.test(text.trim())){
   const next={...session,onboarding:session.account?null:{step:'language',draft:{}},draft:{},pendingAccount:null,pendingWithdrawal:null,pendingChoice:null};
   return {reply:languagePrompt,session:next};
@@ -97,6 +100,6 @@ export function handleFarmerMessage(text,session,model,context={}){
  if(/O que você tem/.test(result.reply))result.reply='What do you have available, '+result.session.account.name+'? For example: I have 120 kg of cassava. Your saved area is '+result.session.account.location+'; you can correct it in your message.';
  const draft=result.session.draft||{};if(!missing(draft).length&&/Responda|Reply CONFIRM/.test(result.reply))result.reply=lotSummary(draft,'en')+' Local price: BRL '+draft.localPriceBrl+'/kg. Reply CONFIRM or correct the details.';
  }
- result.session.language=lang;return result;
+ result.session.language=lang;result.session.demoMarketplace=session.demoMarketplace;result.session.marketOrderId=session.marketOrderId;return result;
 }
 

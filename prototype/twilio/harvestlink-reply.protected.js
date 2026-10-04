@@ -272,8 +272,51 @@ function handleMessage(text,session,model,context={}) {
   return {reply:fields.length?questions[fields[0]]:lotSummary(draft)+' Responda CONFIRMO.',session:{...session,draft},intent};
 }
 
+const shipmentHold='awaiting buyer confirmation and trade-requirement checks';
+const marketOrders=[
+ {id:'DEMO-TOMATO',crop:'tomato',grade:'A',quantityKg:200,sourceLocation:'Bonfim',buyer:'Lethem Fresh Produce (fictional importer)',destination:'Lethem, Guyana',priceGydKg:250,earliest:'2026-10-04',latest:'2026-10-10'},
+ {id:'DEMO-CASSAVA',crop:'cassava',grade:'A',quantityKg:300,sourceLocation:'Boa Vista',buyer:'Rupununi Foods (fictional importer)',destination:'Lethem, Guyana',priceGydKg:180,earliest:'2026-10-04',latest:'2026-10-10'},
+ {id:'DEMO-BANANA',crop:'banana',grade:'A',quantityKg:150,sourceLocation:'Bonfim',buyer:'Border Fruit Market (fictional importer)',destination:'Lethem, Guyana',priceGydKg:220,earliest:'2026-10-04',latest:'2026-10-10'}
+].map(o=>({...o,label:'DEMONSTRATION ORDER — fictional, not a purchase commitment'}));
+function marketOrder(session){return session.demoMarketplace?marketOrders.find(o=>o.id===(session.marketOrderId||'DEMO-TOMATO')):null;}
+function marketView(session,lots=[],choices=[],handovers=[]){
+ const order=marketOrder(session),at=new Date().toISOString();
+ if(!order)return {enabled:false,observedAt:at,orders:marketOrders,status:shipmentHold};
+ // Synthetic availability exists only in the opted-in demonstration view, never in farmer records.
+ const example={id:'DEMO-SYNTHETIC-'+order.crop,farmer:'Fictional partner farmer',farmerId:'DEMO-PARTNER',crop:order.crop,location:order.sourceLocation,quantityKg:80,grade:'A',harvestDate:'2026-10-04',localPriceBrl:3.5,confirmedAt:'2026-10-04T00:00:00Z',status:'available',synthetic:true};
+ const compatible=lots.filter(l=>normal(l.location||'').startsWith(normal(order.sourceLocation))).map(l=>({...l,location:order.sourceLocation}));
+ const pool=poolLots([...compatible,example],order),costs={...demoCosts},comparison=compare(pool,costs,order);
+ const ownIds=new Set(lots.filter(l=>l.farmerId===session.account?.id).map(l=>l.id));
+ return {enabled:true,observedAt:at,source:'SIMULATED marketplace, buyers, prices, transport and trade tasks',orders:marketOrders,order,costs,pooledKg:pool.quantityKg,shortfallKg:pool.shortfallKg,syntheticKg:pool.allocations.filter(a=>a.lot.synthetic).reduce((s,a)=>s+a.kg,0),ownAllocations:comparison.farmers.filter(f=>ownIds.has(f.id)),transport:{id:'DEMO-ROUTE-01',carrier:'Border Harvest Transport (fictional)',route:order.sourceLocation+' → '+order.destination,pickup:'2026-10-05 07:00–09:00 local, illustrative',capacityKg:500,transportBrlKg:costs.crossTransportBrlKg,booking:'not booked'},trade:{exporter:'HarvestLink Export Desk (fictional)',originCountry:'Brazil',destinationCountry:'Guyana',checks:{buyerConfirmation:'pending',exporterEligibility:'unchecked',importRequirements:'unchecked',plantHealthRequirements:'unchecked',quality:'unconfirmed',payment:'unconfirmed'},dispatchAuthorized:false},handovers:handovers.filter(h=>h.farmerId===session.account?.id),status:shipmentHold};
+}
+function marketMessage(text,session,context={}){
+ const t=normal(text).trim(),en=session.account?.language==='en',say=(a,b)=>en?a:b;
+ if(!/^(demo market|demo mercado|demo off|market|mercado|logistics|logistica|trade|comercio|handover|repasse|offer demo-[a-z]+)$/.test(t)&&!session.pendingHandover)return null;
+ if(!session.account)return null;
+ if(t==='demo market'||t==='demo mercado')return {session:{...session,demoMarketplace:true,marketOrderId:'DEMO-TOMATO'},reply:say('DEMO enabled: fictional buyers, prices and an 80 kg partner lot. Your real records remain separate. Send MARKET, LOGISTICS, TRADE or COMPARE EARNINGS.','DEMO ativada: compradores, preços e 80 kg fictícios. Envie MERCADO, LOGISTICA, COMERCIO ou COMPARAR GANHOS.')};
+ if(t==='demo off')return {session:{...session,demoMarketplace:false,pendingHandover:null},reply:say('Demo disabled. Confirmed records preserved.','Demo desativada. Registros preservados.')};
+ if(t.startsWith('offer ')){const order=marketOrders.find(o=>o.id===t.slice(6).toUpperCase());if(!order)return {session,reply:'Unknown demo order / Pedido desconhecido.'};return {session:{...session,demoMarketplace:true,marketOrderId:order.id},reply:say('Selected fictional order '+order.id+'. Send MARKET.','Pedido fictício selecionado '+order.id+'. Envie MERCADO.')};}
+ const view=marketView(session,context.lots,context.choices,context.handovers);
+ if(!view.enabled)return {session,reply:say('Send DEMO MARKET to explore the simulated marketplace. No live buyer feed is connected.','Envie DEMO MERCADO para explorar o mercado simulado. Sem compradores reais conectados.')};
+ if(session.pendingHandover){
+  if(/^(cancel|cancelar)$/.test(t))return {session:{...session,pendingHandover:null},reply:say('Handover draft cancelled.','Rascunho de repasse cancelado.')};
+  if(!/^(confirm|confirmo)$/.test(t))return {session,reply:say('Review the fictional handover. Reply CONFIRM or CANCEL.','Revise o repasse fictício. Envie CONFIRMO ou CANCELAR.')};
+  const handover={...session.pendingHandover,id:crypto.randomUUID(),createdAt:new Date().toISOString(),humanConfirmed:true};
+  return {session:{...session,pendingHandover:null},handover,reply:say('Demo handover saved. ','Repasse demo salvo. ')+shipmentHold+'. No dispatch authorized.'};
+ }
+ if(t==='market'||t==='mercado')return {session,reply:say('SIMULATED MARKET','MERCADO SIMULADO')+' · '+view.observedAt+'\n'+marketOrders.map(o=>`${o.id}: ${o.quantityKg} kg ${crops[o.crop][en?'en':'pt']} · ${o.sourceLocation} → ${o.destination} · GYD ${o.priceGydKg}/kg`).join('\n')+`\n${view.order.id}: ${view.pooledKg}/${view.order.quantityKg} kg (${view.syntheticKg} kg fictional partner); ${view.shortfallKg} kg missing. Send OFFER <ID> to select. No purchase confirmed.`};
+ if(t==='logistics'||t==='logistica')return {session,reply:say('SIMULATED LOGISTICS','LOGISTICA SIMULADA')+` · ${view.transport.carrier}\n${view.transport.route}; pickup ${view.transport.pickup}; capacity ${view.transport.capacityKg} kg; BRL ${view.transport.transportBrlKg}/kg. Not booked; no dispatch authorized.`};
+ if(t==='trade'||t==='comercio')return {session,reply:say('SIMULATED IMPORT / EXPORT','IMPORTACAO / EXPORTACAO SIMULADA')+` · Brazil → Guyana\n${view.trade.exporter}. Buyer: pending; exporter, import and plant-health requirements: unchecked; quality and payment: unconfirmed. ${shipmentHold}. Send HANDOVER after confirming your proposal choice.`};
+ const choice=(context.choices||[]).find(c=>c.orderId===view.order.id&&c.choice==='cross-border-proposal'&&(context.lots||[]).some(l=>l.id===c.lotId&&l.farmerId===session.account.id));
+ if(!choice)return {session,reply:say('First compare earnings, CHOOSE PROPOSAL and CONFIRM your choice. No handover created.','Primeiro compare ganhos, ESCOLHO PROPOSTA e CONFIRMO. Nenhum repasse criado.')};
+ const draft={farmerId:session.account.id,orderId:view.order.id,choiceId:choice.id,quantityKg:choice.quantityKg,exporter:view.trade.exporter,transport:view.transport,checks:view.trade.checks,status:shipmentHold,dispatchAuthorized:false,demo:true};
+ return {session:{...session,pendingHandover:draft},reply:say('Review DEMO handover: ','Revise o repasse DEMO: ')+`${draft.quantityKg} kg to ${draft.exporter}. Transport not booked; checks pending. Reply ${en?'CONFIRM or CANCEL':'CONFIRMO ou CANCELAR'}. ${shipmentHold}.`};
+}
+
+function marketPoolLots(lots,order){return [...lots.filter(l=>normal(l.location||'').startsWith(normal(order.sourceLocation))).map(l=>({...l,location:order.sourceLocation})),{id:'DEMO-SYNTHETIC-'+order.crop,farmer:'Fictional partner farmer',farmerId:'DEMO-PARTNER',crop:order.crop,location:order.sourceLocation,quantityKg:80,grade:'A',harvestDate:'2026-10-04',localPriceBrl:3.5,confirmedAt:'2026-10-04T00:00:00Z',synthetic:true}];}
+
 const accountMenu='COLHEITA · LOTES · PROPOSTAS · STATUS · CONTA · ALTERAR NOME <nome> · ALTERAR LOCAL <cidade> · RETIRAR LOTE <ID> · SUPORTE · EXPORTAR. CONFIRMO salva uma revisão; CANCELAR abandona um rascunho.';
-const accountMenuEn='HARVEST · LOTS · OFFERS · STATUS · ACCOUNT · CHANGE NAME <name> · CHANGE LOCATION <town> · WITHDRAW LOT <ID> · SUPPORT · EXPORT. CONFIRM saves a review; CANCEL abandons a draft. COMPARE EARNINGS · CHOOSE LOCAL · CHOOSE PROPOSAL · LANGUAGE EN/PT.';
+const accountMenuEn='HARVEST · LOTS · OFFERS · STATUS · ACCOUNT · CHANGE NAME <name> · CHANGE LOCATION <town> · WITHDRAW LOT <ID> · SUPPORT · EXPORT. CONFIRM saves a review; CANCEL abandons a draft. COMPARE EARNINGS · CHOOSE LOCAL · CHOOSE PROPOSAL · LANGUAGE EN/PT · DEMO MARKET · MARKET · LOGISTICS · TRADE · HANDOVER.';
 const accountQuestions={consent:'Olá! Vamos criar seu perfil. Salvamos seu nome e cidade para registrar colheitas. Um lote confirmado pode ser apresentado a compradores. Não envie documentos ou dados bancários. Digite ACEITO para continuar ou CANCELAR.',name:'Como você prefere ser chamado? Envie somente seu nome.',location:'Em qual cidade ou comunidade você produz? Envie somente o local, sem endereço residencial.',language:languagePrompt};
 const cleanValue=s=>s.trim().replace(/^(?:sou|meu nome [ée]|nome:|em|local:)\s+/iu,'');
 const accountSummary=a=>`${a.name} · ${a.location} · ${a.language==='en'?'English':'Português'} · ID ${a.id.slice(0,8)}`;
@@ -302,7 +345,7 @@ function handleFarmerMessageInner(text,session,model,context={}){
    const account={...d,id:crypto.randomUUID(),createdAt:new Date().toISOString(),consent:{purpose:'harvest coordination and buyer availability summaries',version:'v1',acceptedAt:new Date().toISOString()},origin:session.source||'offline-app'};
    const next={...session,account,onboarding:null,draft:{},lastLotId:null,pendingChoice:null};
    if(onboarding.initialHarvest){const r=handleMessage(onboarding.initialHarvest,{...next,draft:{farmer:account.name,location:account.location}},model,context);return {...r,reply:'Perfil salvo. '+r.reply,session:{...r.session,account}};}
-   return reply(account.language==='en'?`Profile saved: ${accountSummary(account)}. Send HARVEST to register a harvest, or ACCOUNT, LOTS, OFFERS, STATUS, SUPPORT. Use Connect WhatsApp / SMS to verify and link your phone account.`:`Perfil salvo: ${accountSummary(account)}. Envie COLHEITA para começar, ou MENU. Use Conectar WhatsApp / SMS para verificar e vincular sua conta.`,next);
+   return reply(account.language==='en'?`Profile saved: ${accountSummary(account)}. Send HARVEST to register a harvest, or ACCOUNT, LOTS, OFFERS, STATUS, SUPPORT. Your account is ready to use in this chat. The optional phone companion can be linked for offline access.`:`Perfil salvo: ${accountSummary(account)}. Envie COLHEITA para começar, ou MENU. Use Conectar WhatsApp / SMS para verificar e vincular sua conta.`,next);
   }
  }
  if(session.account&&/^(iniciar|comecar|start|cadastro)$/.test(t))return reply('Seu perfil já está criado. Envie CONTA para revisar ou ALTERAR NOME / ALTERAR LOCAL.');
@@ -342,6 +385,8 @@ function handleFarmerMessageInner(text,session,model,context={}){
 }
 
 function handleFarmerMessage(text,session,model,context={}){
+ const marketResult=typeof text==='string'?marketMessage(text,session,context):null;
+ if(marketResult)return marketResult;
  if(typeof text==='string'&&/^(restart|restart onboarding|recomeçar|recomecar)$/i.test(text.trim())){
   const next={...session,onboarding:session.account?null:{step:'language',draft:{}},draft:{},pendingAccount:null,pendingWithdrawal:null,pendingChoice:null};
   return {reply:languagePrompt,session:next};
@@ -369,7 +414,7 @@ function handleFarmerMessage(text,session,model,context={}){
  if(/O que você tem/.test(result.reply))result.reply='What do you have available, '+result.session.account.name+'? For example: I have 120 kg of cassava. Your saved area is '+result.session.account.location+'; you can correct it in your message.';
  const draft=result.session.draft||{};if(!missing(draft).length&&/Responda|Reply CONFIRM/.test(result.reply))result.reply=lotSummary(draft,'en')+' Local price: BRL '+draft.localPriceBrl+'/kg. Reply CONFIRM or correct the details.';
  }
- result.session.language=lang;return result;
+ result.session.language=lang;result.session.demoMarketplace=session.demoMarketplace;result.session.marketOrderId=session.marketOrderId;return result;
 }
 
 
@@ -410,7 +455,8 @@ function authenticateDevice(db,token){
 function snapshot(db,farmerId){
  const account=db.accounts[farmerId];if(!account)fail(404,'Account not found');
  const lots=db.lots.filter(l=>l.farmerId===farmerId),ids=new Set(lots.map(l=>l.id));
- return {account:{...account},revision:account.revision,lots:structuredClone(lots),choices:structuredClone(db.choices.filter(c=>ids.has(c.lotId))),supportRequests:structuredClone(db.supportRequests.filter(s=>s.farmerId===farmerId)),shipmentStatus:'awaiting buyer confirmation and trade-requirement checks'};
+ const session=Object.values(db.sessions).find(s=>s.account?.id===farmerId)||{account};
+ return {marketplace:marketView(session,db.lots,db.choices,db.handovers),account:{...account},revision:account.revision,lots:structuredClone(lots),choices:structuredClone(db.choices.filter(c=>ids.has(c.lotId))),supportRequests:structuredClone(db.supportRequests.filter(s=>s.farmerId===farmerId)),shipmentStatus:'awaiting buyer confirmation and trade-requirement checks'};
 }
 function bump(db,id){if(db.accounts[id])db.accounts[id].revision=(db.accounts[id].revision||0)+1;}
 function processInbound(db,event,model,profileName='general',now=Date.now()){
@@ -438,7 +484,8 @@ function processInbound(db,event,model,profileName='general',now=Date.now()){
   else if(t==='cancelar'||t==='cancel')result={session:{...session,pendingUnlink:null},reply:'Revogação cancelada.'};else result={session,reply:'Digite CONFIRMO ou CANCELAR.'};
  }else{
   const profile=profiles[profileName]||profiles.general;
-  result=handleFarmerMessage(event.Body,session,model,{lots:db.lots,choices:db.choices,costs:demoCosts,profile,order:profile.id==='bonfim'?demoOrder:null});
+  const order=marketOrder(session);const lots=order?marketPoolLots(db.lots,order):db.lots;
+ result=handleFarmerMessage(event.Body,session,model,{lots,choices:db.choices,handovers:db.handovers,costs:demoCosts,profile,order:order||(profile.id==='bonfim'?demoOrder:null)});
  }
  if(result.session.account?.language==='en'){result.reply=englishReply(result.reply).replace(/^Vincular o dispositivo/, 'Link device').replace('à conta','to account').replace('? Código','? Code').replace('Ele poderá consultar e enviar seus registros. Digite CONFIRM somente se você criou este código, ou CANCEL.','It can read and submit your records. Reply CONFIRM only if you created this code, or CANCEL.');}
  db.sessions[event.From]=result.session;
@@ -450,6 +497,7 @@ function processInbound(db,event,model,profileName='general',now=Date.now()){
  if(result.choice)db.choices.push(result.choice);
  if(result.lotUpdate)db.lots=db.lots.map(l=>l.id===result.lotUpdate.id?{...l,...result.lotUpdate}:l);
  if(result.supportRequest)db.supportRequests.push(result.supportRequest);
+ if(result.handover){db.handovers.push(result.handover);bump(db,result.session.account.id);}
  db.seen[event.MessageSid]=result.reply;return result.reply;
 }
 const validId=id=>typeof id==='string'&&/^[a-zA-Z0-9-]{4,80}$/.test(id);

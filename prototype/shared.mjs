@@ -1,3 +1,4 @@
+import {marketView,marketOrder,marketPoolLots} from './public/marketplace.js';
 import {englishReply} from './public/conversation-language.js';
 import {randomBytes,createHash,timingSafeEqual} from 'node:crypto';
 import {handleFarmerMessage} from './public/account.js';
@@ -39,7 +40,8 @@ export function authenticateDevice(db,token){
 export function snapshot(db,farmerId){
  const account=db.accounts[farmerId];if(!account)fail(404,'Account not found');
  const lots=db.lots.filter(l=>l.farmerId===farmerId),ids=new Set(lots.map(l=>l.id));
- return {account:{...account},revision:account.revision,lots:structuredClone(lots),choices:structuredClone(db.choices.filter(c=>ids.has(c.lotId))),supportRequests:structuredClone(db.supportRequests.filter(s=>s.farmerId===farmerId)),shipmentStatus:'awaiting buyer confirmation and trade-requirement checks'};
+ const session=Object.values(db.sessions).find(s=>s.account?.id===farmerId)||{account};
+ return {marketplace:marketView(session,db.lots,db.choices,db.handovers),account:{...account},revision:account.revision,lots:structuredClone(lots),choices:structuredClone(db.choices.filter(c=>ids.has(c.lotId))),supportRequests:structuredClone(db.supportRequests.filter(s=>s.farmerId===farmerId)),shipmentStatus:'awaiting buyer confirmation and trade-requirement checks'};
 }
 function bump(db,id){if(db.accounts[id])db.accounts[id].revision=(db.accounts[id].revision||0)+1;}
 export function processInbound(db,event,model,profileName='general',now=Date.now()){
@@ -67,7 +69,8 @@ export function processInbound(db,event,model,profileName='general',now=Date.now
   else if(t==='cancelar'||t==='cancel')result={session:{...session,pendingUnlink:null},reply:'Revogação cancelada.'};else result={session,reply:'Digite CONFIRMO ou CANCELAR.'};
  }else{
   const profile=profiles[profileName]||profiles.general;
-  result=handleFarmerMessage(event.Body,session,model,{lots:db.lots,choices:db.choices,costs:demoCosts,profile,order:profile.id==='bonfim'?demoOrder:null});
+  const order=marketOrder(session);const lots=order?marketPoolLots(db.lots,order):db.lots;
+ result=handleFarmerMessage(event.Body,session,model,{lots,choices:db.choices,handovers:db.handovers,costs:demoCosts,profile,order:order||(profile.id==='bonfim'?demoOrder:null)});
  }
  if(result.session.account?.language==='en'){result.reply=englishReply(result.reply).replace(/^Vincular o dispositivo/, 'Link device').replace('à conta','to account').replace('? Código','? Code').replace('Ele poderá consultar e enviar seus registros. Digite CONFIRM somente se você criou este código, ou CANCEL.','It can read and submit your records. Reply CONFIRM only if you created this code, or CANCEL.');}
  db.sessions[event.From]=result.session;
@@ -79,6 +82,7 @@ export function processInbound(db,event,model,profileName='general',now=Date.now
  if(result.choice)db.choices.push(result.choice);
  if(result.lotUpdate)db.lots=db.lots.map(l=>l.id===result.lotUpdate.id?{...l,...result.lotUpdate}:l);
  if(result.supportRequest)db.supportRequests.push(result.supportRequest);
+ if(result.handover){db.handovers.push(result.handover);bump(db,result.session.account.id);}
  db.seen[event.MessageSid]=result.reply;return result.reply;
 }
 const validId=id=>typeof id==='string'&&/^[a-zA-Z0-9-]{4,80}$/.test(id);
