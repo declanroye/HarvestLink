@@ -1,14 +1,14 @@
-import {documentText} from './workflows.js?release=v34';
-import {openPhoneStorage} from './storage.js?release=v34';
-import {recordSyncStates} from './outbox.js?release=v34';
-import {marketView,marketOrder,marketPoolLots} from './marketplace.js?release=v34';
-import {handleFarmerMessage} from './account.js?release=v34';
-import {loadLocalModel} from './ai/load.js?release=v34';
-import {installLinking} from './linking.js?release=v34';
-import {exportJSON} from './export.js?release=v34';
+import {documentText} from './workflows.js?release=v35';
+import {openPhoneStorage} from './storage.js?release=v35';
+import {recordSyncStates} from './outbox.js?release=v35';
+import {marketView,marketOrder,marketPoolLots} from './marketplace.js?release=v35';
+import {handleFarmerMessage} from './account.js?release=v35';
+import {loadLocalModel} from './ai/load.js?release=v35';
+import {installLinking} from './linking.js?release=v35';
+import {exportJSON} from './export.js?release=v35';
 let linking;
-import {installLanguageSwitch} from './i18n.js?release=v34';
-import {handleMessage,missing,lotSummary,poolLots,compare,validateLot,demoCosts,demoOrder,classify,profiles,crops} from './core.js?release=v34';
+import {installLanguageSwitch} from './i18n.js?release=v35';
+import {handleMessage,missing,lotSummary,poolLots,compare,validateLot,demoCosts,demoOrder,classify,profiles,crops} from './core.js?release=v35';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),brl=n=>'R$ '+n.toFixed(2),key='harvestlink-v1';
 let model;try{model=await loadLocalModel();}catch(e){const banner=document.createElement('div');banner.className='recovery-banner';banner.textContent='The complete offline model is not available. Connect to the internet and reload to finish installation. Your saved records have not been erased.';document.body.prepend(banner);throw e;}const modelBytes=model.modelBytes+model.runtimeBytes;
 const defaults=()=>({lots:[],session:{draft:{}},chat:[],choices:[],handovers:[],benchmarks:[],costs:{...demoCosts},profile:"general",channel:{},starts:0});
@@ -90,7 +90,7 @@ $('#export-account').onclick=()=>{const account=state.session.account;if(!accoun
 function channelLinks(){for(const id of ['whatsapp-number','whatsapp-join','sms-number'])$('#'+id).value=state.channel[id]||'';const number=state.channel['whatsapp-number']||'',sms=state.channel['sms-number']||'';const wa=$('#open-whatsapp'),sm=$('#open-sms');wa.removeAttribute('href');sm.removeAttribute('href');if(/^\+[1-9]\d{7,14}$/.test(number))wa.href='https://wa.me/'+number.slice(1)+'?text='+encodeURIComponent(state.channel['whatsapp-join']||'AJUDA');if(/^\+[1-9]\d{7,14}$/.test(sms))sm.href='sms:'+sms+'?body='+encodeURIComponent('AJUDA');for(const a of [wa,sm])a.setAttribute('aria-disabled',String(!a.hasAttribute('href')));}
 $('#save-channel').onclick=()=>{const next={};for(const id of ['whatsapp-number','whatsapp-join','sms-number'])next[id]=$('#'+id).value.trim();if([next['whatsapp-number'],next['sms-number']].some(n=>n&&!/^\+[1-9]\d{7,14}$/.test(n)))return toast('Use o formato internacional: + seguido do código do país e número.');state.channel=next;persist();channelLinks();toast('Conexão salva neste telefone. Abra o canal e envie a mensagem.');};channelLinks();
 function connectivity(){$('#connection').textContent=navigator.onLine?'● Online':'● Offline · saved on phone';}window.addEventListener('online',connectivity);window.addEventListener('offline',connectivity);connectivity();render();linking=installLinking({state,persist,render,toast,download,flush:phoneStorage.flush});installLanguageSwitch();
-if('serviceWorker'in navigator){let registration;const showUpdate=()=>{if(!registration?.waiting)return;$('#update-banner').hidden=false;};navigator.serviceWorker.register('./sw.js?release=v34').then(r=>{registration=r;showUpdate();r.addEventListener('updatefound',()=>r.installing?.addEventListener('statechange',showUpdate));return navigator.serviceWorker.ready;}).then(()=>toast('Offline cache ready, including the small AI.')).catch(e=>toast('Offline installation failed. Stay connected and reload to retry: '+e.message));$('#apply-update').onclick=async()=>{try{if(Object.keys(state.session.draft||{}).length||state.session.onboarding||state.session.pendingChoice||state.session.pendingHandover||state.phoneHarvestDraft||state.session.pendingDocument||state.session.pendingDelivery||state.session.pendingAccount||state.session.pendingWithdrawal||typeof state.session.pendingNotifications==='boolean'||state.shared?.pendingMessage||state.shared?.pendingOperation)return toast('Finish or cancel the current review and any pending submission before updating.');await phoneStorage.flush();registration?.waiting?.postMessage({type:'ACTIVATE_UPDATE'});}catch(e){toast(e.message);}};navigator.serviceWorker.addEventListener('controllerchange',()=>{if(registration?.active&&$('#update-banner').hidden===false)location.reload();});}
+if('serviceWorker'in navigator){let registration;const showUpdate=()=>{if(!registration?.waiting)return;$('#update-banner').hidden=false;};navigator.serviceWorker.register('./sw.js?release=v35').then(r=>{registration=r;showUpdate();r.addEventListener('updatefound',()=>r.installing?.addEventListener('statechange',showUpdate));return navigator.serviceWorker.ready;}).then(()=>toast('Offline cache ready, including the small AI.')).catch(e=>toast('Offline installation failed. Stay connected and reload to retry: '+e.message));$('#apply-update').onclick=async()=>{try{if(Object.keys(state.session.draft||{}).length||state.session.onboarding||state.session.pendingChoice||state.session.pendingHandover||state.phoneHarvestDraft||state.session.pendingDocument||state.session.pendingDelivery||state.session.pendingAccount||state.session.pendingWithdrawal||typeof state.session.pendingNotifications==='boolean'||state.shared?.pendingMessage||state.shared?.pendingOperation)return toast('Finish or cancel the current review and any pending submission before updating.');await phoneStorage.flush();registration?.waiting?.postMessage({type:'ACTIVATE_UPDATE'});}catch(e){toast(e.message);}};navigator.serviceWorker.addEventListener('controllerchange',()=>{if(registration?.active&&$('#update-banner').hidden===false)location.reload();});}
 
 
 function renderMarketplace(){
@@ -99,7 +99,7 @@ function renderMarketplace(){
  const orders=view.orders||[];
  $('#market-cards').innerHTML=orders.map(o=>'<article class="offer-row"><div><p class="eyebrow">'+esc(o.id)+' · DEMO</p><h3>'+esc(crops[o.crop]?.[state.session.account?.language==='pt'?'pt':'en']||o.crop)+'</h3><p>'+esc(o.sourceLocation)+' → '+esc(o.destination)+'</p></div><div class="offer-terms"><strong>'+esc(o.quantityKg)+' kg</strong><span>GYD '+esc(o.priceGydKg)+'/kg</span></div><p class="muted">'+esc(o.buyer)+'</p><button data-market-command="OFFER '+esc(o.id)+'">'+(state.session.account?.language==='pt'?'Revisar proposta':'Review proposal')+'</button></article>').join('')+(view.enabled?card('Pool '+view.pooledKg+'/'+view.order.quantityKg+' kg · '+view.syntheticKg+' kg fictional partner · '+view.shortfallKg+' kg missing')+card('Your allocations: '+view.ownAllocations.map(a=>a.kg+' kg · local BRL '+a.localNet.toFixed(2)+' · proposal BRL '+a.crossNet.toFixed(2)).join('; '))+card('Logistics: '+view.transport.route+' · '+view.transport.carrier+' · '+view.transport.pickup+' · BRL '+view.transport.transportBrlKg+'/kg · not booked')+card('Import / export: '+view.trade.exporter+' · '+JSON.stringify(view.trade.checks))+card(view.status+' · No dispatch authorized')+view.handovers.map(h=>card('Handover '+h.id.slice(0,8)+' · '+h.quantityKg+' kg · '+h.status)).join(''):card('Send DEMO MARKET in WhatsApp to activate the fictional example.'));
 }
-$('#market-cards').onclick=async e=>{const b=e.target.closest('[data-market-command]');if(!b)return;document.querySelector('[data-tab=farmer]').click();if(!state.session.demoMarketplace)await submit('DEMO MARKET');if(state.session.demoMarketplace)await submit(b.dataset.marketCommand);};
+$('#market-cards').onclick=async e=>{const b=e.target.closest('[data-market-command]');if(!b)return;if(!state.session.account){document.querySelector('[data-tab=capture]').click();return toast('Add your first harvest or connect WhatsApp before reviewing an offer.');}document.querySelector('[data-tab=farmer]').click();if(!state.session.demoMarketplace)await submit('DEMO MARKET');if(state.session.demoMarketplace)await submit(b.dataset.marketCommand);};
 $('#refresh-market').onclick=async()=>{try{if(!state.shared?.token){delete state.marketCache;renderMarketplace();return toast('Local demonstration refreshed. Link WhatsApp to load shared records.');}if(!linking?.marketplace)throw Error('Link your WhatsApp account first.');state.marketCache=await linking.marketplace();persist();renderMarketplace();}catch(e){toast(e.message);}};
 setInterval(()=>{if(!$('#marketplace').hidden&&navigator.onLine&&state.shared?.token)$('#refresh-market').click();},15000);
 
@@ -121,8 +121,8 @@ $('#workflow-documents').onclick=e=>{const b=e.target.closest('[data-document-do
 function renderSimpleForms(){
  const account=state.session.account,fields=$('#profile-fields');if(!fields)return;
  fields.hidden=!!account;fields.disabled=!!account;
- const pending=state.session.pendingChoice||state.session.pendingHandover||state.session.pendingDocument||state.session.pendingDelivery||state.session.pendingAccount||state.session.pendingWithdrawal;
- $('#action-review').hidden=!pending;
+ const pending=state.session.onboarding||Object.keys(state.session.draft||{}).length||state.session.pendingChoice||state.session.pendingHandover||state.session.pendingDocument||state.session.pendingDelivery||state.session.pendingAccount||state.session.pendingWithdrawal;
+ $('#action-review').hidden=!pending;$('#action-confirm').disabled=!!state.session.onboarding&&state.session.onboarding.step!=='review'||Object.keys(state.session.draft||{}).length>0&&missing(state.session.draft).length>0;
  $('#action-review-details').textContent=pending?(state.chat.at(-1)?.text||'Review before confirming.') : '';
 }
 let formDraft;
