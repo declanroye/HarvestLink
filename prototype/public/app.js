@@ -1,14 +1,14 @@
-import {documentText} from './workflows.js?release=v33';
-import {openPhoneStorage} from './storage.js?release=v33';
-import {recordSyncStates} from './outbox.js?release=v33';
-import {marketView,marketOrder,marketPoolLots} from './marketplace.js?release=v33';
-import {handleFarmerMessage} from './account.js?release=v33';
-import {loadLocalModel} from './ai/load.js?release=v33';
-import {installLinking} from './linking.js?release=v33';
-import {exportJSON} from './export.js?release=v33';
+import {documentText} from './workflows.js?release=v34';
+import {openPhoneStorage} from './storage.js?release=v34';
+import {recordSyncStates} from './outbox.js?release=v34';
+import {marketView,marketOrder,marketPoolLots} from './marketplace.js?release=v34';
+import {handleFarmerMessage} from './account.js?release=v34';
+import {loadLocalModel} from './ai/load.js?release=v34';
+import {installLinking} from './linking.js?release=v34';
+import {exportJSON} from './export.js?release=v34';
 let linking;
-import {installLanguageSwitch} from './i18n.js?release=v33';
-import {handleMessage,missing,lotSummary,poolLots,compare,validateLot,demoCosts,demoOrder,classify,profiles,crops} from './core.js?release=v33';
+import {installLanguageSwitch} from './i18n.js?release=v34';
+import {handleMessage,missing,lotSummary,poolLots,compare,validateLot,demoCosts,demoOrder,classify,profiles,crops} from './core.js?release=v34';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),brl=n=>'R$ '+n.toFixed(2),key='harvestlink-v1';
 let model;try{model=await loadLocalModel();}catch(e){const banner=document.createElement('div');banner.className='recovery-banner';banner.textContent='The complete offline model is not available. Connect to the internet and reload to finish installation. Your saved records have not been erased.';document.body.prepend(banner);throw e;}const modelBytes=model.modelBytes+model.runtimeBytes;
 const defaults=()=>({lots:[],session:{draft:{}},chat:[],choices:[],handovers:[],benchmarks:[],costs:{...demoCosts},profile:"general",channel:{},starts:0});
@@ -90,7 +90,7 @@ $('#export-account').onclick=()=>{const account=state.session.account;if(!accoun
 function channelLinks(){for(const id of ['whatsapp-number','whatsapp-join','sms-number'])$('#'+id).value=state.channel[id]||'';const number=state.channel['whatsapp-number']||'',sms=state.channel['sms-number']||'';const wa=$('#open-whatsapp'),sm=$('#open-sms');wa.removeAttribute('href');sm.removeAttribute('href');if(/^\+[1-9]\d{7,14}$/.test(number))wa.href='https://wa.me/'+number.slice(1)+'?text='+encodeURIComponent(state.channel['whatsapp-join']||'AJUDA');if(/^\+[1-9]\d{7,14}$/.test(sms))sm.href='sms:'+sms+'?body='+encodeURIComponent('AJUDA');for(const a of [wa,sm])a.setAttribute('aria-disabled',String(!a.hasAttribute('href')));}
 $('#save-channel').onclick=()=>{const next={};for(const id of ['whatsapp-number','whatsapp-join','sms-number'])next[id]=$('#'+id).value.trim();if([next['whatsapp-number'],next['sms-number']].some(n=>n&&!/^\+[1-9]\d{7,14}$/.test(n)))return toast('Use o formato internacional: + seguido do código do país e número.');state.channel=next;persist();channelLinks();toast('Conexão salva neste telefone. Abra o canal e envie a mensagem.');};channelLinks();
 function connectivity(){$('#connection').textContent=navigator.onLine?'● Online':'● Offline · saved on phone';}window.addEventListener('online',connectivity);window.addEventListener('offline',connectivity);connectivity();render();linking=installLinking({state,persist,render,toast,download,flush:phoneStorage.flush});installLanguageSwitch();
-if('serviceWorker'in navigator){let registration;const showUpdate=()=>{if(!registration?.waiting)return;$('#update-banner').hidden=false;};navigator.serviceWorker.register('./sw.js?release=v33').then(r=>{registration=r;showUpdate();r.addEventListener('updatefound',()=>r.installing?.addEventListener('statechange',showUpdate));return navigator.serviceWorker.ready;}).then(()=>toast('Offline cache ready, including the small AI.')).catch(e=>toast('Offline installation failed. Stay connected and reload to retry: '+e.message));$('#apply-update').onclick=async()=>{try{if(Object.keys(state.session.draft||{}).length||state.session.onboarding||state.session.pendingChoice||state.session.pendingHandover||state.phoneHarvestDraft||state.session.pendingDocument||state.session.pendingDelivery||state.session.pendingAccount||state.session.pendingWithdrawal||typeof state.session.pendingNotifications==='boolean'||state.shared?.pendingMessage||state.shared?.pendingOperation)return toast('Finish or cancel the current review and any pending submission before updating.');await phoneStorage.flush();registration?.waiting?.postMessage({type:'ACTIVATE_UPDATE'});}catch(e){toast(e.message);}};navigator.serviceWorker.addEventListener('controllerchange',()=>{if(registration?.active&&$('#update-banner').hidden===false)location.reload();});}
+if('serviceWorker'in navigator){let registration;const showUpdate=()=>{if(!registration?.waiting)return;$('#update-banner').hidden=false;};navigator.serviceWorker.register('./sw.js?release=v34').then(r=>{registration=r;showUpdate();r.addEventListener('updatefound',()=>r.installing?.addEventListener('statechange',showUpdate));return navigator.serviceWorker.ready;}).then(()=>toast('Offline cache ready, including the small AI.')).catch(e=>toast('Offline installation failed. Stay connected and reload to retry: '+e.message));$('#apply-update').onclick=async()=>{try{if(Object.keys(state.session.draft||{}).length||state.session.onboarding||state.session.pendingChoice||state.session.pendingHandover||state.phoneHarvestDraft||state.session.pendingDocument||state.session.pendingDelivery||state.session.pendingAccount||state.session.pendingWithdrawal||typeof state.session.pendingNotifications==='boolean'||state.shared?.pendingMessage||state.shared?.pendingOperation)return toast('Finish or cancel the current review and any pending submission before updating.');await phoneStorage.flush();registration?.waiting?.postMessage({type:'ACTIVATE_UPDATE'});}catch(e){toast(e.message);}};navigator.serviceWorker.addEventListener('controllerchange',()=>{if(registration?.active&&$('#update-banner').hidden===false)location.reload();});}
 
 
 function renderMarketplace(){
@@ -127,12 +127,12 @@ function renderSimpleForms(){
 }
 let formDraft;
 $('#harvest-date').value=new Date().toISOString().slice(0,10);
-$('#harvest-form').onsubmit=e=>{e.preventDefault();try{
+$('#harvest-form').onsubmit=async e=>{e.preventDefault();try{
  if(Object.keys(state.session.draft||{}).length||state.session.onboarding||state.session.pendingChoice||state.session.pendingHandover||state.session.pendingDocument||state.session.pendingDelivery)throw Error('Finish or cancel your existing review first.');
  const account=state.session.account,name=account?.name||$('#harvest-name').value.trim(),location=account?.location||$('#harvest-place').value.trim();
  formDraft=validateLot({farmer:name,location,crop:$('#harvest-crop').value,quantityKg:Number($('#harvest-weight').value),grade:$('#harvest-grade').value,harvestDate:$('#harvest-date').value,localPriceBrl:Number($('#harvest-price').value)});
  $('#harvest-review-details').innerHTML='<div class="review-facts">'+Object.entries({Farmer:name,Community:location,Crop:crops[formDraft.crop].en,Weight:formDraft.quantityKg+' kg',Quality:formDraft.grade,Date:formDraft.harvestDate,'Price nearby':'BRL '+formDraft.localPriceBrl+'/kg'}).map(([k,v])=>'<div><span>'+esc(k)+'</span><strong>'+esc(v)+'</strong></div>').join('')+'</div>';
- $('#harvest-review').hidden=false;$('#harvest-form').hidden=true;
+ state.phoneHarvestDraft=Object.fromEntries(harvestInputs.map(id=>[id,$('#'+id).value]));await persist();$('#harvest-review').hidden=false;$('#harvest-form').hidden=true;
  }catch(e){toast(e.message);}};
 $('#harvest-edit').onclick=()=>{$('#harvest-form').hidden=false;$('#harvest-review').hidden=true;formDraft=null;};
 $('#harvest-save').onclick=async()=>{if(!formDraft||!phoneStorage.writable)return;const button=$('#harvest-save');button.disabled=true;const before=structuredClone(state);try{
@@ -145,4 +145,6 @@ $('#action-confirm').onclick=()=>submit('CONFIRM');$('#action-cancel').onclick=(
 
 const harvestInputs=['harvest-name','harvest-place','harvest-crop','harvest-weight','harvest-grade','harvest-date','harvest-price'];
 for(const id of harvestInputs)if(state.phoneHarvestDraft?.[id]!==undefined)$('#'+id).value=state.phoneHarvestDraft[id];
-$('#harvest-form').addEventListener('change',()=>{state.phoneHarvestDraft=Object.fromEntries(harvestInputs.map(id=>[id,$('#'+id).value]));persist();});
+$('#harvest-form').addEventListener('input',()=>{state.phoneHarvestDraft=Object.fromEntries(harvestInputs.map(id=>[id,$('#'+id).value]));persist();});
+
+$('#harvest-discard').onclick=async()=>{delete state.phoneHarvestDraft;formDraft=null;$('#harvest-form').reset();$('#harvest-date').value=new Date().toISOString().slice(0,10);await persist();$('#harvest-review').hidden=true;$('#harvest-form').hidden=false;document.querySelector('[data-tab=overview]').click();};

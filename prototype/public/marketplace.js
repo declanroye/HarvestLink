@@ -1,4 +1,4 @@
-import {poolLots,compare,demoCosts,crops,normal} from './core.js?release=v33';
+import {poolLots,compare,demoCosts,crops,normal} from './core.js?release=v34';
 export const shipmentHold='awaiting buyer confirmation and trade-requirement checks';
 export const marketOrders=[
  {id:'DEMO-TOMATO',crop:'tomato',grade:'A',quantityKg:200,sourceLocation:'Bonfim',buyer:'Lethem Fresh Produce (fictional importer)',destination:'Lethem, Guyana',priceGydKg:250,earliest:'2026-10-04',latest:'2026-10-10'},
