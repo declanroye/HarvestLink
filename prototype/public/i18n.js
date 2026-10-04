@@ -1,4 +1,9 @@
 const pairs = [
+['Abrir assistente no WhatsApp ↗','Open assistant in WhatsApp ↗'],
+['Seu espaço de trabalho.','Your workspace.'],
+['Contas, colheitas e oportunidades — em um só lugar.','Accounts, harvests and opportunities, in one place.'],
+['Registros','Records'],['Logística e repasse','Logistics & handover'],['Vincular minha conta','Link my account'],['Mais ferramentas','More tools'],['Assistente offline','Offline assistant'],['Proposta ao comprador','Buyer proposal'],['Evidências e operação','Evidence & operations'],['Uma visão clara do que vem a seguir.','A clear view of what comes next.'],['Registrar colheita ↗','Record a harvest ↗'],['O assistente trabalha no WhatsApp.','Your assistant works in WhatsApp.'],['Este espaço mantém tudo organizado.','This workspace keeps things organised.'],
+
 ["UMA CONTA · DOIS CANAIS","ONE ACCOUNT · TWO CHANNELS"],
 ["Vincule pelo seu WhatsApp.","Link through your WhatsApp."],
 ["Um código temporário verifica seu número. Confirme no WhatsApp antes de permitir acesso a este telefone.","A temporary code verifies your number. Confirm in WhatsApp before granting this phone access."],

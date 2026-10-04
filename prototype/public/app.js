@@ -1,11 +1,11 @@
-import {marketView,marketOrder,marketPoolLots} from './marketplace.js?release=v20';
-import {handleFarmerMessage} from './account.js?release=v20';
-import {loadLocalModel} from './ai/load.js?release=v20';
-import {installLinking} from './linking.js?release=v20';
-import {exportJSON} from './export.js?release=v20';
+import {marketView,marketOrder,marketPoolLots} from './marketplace.js?release=v22';
+import {handleFarmerMessage} from './account.js?release=v22';
+import {loadLocalModel} from './ai/load.js?release=v22';
+import {installLinking} from './linking.js?release=v22';
+import {exportJSON} from './export.js?release=v22';
 let linking;
-import {installLanguageSwitch} from './i18n.js?release=v20';
-import {handleMessage,missing,lotSummary,poolLots,compare,demoCosts,demoOrder,classify,profiles,crops} from './core.js?release=v20';
+import {installLanguageSwitch} from './i18n.js?release=v22';
+import {handleMessage,missing,lotSummary,poolLots,compare,demoCosts,demoOrder,classify,profiles,crops} from './core.js?release=v22';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),brl=n=>'R$ '+n.toFixed(2),key='harvestlink-v1';
 const model=await loadLocalModel(),modelBytes=model.modelBytes+model.runtimeBytes;
 const defaults=()=>({lots:[],session:{draft:{}},chat:[],choices:[],handovers:[],benchmarks:[],costs:{...demoCosts},profile:"general",channel:{},starts:0});
@@ -30,7 +30,7 @@ function render(){
  $('#account-lots').innerHTML=ownLots.map(l=>card(l.id.slice(0,8)+' · '+l.quantityKg+' kg '+(crops[l.crop]?.pt||l.crop)+' · '+(l.status==='withdrawn'?'Retirado':'Disponível'))).join('')||card('Nenhum lote associado a este perfil.');
  $('#account-support').innerHTML=state.supportRequests.filter(r=>r.farmerId===account?.id).map(r=>card(r.id.slice(0,8)+' · '+r.createdAt+' · Aguardando revisão; sem notificação automática.')).join('')||card('Nenhum pedido de apoio.');
  $("#use-case").value=state.profile;$("#journey-status").textContent=state.choices.some(c=>c.choice==="cross-border-proposal")?"Remessa aguarda confirmação do comprador e verificação comercial":"Nenhuma venda confirmada";
- $('#lot-count').textContent=state.lots.length;
+ $('#lot-count').textContent=ownLots.length;
  $('#chat').innerHTML=state.chat.length?state.chat.map(m=>`<div class="bubble ${m.role==='user'?'user':''}">${esc(m.text)}</div>`).join(''):card('Olá! Sou o HarvestLink. Toque em Começar para criar seu perfil. Uma pergunta de cada vez; você confirma antes de salvar.');$('#chat').scrollTop=$('#chat').scrollHeight;
  const d=state.session.draft||{};
  $('#draft').innerHTML=Object.keys(d).length?card(Object.entries(d).map(([k,v])=>`${({farmer:'Agricultor',crop:'Cultura',location:'Local',quantityKg:'Quilos',grade:'Classe',harvestDate:'Colheita',localPriceBrl:'Preço local/kg'})[k]||k}: ${k==='crop'?(crops[v]?.pt||v):v}`).join(' · ')):card(state.session.onboarding?({consent:'Permissão para guardar seus dados',name:'Seu nome',location:'Sua comunidade',language:'Seu idioma',review:'Confira seu perfil'})[state.session.onboarding.step]:state.session.pendingAccount?'Alteração de perfil aguardando confirmação':state.session.pendingWithdrawal?'Retirada de lote aguardando confirmação':'Nenhum rascunho ainda.');
@@ -75,14 +75,14 @@ $('#export-account').onclick=()=>{const account=state.session.account;if(!accoun
 function channelLinks(){for(const id of ['whatsapp-number','whatsapp-join','sms-number'])$('#'+id).value=state.channel[id]||'';const number=state.channel['whatsapp-number']||'',sms=state.channel['sms-number']||'';const wa=$('#open-whatsapp'),sm=$('#open-sms');wa.removeAttribute('href');sm.removeAttribute('href');if(/^\+[1-9]\d{7,14}$/.test(number))wa.href='https://wa.me/'+number.slice(1)+'?text='+encodeURIComponent(state.channel['whatsapp-join']||'AJUDA');if(/^\+[1-9]\d{7,14}$/.test(sms))sm.href='sms:'+sms+'?body='+encodeURIComponent('AJUDA');for(const a of [wa,sm])a.setAttribute('aria-disabled',String(!a.hasAttribute('href')));}
 $('#save-channel').onclick=()=>{const next={};for(const id of ['whatsapp-number','whatsapp-join','sms-number'])next[id]=$('#'+id).value.trim();if([next['whatsapp-number'],next['sms-number']].some(n=>n&&!/^\+[1-9]\d{7,14}$/.test(n)))return toast('Use o formato internacional: + seguido do código do país e número.');state.channel=next;persist();channelLinks();toast('Conexão salva neste telefone. Abra o canal e envie a mensagem.');};channelLinks();
 function connectivity(){$('#connection').textContent=navigator.onLine?'● Conectado · AI local':'● Offline · AI local';}window.addEventListener('online',connectivity);window.addEventListener('offline',connectivity);connectivity();render();linking=installLinking({state,persist,render,toast,download});installLanguageSwitch();
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?release=v20').then(()=>navigator.serviceWorker.ready).then(()=>toast('Offline cache installed, including the small AI. Reload once, then test airplane mode.')).catch(e=>toast('Offline cache unavailable: '+e.message));
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?release=v22').then(()=>navigator.serviceWorker.ready).then(()=>toast('Offline cache installed, including the small AI. Reload once, then test airplane mode.')).catch(e=>toast('Offline cache unavailable: '+e.message));
 
 
 function renderMarketplace(){
  const view=state.marketCache||state.shared?.snapshot?.marketplace||marketView(state.session,state.lots,state.choices,state.handovers);
  $('#market-status').textContent=(navigator.onLine?'Online':'Offline · cached snapshot')+' · '+(view.observedAt||'')+' · DEMONSTRATION ONLY';
  const orders=view.orders||[];
- $('#market-cards').innerHTML=orders.map(o=>card(o.id+' · '+o.quantityKg+' kg '+o.crop+' · '+o.sourceLocation+' → '+o.destination+' · GYD '+o.priceGydKg+'/kg · '+o.buyer)).join('')+(view.enabled?card('Pool '+view.pooledKg+'/'+view.order.quantityKg+' kg · '+view.syntheticKg+' kg fictional partner · '+view.shortfallKg+' kg missing')+card('Your allocations: '+view.ownAllocations.map(a=>a.kg+' kg · local BRL '+a.localNet.toFixed(2)+' · proposal BRL '+a.crossNet.toFixed(2)).join('; '))+card('Logistics: '+view.transport.route+' · '+view.transport.carrier+' · '+view.transport.pickup+' · BRL '+view.transport.transportBrlKg+'/kg · not booked')+card('Import / export: '+view.trade.exporter+' · '+JSON.stringify(view.trade.checks))+card(view.status+' · No dispatch authorized')+view.handovers.map(h=>card('Handover '+h.id.slice(0,8)+' · '+h.quantityKg+' kg · '+h.status)).join(''):card('Send DEMO MARKET in WhatsApp to activate the fictional example.'));
+ $('#market-cards').innerHTML=orders.map(o=>'<article class="offer-row"><div><p class="eyebrow">'+esc(o.id)+' · DEMO</p><h3>'+esc(crops[o.crop]?.[state.session.account?.language==='pt'?'pt':'en']||o.crop)+'</h3><p>'+esc(o.sourceLocation)+' → '+esc(o.destination)+'</p></div><div class="offer-terms"><strong>'+esc(o.quantityKg)+' kg</strong><span>GYD '+esc(o.priceGydKg)+'/kg</span></div><p class="muted">'+esc(o.buyer)+'</p></article>').join('')+(view.enabled?card('Pool '+view.pooledKg+'/'+view.order.quantityKg+' kg · '+view.syntheticKg+' kg fictional partner · '+view.shortfallKg+' kg missing')+card('Your allocations: '+view.ownAllocations.map(a=>a.kg+' kg · local BRL '+a.localNet.toFixed(2)+' · proposal BRL '+a.crossNet.toFixed(2)).join('; '))+card('Logistics: '+view.transport.route+' · '+view.transport.carrier+' · '+view.transport.pickup+' · BRL '+view.transport.transportBrlKg+'/kg · not booked')+card('Import / export: '+view.trade.exporter+' · '+JSON.stringify(view.trade.checks))+card(view.status+' · No dispatch authorized')+view.handovers.map(h=>card('Handover '+h.id.slice(0,8)+' · '+h.quantityKg+' kg · '+h.status)).join(''):card('Send DEMO MARKET in WhatsApp to activate the fictional example.'));
 }
 $('#refresh-market').onclick=async()=>{try{if(!linking?.marketplace)throw Error('Link your WhatsApp account first.');state.marketCache=await linking.marketplace();persist();renderMarketplace();}catch(e){toast(e.message);}};
 setInterval(()=>{if(!$('#marketplace').hidden&&navigator.onLine&&state.shared?.token)$('#refresh-market').click();},15000);
