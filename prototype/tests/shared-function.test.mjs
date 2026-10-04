@@ -13,4 +13,8 @@ test('paired Functions use one durable Sync store for WhatsApp verification and 
  await send('tenho 25 kg de milho, classe A, 2026-10-04, BRL 3/kg');await send('CONFIRMO');const shared=(await api('snapshot',{},linked.token)).body;assert.equal(shared.lots.length,1);assert.equal(shared.account.id,linked.snapshot.account.id);
  const lot={...shared.lots[0],id:crypto.randomUUID(),quantityKg:40};delete lot.providerSid;
  const received=await api('sync',{operationId:crypto.randomUUID(),baseRevision:shared.revision,lots:[lot],choices:[],supportRequests:[]},linked.token);assert.equal(received.status,200);assert.match((await send('LOTES')).toString(),/40 kg/);
+ await send('DEMO MARKET');await send('OFFER DEMO-CASSAVA');await send('tenho 220 kg de mandioca, classe A, 2026-10-04, BRL 3.50/kg');await send('CONFIRMO');
+ const marketplace=(await api('snapshot',{},linked.token)).body.marketplace;assert.equal(marketplace.pooledKg,300);assert.equal(marketplace.syntheticKg,80);
+ await send('ESCOLHO PROPOSTA');await send('CONFIRMO');await send('HANDOVER');await send('CONFIRMO');
+ const handovers=(await api('snapshot',{},linked.token)).body.marketplace.handovers;assert.equal(handovers.length,1);assert.equal(handovers[0].dispatchAuthorized,false);
 });
