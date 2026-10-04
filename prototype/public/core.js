@@ -26,14 +26,14 @@ export const questions = {
 };
 export function extract(text, previous={},profile=profiles.bonfim) {
   const t = normal(text), draft = {...(profile.crop?{crop:profile.crop}:{}),...(profile.location?{location:profile.location}:{}),...previous};
-  const detected=Object.entries(crops).filter(([id,c])=>c.terms.some(term=>new RegExp('\\b'+term+'\\b').test(t)));
+  const detected=Object.entries(crops).filter(([id,c])=>[...c.terms,c.en,...({tomato:['tomato'],maize:['corn'],beans:['bean'],banana:['banana'],papaya:['papaya']}[id]||[])].some(term=>new RegExp('\\b'+term+'\\b').test(t)));
   if(detected.length===1)draft.crop=detected[0][0];
   if(detected.length>1)draft.crop=null;
-  const place=text.match(/(?:\bem\s+|local(?:idade)?:\s*)([\p{L}][\p{L} '-]{1,50}?)(?=[,.!\n]|\s+(?:classe|tipo|colheita|R\$|preco|tenho|com)|$)/iu);
+  const place=text.match(/(?:\bem\s+|\bin\s+|location:\s*|local(?:idade)?:\s*)([\p{L}][\p{L} '-]{1,50}?)(?=[,.!\n]|\s+(?:classe|grade|tipo|colheita|harvest|BRL|R\$|preco|tenho|com)|$)/iu);
   if(place)draft.location=place[1].trim();
-  const name = text.match(/(?:meu nome [ée]|sou|nome:)\s+([\p{L}][\p{L} '-]{0,35}?)(?=[,.!\n]|\s+(?:tenho|vou|colhi|com)|$)/iu);
-  const qty = t.match(/(\d+(?:[.,]\d+)?)\s*(?:kg|quilos?|quilogramas?)\b/);
-  const grade = t.match(/(?:classe|tipo|categoria)\s*([ab])\b/);
+  const name = text.match(/(?:meu nome [ée]|my name is|name:|sou|nome:)\s+([\p{L}][\p{L} '-]{0,35}?)(?=[,.!\n]|\s+(?:tenho|vou|colhi|com)|$)/iu);
+  const qty = t.match(/(\d+(?:[.,]\d+)?)\s*(?:kg|kilograms?|kilos?|quilos?|quilogramas?)\b/);
+  const grade = t.match(/(?:classe|grade|tipo|categoria)\s*([ab])\b/);
   const date = t.match(/\b(\d{4}-\d{2}-\d{2})\b/);
   const price = t.match(/(?:r\$|brl|preco(?: local)?(?: de)?|vendo por)\s*(\d+(?:[.,]\d+)?)\s*(?:\/\s*kg|por\s*(?:kg|quilo))?/);
   if(name) draft.farmer=name[1].trim();

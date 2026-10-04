@@ -18,7 +18,7 @@ The Sync implementation has a bounded **14,500-byte** safety cap beneath the doc
 ## Linking and everyday use
 
 1. On your phone, open `https://wa.me/14155238886?text=join%20where-necessary` and send **join where-necessary**. Wait for the Twilio Sandbox welcome. If rejected, check the current join code in Twilio Console; trial joining may expire.
-2. Send **INICIAR**, then answer consent, name, community, language and **CONFIRMO**.
+2. Send **EN** to begin in English, or **PT** for Portuguese. Continue with **I AGREE**, name, community and **CONFIRM** in English (or **ACEITO** and **CONFIRMO** in Portuguese).
 3. In the companion, tap **Create pairing code**. The code expires after ten minutes. Send the displayed **VINCULAR CODE** from the onboarded WhatsApp number.
 4. Review the account and device name in WhatsApp. Reply **CONFIRMO**. Then tap **Check link** in the companion and explicitly activate that account.
 5. A backup is exported before activation. Available local lots are copied only if you separately confirm ownership; records are never merged by name. Previous local lots remain stored. Local choices need coordinator review rather than automatic migration.

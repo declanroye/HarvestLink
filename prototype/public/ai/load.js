@@ -1,4 +1,4 @@
-import {HarvestIntentModel} from './predict.mjs?release=v14';
+import {HarvestIntentModel} from './predict.mjs?release=v15';
 export async function loadLocalModel(){
  const paths=['model/metadata.json','model/vocabulary.json','model/weights.f32','predict.mjs'];
  const responses=await Promise.all(paths.map(p=>fetch(new URL(p,import.meta.url))));

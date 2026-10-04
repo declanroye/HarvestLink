@@ -1,0 +1,58 @@
+// Reviewed, fixed response phrases. No remote translation or generated trading promises.
+export const languagePrompt='Welcome to HarvestLink. Which language do you prefer? Reply EN for English or PT para português.';
+export function selectLanguage(text){const t=text.trim().toLowerCase();return /^(en|english|i speak english|language en|idioma en)$/.test(t)?'en':/^(pt|portugu[eê]s|portuguese|falo portugu[eê]s|idioma pt|language pt)$/.test(t)?'pt':null;}
+export function englishReply(text){
+ const phrases=[
+ ['Seu lote está confirmado. O pedido de demonstração ainda precisa de ','Your lot is confirmed. The demonstration order still needs '],[' kg compatíveis.',' compatible kg.'],
+ ['DEMONSTRAÇÃO','DEMONSTRATION'],[' kg alocados. Local líquido: ',' kg allocated. Local net: '],['Proposta líquida estimada: ','Estimated proposal net: '],['Custos de ','Costs dated '],['válidos até ','valid until '],['Câmbio: ','Exchange rate: '],['preço: ','price: '],['perda: ','loss: '],['Custos do pedido (BRL): ','Order costs (BRL): '],['reserva comercial não verificada','unverified trade allowance'],['transporte','transport'],['embalagem','packaging'],['manuseio','handling'],['coordenação','coordination'],['Rateio por kg.','Allocated per kg.'],['Envie CHOOSE LOCAL ou CHOOSE PROPOSAL.','Send CHOOSE LOCAL or CHOOSE PROPOSAL.'],['Sua escolha: ','Your choice: '],
+ ['Olá! Vamos criar seu perfil. Salvamos seu nome e cidade para registrar colheitas. Um lote confirmado pode ser apresentado a compradores. Não envie documentos ou dados bancários. Digite ACEITO para continuar ou CANCELAR.','Let’s create your profile. We save your name and production area to register harvests. Confirmed availability may be shown to buyers. Do not send identity documents or bank details. Reply I AGREE to continue or CANCEL.'],
+ ['Como você prefere ser chamado? Envie somente seu nome.','What should we call you? Send only your name.'],
+ ['Em qual cidade ou comunidade você produz? Envie somente o local, sem endereço residencial.','Which town or community do you produce in? Send only the area, not your home address.'],
+ ['Use uma mensagem de até 1000 caracteres.','Use a message of up to 1000 characters.'],
+ ['Envie um nome ou local de 2 a 60 caracteres.','Send a name or area of 2 to 60 characters.'],
+ ['Rascunho cancelado. Seus registros confirmados foram preservados.','Draft cancelled. Your confirmed records were preserved.'],
+ ['O que você colheu? Exemplo: tomate, mandioca, milho, arroz, feijão, banana ou mamão.','What crop do you have? For example: tomatoes, cassava, maize, rice, beans, bananas or papayas.'],
+ ['Onde está sua colheita? Exemplo: em Boa Vista.','Where is your harvest? For example: in Boa Vista.'],
+ ['Qual é seu nome? Exemplo: meu nome é Ana.','What is your name? For example: my name is Ana.'],
+ ['Quantos quilos estão disponíveis? Exemplo: 120 kg. Não use caixas sem informar o peso.','How many kilograms are available? For example: 120 kg. If using crates, include their weight.'],
+ ['Qual é a classificação? Digite classe A ou classe B.','What is the grade? Reply grade A or grade B.'],
+ ['Qual é a data da colheita? Use AAAA-MM-DD.','What is the harvest date? Use YYYY-MM-DD.'],
+ ['Qual preço local por kg você consegue? Exemplo: R$ 3,50/kg.','What local price per kg can you get? Use BRL, for example BRL 3.50/kg.'],
+ ['Não entendi com segurança. Envie: sou Ana, tenho 120 kg de tomate, classe A, colheita 2026-10-04, R$ 3,50/kg.','I could not understand confidently. Try: I have 120 kg of tomatoes, grade A, harvest 2026-10-04, BRL 3.50/kg.'],
+ ['Seu lote pode ser registrado sem um pedido. Ainda não há oferta de comprador para comparar; aguarde uma proposta do coordenador. Nenhuma venda foi confirmada.','You can register a harvest without an order. There is no buyer offer to compare yet; wait for a coordinator’s proposal. No sale is confirmed.'],
+ ['Você ainda não tem lotes neste perfil. Envie COLHEITA.','You have no lots in this account yet. Send HARVEST.'],
+ ['Nenhuma proposta de comprador disponível. Seu cadastro não garante venda. Envie COLHEITA para registrar disponibilidade.','No buyer offer is available. Registration does not guarantee a sale. Send HARVEST to register availability.'],
+ ['Ainda não há lotes para exportar.','There are no lots to export yet.'],
+ ['Este lote precisa de revisão do coordenador. Envie SUPORTE.','This lot needs coordinator review. Send SUPPORT.'],
+ ['ID não encontrado ou ambíguo nos seus lotes. Envie LOTES.','Lot ID not found or ambiguous. Send LOTS.'],
+ ['Este lote já tem reserva ou escolha. Envie SUPORTE para revisão.','This lot already has a reservation or choice. Send SUPPORT for review.'],
+ ['Lote retirado da disponibilidade. O histórico foi preservado.','Lot withdrawn from availability. History was preserved.'],
+ ['Os lotes anteriores mantêm seus dados originais.','Earlier lots retain their original details.'],
+ ['Use de 2 a 60 caracteres.','Use 2 to 60 characters.'],
+ ['Seu perfil já está criado. Envie CONTA para revisar ou ALTERAR NOME / ALTERAR LOCAL.','Your profile already exists. Send ACCOUNT, CHANGE NAME or CHANGE LOCATION.'],
+ ['Pedido de apoio registrado para revisão. Nenhum atendente foi notificado automaticamente neste protótipo. Guarde seu ID ','Support request saved for review. This prototype does not automatically notify a human. Keep your ID '],
+ ['O coordenador pode revisar a fila no painel.','The coordinator can review the support queue.'],
+ ['Seu lote já tem uma escolha confirmada. O coordenador pode revisar com você. Nenhuma remessa autorizada.','Your lot already has a confirmed choice. The coordinator can review it with you. No shipment is authorized.'],
+ ['Confirme seu lote primeiro. Depois envie COMPARAR GANHOS.','Confirm your lot first. Then send COMPARE EARNINGS.'],
+ ['Os custos estão vencidos. Aguarde atualização pelo coordenador antes de escolher.','Costs have expired. Wait for updated assumptions before choosing.'],
+ ['Custos vencidos. Peça uma nova comparação.','Costs expired. Request a new comparison.'],
+ ['Escolha já registrada.','Choice already recorded.'],
+ ['Quantidade inválida.','Invalid quantity.'],['Preço inválido.','Invalid price.'],['Classe inválida.','Invalid grade.'],['Data inválida.','Invalid date.'],['Nome inválido.','Invalid name.'],['Localidade inválida.','Invalid area.'],['Cultura não reconhecida. Informe uma das culturas suportadas.','Unsupported crop. Use one of the listed crops.'],
+ ['Revise seu perfil. Digite CONFIRMO ou CANCELAR.','Review your profile. Reply CONFIRM or CANCEL.'],
+ ['Digite CONFIRMO para salvar a alteração ou CANCELAR.','Reply CONFIRM to save the change or CANCEL.'],
+ ['Digite CONFIRMO para retirar o lote da disponibilidade ou CANCELAR.','Reply CONFIRM to withdraw this lot or CANCEL.'],
+ ['Digite CONFIRMO para criar seu perfil ou CANCELAR para recomeçar.','Reply CONFIRM to create your profile or CANCEL to restart.'],
+ ['Remessa aguarda confirmação do comprador e verificação comercial.','Shipment awaits buyer confirmation and trade-requirement checks.'],
+ ['Nenhuma remessa foi autorizada.','No shipment is authorized.'],['Nenhuma remessa autorizada.','No shipment is authorized.'],['Nenhuma compra confirmada.','No purchase confirmed.'],['Nenhuma venda confirmada.','No sale confirmed.'],
+ ['Registros neste telefone; comprador ainda não recebeu estes dados por este canal.','Records are on this phone; they have not been sent to a buyer through this channel.'],['Registros recebidos pelo serviço online.','Records received by the online service.'],
+ ['Digite CONFIRMO ou CANCELAR.','Reply CONFIRM or CANCEL.'],['Responda CONFIRMO.','Reply CONFIRM.'],['Responda CONFIRMO para registrar ou CANCELAR.','Reply CONFIRM to save or CANCEL.'],
+ ['Confira: ','Review: '],['Perfil atualizado: ','Profile updated: '],['Perfil salvo. ','Profile saved. '],['Lote confirmado: ','Lot confirmed: '],['classe ','grade '],['Escolha confirmada: ','Choice confirmed: '],['venda local','local sale'],['proposta para revisão','proposal for review'],['Registro salvo.','Record saved.'],
+ [' lotes disponíveis; ',' available lots; '],[' escolhas registradas.',' recorded choices.'],['retirado','withdrawn'],['disponível','available'],['neste telefone','on this phone'],['recebido online','received online'],
+ ['Seus últimos registros:','Your recent records:'],['Conta: ','Account: '],['Para um arquivo completo, use o controle de exportação no telefone.','Use the phone’s export control for a complete file.'],
+ ['Envie COMPARAR GANHOS para seu último lote confirmado.','Send COMPARE EARNINGS for your last confirmed lot.'],
+ ['Código inválido, expirado ou já utilizado. Gere outro no telefone.','Invalid, expired or used code. Create another on your phone.'],['Código em revisão por outro número. Gere um novo código.','Another number is reviewing this code. Create a new code.'],['Vinculação cancelada.','Linking cancelled.'],['Código expirado ou já usado. Gere outro no telefone.','Code expired or already used. Create another on your phone.'],['Confira o dispositivo e responda CONFIRMO ou CANCELAR.','Review the device and reply CONFIRM or CANCEL.'],['Número verificado e vinculação confirmada. Volte ao telefone e toque Verificar vínculo. Nenhuma venda foi confirmada.','Phone verified and linking confirmed. Return to the companion and tap Check link. No sale is confirmed.'],['Revogar o acesso de todos os dispositivos desta conta? Digite CONFIRMO ou CANCELAR.','Revoke access for every device on this account? Reply CONFIRM or CANCEL.'],['Acesso dos dispositivos revogado. Registros locais já baixados continuam no telefone.','Device access revoked. Previously downloaded records remain on the phone.'],['Revogação cancelada.','Revocation cancelled.'],
+ ['CONFIRMO','CONFIRM'],['CANCELAR','CANCEL'],['COMPARAR GANHOS','COMPARE EARNINGS'],['ESCOLHO LOCAL','CHOOSE LOCAL'],['ESCOLHO PROPOSTA','CHOOSE PROPOSAL']
+ ];
+ for(const [pt,en] of phrases.sort((a,b)=>b[0].length-a[0].length))text=text.split(pt).join(en);
+ return text;
+}

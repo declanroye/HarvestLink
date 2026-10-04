@@ -4,7 +4,7 @@ import {HarvestIntentModel} from '../public/ai/predict.mjs';
 const read=p=>readFile(new URL('../public/ai/model/'+p,import.meta.url));
 const [m,v,w]=await Promise.all(['metadata.json','vocabulary.json','weights.f32'].map(read));const model=new HarvestIntentModel(JSON.parse(m),JSON.parse(v),w.buffer.slice(w.byteOffset,w.byteOffset+w.byteLength));
 let sid=0;const send=(db,from,body)=>processInbound(db,{From:from,Body:body,MessageSid:'SM-'+(++sid)},model);
-function onboard(db,from,name='Ana'){for(const text of ['INICIAR','ACEITO',name,'Boa Vista','PT','CONFIRMO'])send(db,from,text);return db.sessions[from].account.id;}
+function onboard(db,from,name='Ana'){for(const text of ['INICIAR','PT','ACEITO',name,'Boa Vista','PT','CONFIRMO'])send(db,from,text);return db.sessions[from].account.id;}
 function link(db,from){const r=requestLink(db,'test phone');send(db,from,r.command);send(db,from,'CONFIRMO');return claimLink(db,r.id,r.claim);}
 test('verified linking requires onboarding, provider identity and a second confirmation; expires and claims once',()=>{
  const db=initialize({}),r=requestLink(db,'phone',1000);assert.equal(claimLink(db,r.id,r.claim,1001).state,'pending');

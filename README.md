@@ -1,6 +1,6 @@
 # HarvestLink
 
-A messaging-first harvest assistant for smallholder farmers. Portuguese crop intake and an offline phone companion are the core; **Bonfim tomatoes → Lethem importers** is one optional demonstration scenario.
+A messaging-first harvest assistant for smallholder farmers. English/Portuguese crop intake and an offline phone companion are the core; **Bonfim tomatoes → Lethem importers** is one optional demonstration scenario.
 
 Farmers register harvests, receive net-earnings comparisons and confirm their choices through **WhatsApp or SMS**. The browser interface is a conversation preview, offline companion, and buyer/coordinator workspace.
 

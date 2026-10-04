@@ -23,7 +23,7 @@ Open http://127.0.0.1:4173. For phone use, the static `public` directory needs a
 
 ## Account onboarding
 
-Send INICIAR (or AJUDA), then ACEITO, your name, production town/community, PT or EN, and CONFIRMO. The channel profile is saved only after confirmation. Use MENU, CONTA, LOTES, STATUS, ALTERAR NOME, ALTERAR LOCAL, RETIRAR LOTE and SUPORTE for account management. Full journey and implementation boundaries: [PRODUCT.md](PRODUCT.md). Verified linking and shared records are implemented in the latest local build; follow [SHARED-SETUP.md](SHARED-SETUP.md) to deploy both handlers to one store.
+Send START or INICIAR. Choose EN or PT first, then agree to consent, provide your name and production area, and reply CONFIRM (English) or CONFIRMO (Portuguese). The channel profile is saved only after confirmation. Use MENU, CONTA, LOTES, STATUS, ALTERAR NOME, ALTERAR LOCAL, RETIRAR LOTE and SUPORTE for account management. Full journey and implementation boundaries: [PRODUCT.md](PRODUCT.md). Verified linking and shared records are implemented in the latest local build; follow [SHARED-SETUP.md](SHARED-SETUP.md) to deploy both handlers to one store.
 
 ## Farmer journey
 

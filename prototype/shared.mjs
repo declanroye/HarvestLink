@@ -1,3 +1,4 @@
+import {englishReply} from './public/conversation-language.js';
 import {randomBytes,createHash,timingSafeEqual} from 'node:crypto';
 import {handleFarmerMessage} from './public/account.js';
 import {validateLot,profiles,demoOrder,demoCosts} from './public/core.js';
@@ -15,12 +16,12 @@ function prune(db,now){for(const [key,link] of Object.entries(db.links))if(now>l
 export function rateLimit(db,key,max=15,now=Date.now()){
  prune(db,now);const r=db.rateLimits[key];if(!r||now-r.at>60000)db.rateLimits[key]={at:now,count:1};else if(++r.count>max)fail(429,'Too many attempts. Wait one minute.');
 }
-export function requestLink(db,label='My phone',now=Date.now()){
+export function requestLink(db,label='My phone',now=Date.now(),language='pt'){
  initialize(db);prune(db,now);
  if(Object.keys(db.links).length>=25)fail(429,'Pairing service busy. Try again later.');
  const id=secret(),claim=secret();let code;do{code=randomBytes(6).toString('base64url').toUpperCase().replace(/[-_]/g,'X').slice(0,8);}while(Object.values(db.links).some(l=>l.code===code));
  db.links[id]={id,code,claimHash:digest(claim),label:String(label).replace(/[\r\n]/g,' ').slice(0,40),expiresAt:now+600000,state:'pending'};
- return {id,claim,code,expiresAt:new Date(now+600000).toISOString(),command:'VINCULAR '+code};
+ return {id,claim,code,expiresAt:new Date(now+600000).toISOString(),command:(language==='en'?'LINK ':'VINCULAR ')+code};
 }
 export function claimLink(db,id,claim,now=Date.now()){
  initialize(db);const link=db.links[id];
@@ -68,6 +69,7 @@ export function processInbound(db,event,model,profileName='general',now=Date.now
   const profile=profiles[profileName]||profiles.general;
   result=handleFarmerMessage(event.Body,session,model,{lots:db.lots,choices:db.choices,costs:demoCosts,profile,order:profile.id==='bonfim'?demoOrder:null});
  }
+ if(result.session.account?.language==='en'){result.reply=englishReply(result.reply).replace(/^Vincular o dispositivo/, 'Link device').replace('à conta','to account').replace('? Código','? Code').replace('Ele poderá consultar e enviar seus registros. Digite CONFIRM somente se você criou este código, ou CANCEL.','It can read and submit your records. Reply CONFIRM only if you created this code, or CANCEL.');}
  db.sessions[event.From]=result.session;
  if(result.session.account){const id=result.session.account.id,old=db.accounts[id],account={...result.session.account,revision:old?.revision||0};db.accounts[id]=account;
   if(!old||canonical({...old,revision:0})!==canonical({...account,revision:0})||result.lot||result.choice||result.lotUpdate||result.supportRequest)bump(db,id);
@@ -118,7 +120,7 @@ export function syncDevice(db,device,payload){
 }
 export function companionOperation(db,path,method,input,token,rateKey='unknown'){
  initialize(db);
- if(path==='link/request'&&method==='POST'){rateLimit(db,'request:'+rateKey,5);return requestLink(db,input.label);}
+ if(path==='link/request'&&method==='POST'){rateLimit(db,'request:'+rateKey,5);return requestLink(db,input.label,Date.now(),input.language);}
  if(path==='link/claim'&&method==='POST'){rateLimit(db,'claim:'+rateKey,40);return claimLink(db,input.id,input.claim);}
  const device=authenticateDevice(db,token);
  if(path==='snapshot'&&method==='GET')return snapshot(db,device.farmerId);

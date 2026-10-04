@@ -8,7 +8,7 @@ test('paired Functions use one durable Sync store for WhatsApp verification and 
  let sid=0;const send=body=>invoke(replySource,{From:'whatsapp:+test',MessageSid:'SM-'+(++sid),Body:body});
  const api=(action,input={},token='',origin='https://declanroye.github.io')=>invoke(apiSource,{action,input:JSON.stringify(input),token,request:{headers:{origin}}});
  assert.equal((await api('snapshot')).status,401);assert.equal((await api('link/request',{},'','https://bad.invalid')).status,403);
- for(const text of ['INICIAR','ACEITO','Ana','Boa Vista','PT','CONFIRMO'])await send(text);
+ for(const text of ['INICIAR','PT','ACEITO','Ana','Boa Vista','PT','CONFIRMO'])await send(text);
  const pair=(await api('link/request',{label:'phone'})).body;await send(pair.command);assert.equal((await api('link/claim',pair)).body.state,'pending');await send('CONFIRMO');const linked=(await api('link/claim',pair)).body;assert.equal(linked.state,'linked');
  await send('tenho 25 kg de milho, classe A, 2026-10-04, BRL 3/kg');await send('CONFIRMO');const shared=(await api('snapshot',{},linked.token)).body;assert.equal(shared.lots.length,1);assert.equal(shared.account.id,linked.snapshot.account.id);
  const lot={...shared.lots[0],id:crypto.randomUUID(),quantityKg:40};delete lot.providerSid;

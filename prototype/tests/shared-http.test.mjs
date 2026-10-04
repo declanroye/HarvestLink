@@ -8,7 +8,7 @@ test('HTTP signed WhatsApp linking, offline upload, scoped fetch, conflict and p
  try{
   await start();assert.equal((await api('snapshot')).status,401);
   assert.equal((await fetch(base+'/companion/link/request',{method:'POST',headers:{Origin:'https://evil.invalid','Content-Type':'application/json'},body:'{}'})).status,403);
-  for(const t of ['INICIAR','ACEITO','Ana','Boa Vista','PT','CONFIRMO'])await send(t);
+  for(const t of ['INICIAR','PT','ACEITO','Ana','Boa Vista','PT','CONFIRMO'])await send(t);
   const pairing=await (await api('link/request',{label:'test companion'})).json();assert.equal((await (await api('link/claim',pairing)).json()).state,'pending');
   await send(pairing.command);await send('CONFIRMO');const linked=await (await api('link/claim',pairing)).json();assert.equal(linked.state,'linked');assert.equal((await api('link/claim',pairing)).status,401);
   const lot={id:crypto.randomUUID(),farmerId:linked.snapshot.account.id,farmer:'Ana',crop:'cassava',location:'Boa Vista',quantityKg:90,grade:'A',harvestDate:'2026-10-04',localPriceBrl:4,confirmedAt:new Date().toISOString(),confirmation:'explicit farmer confirmation',status:'available',source:'offline-app'};
