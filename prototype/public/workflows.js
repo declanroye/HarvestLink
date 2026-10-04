@@ -1,4 +1,4 @@
-import {normal,crops} from './core.js?release=v38';
+import {normal,crops} from './core.js?release=v39';
 const kinds={'harvest summary':'harvest-summary','harvest-summary':'harvest-summary','resumo da colheita':'harvest-summary','packing list':'packing-list','lista de embalagem':'packing-list','proforma invoice':'proforma-invoice','proforma':'proforma-invoice','fatura proforma':'proforma-invoice'};
 export function documentText(document){const r=document.record;return [document.title,'DRAFT FOR REVIEW — not a sale, tax invoice or customs clearance','Document '+document.id,'Farmer: '+r.farmer,'Community: '+r.location,'Lot: '+r.lotId,'Crop: '+r.crop,'Quantity: '+r.quantityKg+' kg','Grade: '+r.grade,'Harvest date: '+r.harvestDate,'Local price supplied by farmer: BRL '+r.localPriceBrl+'/kg',...(document.packaging?['Packaging: '+document.packaging]:[]),'Buyer / consignee: not confirmed','Shipment: awaiting buyer confirmation and trade-requirement checks','Created: '+document.createdAt].join('\n');}
 export function workflowMessage(text,session,context={}){
