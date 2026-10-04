@@ -289,6 +289,7 @@ function handleFarmerMessageInner(text,session,model,context={}){
    onboarding.step='name';return reply(accountQuestions.name,{...session,onboarding});
   }
   if(onboarding.step==='name'||onboarding.step==='location'){
+   if(/^(confirm|confirmo|confirmar|i agree|aceito|start|iniciar|menu|help|ajuda)$/i.test(text.trim()))return reply(accountQuestions[onboarding.step]);
    const value=cleanValue(text);if(value.length<2||value.length>60||!/^[\p{L}\p{N} .,'’-]+$/u.test(value))return reply('Envie um nome ou local de 2 a 60 caracteres.');
    d[onboarding.step]=value;onboarding.draft=d;onboarding.step=onboarding.step==='name'?'location':d.language?'review':'language';return reply(onboarding.step==='review'?`Confira: ${d.name} · ${d.location} · ${d.language.toUpperCase()}. Digite CONFIRMO para criar seu perfil ou CANCELAR para recomeçar.`:accountQuestions[onboarding.step],{...session,onboarding});
   }
@@ -342,6 +343,15 @@ function handleFarmerMessageInner(text,session,model,context={}){
 
 function handleFarmerMessage(text,session,model,context={}){
  const selected=typeof text==='string'?selectLanguage(text):null;
+ // Older conversations may already be mid-onboarding with no language saved.
+ // Selecting a language must not be treated as a name or town.
+ if(selected&&session.onboarding&&session.onboarding.step!=='language'){
+  const onboarding={...session.onboarding,draft:{...session.onboarding.draft,language:selected}};
+  if(/^(confirm|confirmo|start|iniciar|menu|help|ajuda)$/i.test(onboarding.draft.name||'')){delete onboarding.draft.name;delete onboarding.draft.location;onboarding.step='name';}
+  const prompt=onboarding.step==='review'?`Confira: ${onboarding.draft.name} · ${onboarding.draft.location} · ${selected.toUpperCase()}. Digite CONFIRMO para criar seu perfil ou CANCELAR para recomeçar.`:accountQuestions[onboarding.step];
+  return {reply:selected==='en'?englishReply(prompt):prompt,session:{...session,onboarding,language:selected}};
+ }
+ if(typeof text==='string'&&/^i agree$/i.test(text.trim())&&session.onboarding?.step==='consent')session={...session,language:'en',onboarding:{...session.onboarding,draft:{...session.onboarding.draft,language:'en'}}};
  if(selected&&session.account)return {reply:selected==='en'?'Language set to English. Send MENU for commands.':'Idioma definido: português. Envie MENU.',session:{...session,language:selected,account:{...session.account,language:selected}}};
  if(selected&&!session.account&&!session.onboarding)session={...session,onboarding:{step:'language',draft:{}}};
  const language=selected||session.account?.language||session.onboarding?.draft?.language||session.language;
